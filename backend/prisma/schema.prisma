@@ -1,0 +1,83 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+model Portfolio {
+  id                             Int     @id @default(autoincrement())
+  name                           String
+  totalPortfolioInvestmentByUSD  Float   @default(0)
+  totalPortfolioInvestmentByEURO Float   @default(0)
+  totalPortfolioInvestmentByTRY  Float   @default(0)
+  totalPortfolioQuantity         Float   @default(0)
+  averageCostByUSD               Float   @default(0)
+  averageCostByEURO              Float   @default(0)
+  averageCostByTRY               Float   @default(0)
+  assets                         Asset[]
+}
+
+model Asset {
+  id                         Int           @id @default(autoincrement())
+  symbol                     String
+  type                       AssetType
+  isActive                   AssetStatus   @default(ACTIVE)
+  totalAssetInvestmentByUSD  Float
+  totalAssetInvestmentByEURO Float
+  totalAssetInvestmentByTRY  Float
+  totalAssetQuantity         Float
+  averageCostByUSD           Float
+  averageCostByEURO          Float
+  averageCostByTRY           Float
+  initalWeight               Float
+  portfolio                  Portfolio?    @relation(fields: [portfolioId], references: [id])
+  portfolioId                Int?
+  transactions               Transaction[]
+}
+
+model Transaction {
+  id            Int             @id @default(autoincrement())
+  type          TransactionType
+  price         Float
+  priceCurrency CurrencyType
+  usdtry        Float
+  eurusd        Float
+  investment    Float
+  date          DateTime
+  asset         Asset?          @relation(fields: [assetId], references: [id])
+  assetId       Int?
+}
+
+enum AssetStatus {
+  ACTIVE
+  PASSIVE
+}
+
+enum TransactionType {
+  BUY
+  SELL
+}
+
+enum AssetType {
+  ETF
+  STOCK
+  COMMODITY
+  BOND
+  CRYPTO
+}
+
+enum CurrencyType {
+  USD
+  EURO
+  TRY
+}
