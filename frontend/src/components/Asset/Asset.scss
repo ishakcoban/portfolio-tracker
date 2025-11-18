@@ -1,0 +1,36 @@
+.asset-wrapper{
+    background-color: $light-grey;
+    border-radius: 12px;
+}
+
+.asset-logo{
+    width: 20px;
+}
+
+.asset-header{
+    color: $orange;
+    font-size: .7rem;
+}
+
+.asset-value{
+    color: $asset-value-color;
+    font-size: 1.1rem;
+    font-weight: 400;
+}
+
+.asset-name{
+    color:$asset-name-color;
+    font-weight: medium;
+}
+
+.asset-current-price{
+    color: $asset-value-color;
+}
+
+.asset-roi{
+    color: $green;
+}
+
+.asset-earning{
+    color: $green;
+}
