@@ -27,9 +27,9 @@ api.interceptors.response.use(
 
 // Generic HTTP methods
 const httpService = {
-  get: async <T>(url: string, config?: AxiosRequestConfig) => {
-    const response: AxiosResponse<T> = await api.get(url, config);
-    return response.data;
+  get: async (url: string, config?: AxiosRequestConfig) => {
+    const response: AxiosResponse = await api.get(url, config);
+    return response;
   },
 
   post: async (url: string, data: any, config?: AxiosRequestConfig) => {
