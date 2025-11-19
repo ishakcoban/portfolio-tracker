@@ -1,3 +1,13 @@
+number-flow-react::part(suffix) {
+	margin-left: .0625em;
+	font-weight: normal;
+	font-size: 0.75em;
+	color: var(--muted);
+}
+.memen{
+  /* --number-flow-char-height: '0.85em'; */
+  --number-flow-char-height: '0.55em';
+}
 /*#root {
   max-width: 1280px;
   margin: 0 auto;

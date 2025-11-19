@@ -1,11 +1,11 @@
 import { useState, type PropsWithChildren } from "react";
 import "./CustomInput.scss";
 type Props = {
-  input_style: { name: string; header: string };
-  inputHandler: (event: React.ChangeEvent<HTMLInputElement>) =>  void;
-  value:string
+  // input_style: { name: string; header: string };
+  // inputHandler: (event: React.ChangeEvent<HTMLInputElement>) =>  void;
+  header:string
 } & PropsWithChildren;
-export default function CustomInput({ input_style, inputHandler,value }: Props) {
+export default function CustomInput({ header,children }: Props) {
   const [isVisible, setIsVisible] = useState(false);
 
   const switchPassword = () => {
@@ -17,15 +17,16 @@ export default function CustomInput({ input_style, inputHandler,value }: Props) 
       <div className="input-wrapper position-relative">
         <div className="input-border py-1 ps-3 pe-3 m d-flex align-items-center justify-content-end">
           {/* Regular Input */}
-            <input
+            {/* <input
               type={input_style.name}
               className="input-style"
               name={input_style.name}
               value={value}
               onChange={inputHandler}
               disabled={input_style.name === "gender"}
-            />
-       <div>{value}</div>
+            /> */}
+            {children}
+       {/* <div>{value}</div> */}
 
           {/* Eye Icon for Password */}
           {/*(input_style.name === "password" ||
@@ -55,7 +56,7 @@ export default function CustomInput({ input_style, inputHandler,value }: Props) 
           style={{ fontSize: ".7rem" }}
           className="input-header position-absolute top-0 ms-3 px-2"
         >
-          {input_style.header}
+          {header}
         </div>
 
         {/* Select Dropdown */}

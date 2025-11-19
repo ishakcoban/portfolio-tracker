@@ -15,34 +15,35 @@ generator client {
 }
 
 model Portfolio {
-  id                             Int     @id @default(autoincrement())
-  name                           String
-  totalPortfolioInvestmentByUSD  Float   @default(0)
-  totalPortfolioInvestmentByEURO Float   @default(0)
-  totalPortfolioInvestmentByTRY  Float   @default(0)
-  totalPortfolioQuantity         Float   @default(0)
-  averageCostByUSD               Float   @default(0)
-  averageCostByEURO              Float   @default(0)
-  averageCostByTRY               Float   @default(0)
-  assets                         Asset[]
+  id                       Int     @id @default(autoincrement())
+  name                     String
+  totalRawInvestmentByUSD  Float   @default(0)
+  totalRawInvestmentByEURO Float   @default(0)
+  totalRawInvestmentByTRY  Float   @default(0)
+  totalQuantity            Float   @default(0)
+  averageCostByUSD         Float   @default(0)
+  averageCostByEURO        Float   @default(0)
+  averageCostByTRY         Float   @default(0)
+  assets                   Asset[]
 }
 
 model Asset {
-  id                         Int           @id @default(autoincrement())
-  symbol                     String
-  type                       AssetType
-  isActive                   AssetStatus   @default(ACTIVE)
-  totalAssetInvestmentByUSD  Float
-  totalAssetInvestmentByEURO Float
-  totalAssetInvestmentByTRY  Float
-  totalAssetQuantity         Float
-  averageCostByUSD           Float
-  averageCostByEURO          Float
-  averageCostByTRY           Float
-  initalWeight               Float
-  portfolio                  Portfolio?    @relation(fields: [portfolioId], references: [id])
-  portfolioId                Int?
-  transactions               Transaction[]
+  id                       Int           @id @default(autoincrement())
+  symbol                   String
+  type                     AssetType
+  imageUrl                 String
+  isActive                 AssetStatus   @default(ACTIVE)
+  totalRawInvestmentByUSD  Float         @default(0)
+  totalRawInvestmentByEURO Float         @default(0)
+  totalRawInvestmentByTRY  Float         @default(0)
+  totalQuantity            Float         @default(0)
+  averageCostByUSD         Float         @default(0)
+  averageCostByEURO        Float         @default(0)
+  averageCostByTRY         Float         @default(0)
+  initialWeight            Float
+  portfolio                Portfolio     @relation(fields: [portfolioId], references: [id])
+  portfolioId              Int
+  transactions             Transaction[]
 }
 
 model Transaction {
