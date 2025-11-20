@@ -1,20 +1,52 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreatePortfolioDto } from './dto/create-portfolio.dto';
 import { UpdatePortfolioDto } from './dto/update-portfolio.dto';
 import { PrismaService } from '../prisma.service';
 import { Portfolio, Prisma } from 'generated/prisma';
+import { PortfoliosDto } from './dto/find-all-portfolio.dto';
+import { PortfolioMapper } from './portfolio.mapper';
 
 @Injectable()
 export class PortfolioService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService
+  ) {}
   async create(createPortfolioDto: CreatePortfolioDto) {
+    const portfolio = await this.prisma.portfolio.findUnique({
+      where: { name: createPortfolioDto.name },
+    });
+
+    if (portfolio) {
+      throw new BadRequestException(
+        `Portfolio with Name ${createPortfolioDto.name} is already taken!`,
+      );
+    }
+
     await this.prisma.portfolio.create({
       data: createPortfolioDto,
     });
   }
 
-  async findAll() {
-    return await this.prisma.portfolio.findMany();
+  private mapToDto(portfolio: Portfolio): PortfoliosDto {
+    return {
+      id: portfolio.id,
+      name: portfolio.name,
+    };
+  }
+
+  async findAll(){
+    const portfolios = await this.prisma.portfolio.findMany({
+      select: {
+        id: true,
+        name: true,
+        assets:true
+      },
+    });
+    return portfolios;
   }
 
   async findOne(id: number) {
