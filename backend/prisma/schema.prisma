@@ -16,7 +16,7 @@ generator client {
 
 model Portfolio {
   id                       Int     @id @default(autoincrement())
-  name                     String
+  name                     String  @unique
   totalRawInvestmentByUSD  Float   @default(0)
   totalRawInvestmentByEURO Float   @default(0)
   totalRawInvestmentByTRY  Float   @default(0)
@@ -29,7 +29,7 @@ model Portfolio {
 
 model Asset {
   id                       Int           @id @default(autoincrement())
-  symbol                   String
+  symbol                   String        @unique
   type                     AssetType
   imageUrl                 String
   isActive                 AssetStatus   @default(ACTIVE)
@@ -50,7 +50,6 @@ model Transaction {
   id            Int             @id @default(autoincrement())
   type          TransactionType
   price         Float
-  priceCurrency CurrencyType
   usdtry        Float
   eurusd        Float
   investment    Float
