@@ -21,32 +21,32 @@ function App() {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
   }, []);
-console.log("asdasdsa");
+
   return (
     <>
       <Navbar />
       {
-        <div>
-          <div className="text-light fs-1 bg-warning">
+       
+          <div className="text-light fs-1 bg-warning asdasd">
             <span className="bg-danger">€</span>
             <NumberFlow
-              className="bg-danger"
+          
+   
               format={{
                 notation: "standard",
 
                 signDisplay: "never",
+                
               }}
               spinTiming={{ duration: 1500, easing: "ease" }}
               value={value}
+              
             />
           </div>
-          <div className="text-light bg-success">
-            16270
-            <div />
-          </div>
-        </div>
+      
+     
       }
-      {
+      {/*
         <NumberFlowGroup>
           <div
             // style={{ '--number-flow-char-height': '0.85em' }}
@@ -72,7 +72,7 @@ console.log("asdasdsa");
               )}
             />
           </div>
-        </NumberFlowGroup>
+        </NumberFlowGroup>*/
       }
       <button
         onClick={() => {

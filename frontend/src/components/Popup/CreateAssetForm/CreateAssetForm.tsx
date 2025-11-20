@@ -66,7 +66,7 @@ export default function CreateAssetForm({ closePopup, onSuccess }: Props) {
       } catch (error: any) {
         if (error.status === 400) {
           setMessage("Invalid input!");
-          setMessage(error);
+          //setMessage(error);
           setStatusCode(error.status);
         }
       }

@@ -6,6 +6,7 @@ import CreateAssetForm from "../Popup/CreateAssetForm/CreateAssetForm";
 import SuccessMessageCard, {
   type SuccessMessageCardRef,
 } from "../SuccessMessageCard/SuccessMessageCard";
+import CreateTransactionFom from "../Popup/CreateTransactionFom/CreateTransactionFom";
 
 export default function Navbar() {
   const [popupType, setPopupType] = useState<null | string>(null);
@@ -41,6 +42,12 @@ export default function Navbar() {
         >
           Create Asset
         </button>
+        <button
+          className="create-portfolio-button py-1 px-3 my-2 me-5"
+          onClick={() => openPopup("create-transaction")}
+        >
+          Create Transaction
+        </button>
 
         {popupType && (
           <Popup onClose={closePopup}>
@@ -56,6 +63,12 @@ export default function Navbar() {
                 closePopup={closePopup}
                 onSuccess={handleFormSuccess}
               ></CreateAssetForm>
+            )}
+            {popupType === "create-transaction" && (
+              <CreateTransactionFom
+                closePopup={closePopup}
+                onSuccess={handleFormSuccess}
+              ></CreateTransactionFom>
             )}
           </Popup>
         )}
