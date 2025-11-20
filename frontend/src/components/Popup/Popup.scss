@@ -11,6 +11,8 @@
 }
 
 .popup-overlay {
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   position: fixed;
   top: 0;
   left: 0;
