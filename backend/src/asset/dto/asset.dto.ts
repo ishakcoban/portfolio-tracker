@@ -15,7 +15,9 @@ import {
 } from 'class-validator';
 import { AssetType } from 'generated/prisma/client';
 
-export class CreateAssetDto {
+export class AssetDto {
+  @IsNumber()
+  id: number;
   @IsString({ message: 'Symbol must be a string' })
   @IsNotEmpty({ message: 'Symbol is required' })
   @MinLength(3, { message: 'Symbol must be at least 3 characters' })
@@ -25,7 +27,31 @@ export class CreateAssetDto {
   })
   symbol: string;
 
-  @IsEnum(AssetType, { message: 'Type must be a valid AssetType' })
+  @IsNumber({}, { message: 'Initial weight must be a number' })
+  @IsNotEmpty()
+  totalRawInvestmentByUSD: number;
+
+  @IsNumber({}, { message: 'Initial weight must be a number' })
+  @IsNotEmpty()
+  totalRawInvestmentByEURO: number;
+
+  @IsNumber({}, { message: 'Initial weight must be a number' })
+  @IsNotEmpty()
+  totalRawInvestmentByTRY: number;
+
+  @IsNumber({}, { message: 'Initial weight must be a number' })
+  @IsNotEmpty()
+  totalQuantity: number;
+  @IsNumber({}, { message: 'Initial weight must be a number' })
+  @IsNotEmpty()
+  averageCostByUSD: number;
+  @IsNumber({}, { message: 'Initial weight must be a number' })
+  @IsNotEmpty()
+  averageCostByEURO: number;
+  @IsNumber({}, { message: 'Initial weight must be a number' })
+  @IsNotEmpty()
+  averageCostByTRY: number;
+  @IsNotEmpty()
   type: AssetType;
 
   @IsUrl({}, { message: 'Image URL must be a valid URL' })

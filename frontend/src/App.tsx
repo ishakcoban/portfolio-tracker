@@ -6,6 +6,7 @@ import Navbar from "./components/Navbar/Navbar";
 import Asset from "./components/Asset/Asset";
 import NumberFlow, { NumberFlowGroup } from "@number-flow/react";
 import clsx from "clsx/lite";
+import Dashboard from "./pages/Dashboard/Dashboard";
 function App() {
 
   const [diff, setDiff] = useState(12);
@@ -25,7 +26,10 @@ function App() {
   return (
     <>
       <Navbar />
-      {
+      <Dashboard/>
+
+  
+      {/* {
        
           <div className="text-light fs-1 bg-warning asdasd">
             <span className="bg-danger">€</span>
@@ -45,7 +49,7 @@ function App() {
           </div>
       
      
-      }
+      } */}
       {/*
         <NumberFlowGroup>
           <div
@@ -74,26 +78,15 @@ function App() {
           </div>
         </NumberFlowGroup>*/
       }
-      <button
+      {/* <button
         onClick={() => {
           setValue(value + 35155.19);
           setDiff(diff + 1.7);
         }}
       >
         click
-      </button>
-      {/* <div className="row m-0 p-0">
-        <div className="col-3 m-0 p-0 m-2">
-          <Asset />
-        </div>
-        <div className="col-3 m-0 p-0 m-2">
-          <Asset />
-        </div>
-        <div className="col-3 m-0 p-0 m-2">
-          <Asset />
-        </div>
-        <div className="col-3 bg-warning"></div>
-      </div> */}
+      </button> */}
+
 
       {/*
       <div className='bg-danger'>

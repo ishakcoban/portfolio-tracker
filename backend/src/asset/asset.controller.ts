@@ -2,6 +2,7 @@ import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/commo
 import { AssetService } from './asset.service';
 import { CreateAssetDto } from './dto/create-asset.dto';
 import { UpdateAssetDto } from './dto/update-asset.dto';
+import { RequestCurrentAssetPriceDto } from './request/current-asset-price-request';
 
 @Controller('assets')
 export class AssetController {
@@ -16,7 +17,10 @@ export class AssetController {
     return this.assetService.findAll();
   }
 
-
+  @Post('/current-market-price')
+  getCurrentMarketPrice(@Body() requestCurrentAssetPriceDto: RequestCurrentAssetPriceDto[]) {
+    return this.assetService.getCurrentMarketPrice(requestCurrentAssetPriceDto);
+  }
   
   @Get(':id')
   findOne(@Param('id') id: string) {

@@ -42,7 +42,7 @@ export default function CreateAssetForm({ closePopup, onSuccess }: Props) {
   const submitHandler = async () => {
     const data = {
       symbol: symbolText,
-      type: "ETF",
+      type: typeText,
       imageUrl: imageUrlText,
       initialWeight: +initialWeightText,
       portfolioId: +selectedItem,

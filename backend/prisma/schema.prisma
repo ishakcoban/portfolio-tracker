@@ -20,10 +20,6 @@ model Portfolio {
   totalRawInvestmentByUSD  Float   @default(0)
   totalRawInvestmentByEURO Float   @default(0)
   totalRawInvestmentByTRY  Float   @default(0)
-  totalQuantity            Float   @default(0)
-  averageCostByUSD         Float   @default(0)
-  averageCostByEURO        Float   @default(0)
-  averageCostByTRY         Float   @default(0)
   assets                   Asset[]
 }
 
@@ -70,6 +66,7 @@ enum TransactionType {
 
 enum AssetType {
   ETF
+  INDEX
   STOCK
   COMMODITY
   BOND
