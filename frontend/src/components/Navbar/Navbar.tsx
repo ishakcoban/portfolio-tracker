@@ -31,19 +31,19 @@ export default function Navbar() {
       <SuccessMessageCard ref={cardRef} message={message}></SuccessMessageCard>
       <div className="navbar-wrapper d-flex justify-content-end">
         <button
-          className="create-portfolio-button py-1 px-3 my-2 me-5"
+          className="create-portfolio-asset-transaction-button py-1 px-3 my-2 me-4"
           onClick={() => openPopup("create-portfolio")}
         >
           Create Portfolio
         </button>
         <button
-          className="create-portfolio-button py-1 px-3 my-2 me-5"
+          className="create-portfolio-asset-transaction-button py-1 px-3 my-2 me-4"
           onClick={() => openPopup("create-asset")}
         >
           Create Asset
         </button>
         <button
-          className="create-portfolio-button py-1 px-3 my-2 me-5"
+          className="create-portfolio-asset-transaction-button py-1 px-3 my-2 me-4"
           onClick={() => openPopup("create-transaction")}
         >
           Create Transaction

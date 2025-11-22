@@ -1,6 +1,4 @@
-import React, { useState } from "react";
 import "./Asset.scss";
-import LineChart from "../Charts/LineChart";
 import LoadingSpinner from "../LoadingSpinner/LoadingSpinner";
 import NumberFlow from "@number-flow/react";
 
@@ -43,15 +41,13 @@ export default function Asset({ asset }: Props) {
                   <div className="asset-name ms-3 fw-bold">{asset.symbol}</div>
                 </div>
 
-                <div className="bg-warning">
-                  {/* <LineChart></LineChart> */}
-                </div>
+                <div className="bg-warning"></div>
               </div>
               <div className="d-flex justify-content-end py-2">
                 <div className="asset-current-price border-end pe-2 d-flex">
-                  <span>$</span>
+                  <span>${asset.currentPrice}</span>
 
-                  <NumberFlow
+                  {/* <NumberFlow
                     format={{
                       notation: "standard",
 
@@ -59,7 +55,7 @@ export default function Asset({ asset }: Props) {
                     }}
                     spinTiming={{ duration: 1500, easing: "ease" }}
                     value={asset.currentPrice}
-                  />
+                  /> */}
                 </div>
 
                 <div
@@ -68,7 +64,7 @@ export default function Asset({ asset }: Props) {
                     (asset.currentROI < 0 && " text-danger")
                   }
                 >
-                  <NumberFlow
+                  {/* <NumberFlow
                     format={{
                       style: "decimal",
 
@@ -76,8 +72,8 @@ export default function Asset({ asset }: Props) {
                     }}
                     spinTiming={{ duration: 1500, easing: "ease" }}
                     value={asset.currentROI}
-                  />
-                  <span>%</span>
+                  /> */}
+                  <span>{asset.currentROI}%</span>
                 </div>
 
                 <div
@@ -86,8 +82,8 @@ export default function Asset({ asset }: Props) {
                     (asset.currentEarning < 0 && " text-danger")
                   }
                 >
-                  <span>$</span>
-                  <NumberFlow
+                  <span>${asset.currentEarning}</span>
+                  {/* <NumberFlow
                     format={{
                       notation: "standard",
 
@@ -95,7 +91,7 @@ export default function Asset({ asset }: Props) {
                     }}
                     spinTiming={{ duration: 1500, easing: "ease" }}
                     value={asset.currentEarning}
-                  />
+                  /> */}
                 </div>
               </div>
             </div>
@@ -105,7 +101,7 @@ export default function Asset({ asset }: Props) {
             <div className="m-0 p-0">
               <div className="asset-header">Initial Weight</div>
               <div className="asset-value d-flex">
-                <NumberFlow
+                {/* <NumberFlow
                   format={{
                     style: "decimal",
 
@@ -113,15 +109,15 @@ export default function Asset({ asset }: Props) {
                   }}
                   spinTiming={{ duration: 1500, easing: "ease" }}
                   value={asset.initialWeight}
-                />
-                <span>%</span>
+                /> */}
+                <span>{asset.initialWeight}%</span>
               </div>
             </div>
             <div className="m-0 p-0">
               <div className="asset-header">Raw Investment</div>
               <div className="asset-value d-flex">
-                <span>$</span>
-                <NumberFlow
+                <span>${asset.totalRawInvestmentByUSD}</span>
+                {/* <NumberFlow
                   format={{
                     notation: "standard",
 
@@ -129,14 +125,14 @@ export default function Asset({ asset }: Props) {
                   }}
                   spinTiming={{ duration: 1500, easing: "ease" }}
                   value={asset.totalRawInvestmentByUSD}
-                />
+                /> */}
               </div>
             </div>
             <div className="m-0 p-0">
               <div className="asset-header">Total Quantity</div>
               <div className="asset-value">
-                {" "}
-                <NumberFlow
+                {asset.totalQuantity}
+                {/* <NumberFlow
                   format={{
                     notation: "standard",
 
@@ -144,7 +140,7 @@ export default function Asset({ asset }: Props) {
                   }}
                   spinTiming={{ duration: 1500, easing: "ease" }}
                   value={asset.totalQuantity}
-                />
+                /> */}
               </div>
             </div>
           </div>
@@ -152,7 +148,7 @@ export default function Asset({ asset }: Props) {
             <div className="m-0 p-0">
               <div className="asset-header">Current Weight</div>
               <div className="asset-value d-flex">
-                <NumberFlow
+                {/* <NumberFlow
                   format={{
                     style: "decimal",
 
@@ -160,15 +156,15 @@ export default function Asset({ asset }: Props) {
                   }}
                   spinTiming={{ duration: 1500, easing: "ease" }}
                   value={asset.currentWeight}
-                />
-                <span>%</span>
+                /> */}
+                <span>{asset.currentWeight}%</span>
               </div>
             </div>
             <div className="m-0 p-0">
               <div className="asset-header">Current Investment</div>
               <div className="asset-value d-flex">
-                <span>$</span>
-                <NumberFlow
+                <span>${asset.currentInvestment}</span>
+                {/* <NumberFlow
                   format={{
                     notation: "standard",
 
@@ -176,14 +172,14 @@ export default function Asset({ asset }: Props) {
                   }}
                   spinTiming={{ duration: 1500, easing: "ease" }}
                   value={asset.currentInvestment}
-                />
+                /> */}
               </div>
             </div>
             <div className="m-0 p-0">
               <div className="asset-header">Average Cost</div>
               <div className="asset-value d-flex">
-                <span>$</span>
-                <NumberFlow
+                <span>${asset.averageCostByUSD}</span>
+                {/* <NumberFlow
                   format={{
                     notation: "standard",
 
@@ -191,7 +187,7 @@ export default function Asset({ asset }: Props) {
                   }}
                   spinTiming={{ duration: 1500, easing: "ease" }}
                   value={asset.averageCostByUSD}
-                />
+                /> */}
               </div>
             </div>
           </div>
