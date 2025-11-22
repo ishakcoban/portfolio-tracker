@@ -1,38 +1,22 @@
-import { Portfolio } from "generated/prisma";
-import { PortfoliosDto } from "./dto/find-all-portfolio.dto";
-import { CreatePortfolioDto } from "./dto/create-portfolio.dto";
-import { PortfolioDto } from "./dto/find-one-portfolio-dto";
+import { Asset, Portfolio } from 'generated/prisma';
+import { PortfolioDto } from './dto/portfolio-dto';
+import { AssetMapper } from 'src/asset/asset.mapper';
+import { Injectable } from '@nestjs/common';
 
+@Injectable()
 export class PortfolioMapper {
-  //constructor(private readonly photoMapper: AdvertPhotoMapper) {}
+  constructor(private readonly assetMapper: AssetMapper) {}
 
-//     mapToDto(portfolios: Portfolio[]): PortfoliosDto[] {
-
-//         portfolios.map
-//     return {
-//       id: portfolio.id,
-//       name: portfolio.name,
-//     };
-    
-//   }
-  
-
-//   toDto(portfolio: Portfolio): PortfolioDto {
-//     return {
-//       id: portfolio.id,
-//       header: advert.header,
-//       description: advert.description,
-//       price: Number(advert.price),
-//       city: advert.city,
-//       district: advert.district,
-//       neighbourhood: advert.neighbourhood,
-//       rooms: advert.rooms,
-//       floorArea: advert.floorArea,
-//       updatedOn: advert.updatedOn,
-//       userName: advert.user.userName,
-//       photos: this.photoMapper.toDtoList(advert.advertPhotos),
-//     };
-//   }
+  toDto(portfolio: Portfolio, assets: Asset[]): PortfolioDto {
+    return {
+      id: portfolio.id,
+      name: portfolio.name,
+      totalRawInvestmentByUSD: portfolio.totalRawInvestmentByUSD,
+      totalRawInvestmentByEURO: portfolio.totalRawInvestmentByEURO,
+      totalRawInvestmentByTRY: portfolio.totalRawInvestmentByTRY,
+      assets: this.assetMapper.toDtoList(assets),
+    };
+  }
 
   /* toDtoList(adverts: (Advert & { user: User; advertPhotos: any[] })[]): AdvertDto[] {
     return adverts.map((a) => this.toDto(a));
@@ -57,43 +41,43 @@ export class PortfolioMapper {
     };
   }*/
 
-//   createAsset(createAssetDto: CreateAssetDto): Prisma.AssetCreateInput {
-//     return {
-//       symbol: createAssetDto.symbol,
-//       type: createAssetDto.type,
-//       totalAssetInvestmentByUSD: 0,
-//       totalAssetInvestmentByEURO: 0,
-//       totalAssetInvestmentByTRY: 0,
-//       totalAssetQuantity: 0,
-//       costByUSD: 0,
-//       costByEURO: 0,
-//       costByTRY: 0,
-//     };
-//   }
-//   updateAsset(
-//     existedAsset: Asset, // <-- correct type
-//     transaction: Prisma.TransactionCreateInput,
-//   ): Prisma.AssetUpdateInput {
-    
-//     let updatedTotalAssetInvestmentByUSD =
-//       existedAsset.totalAssetInvestmentByUSD + transaction.investment;
-//     let updatedTotalAssetInvestmentByEURO =
-//       existedAsset.totalAssetInvestmentByEURO +
-//       transaction.investment / transaction.eurusd;
-//     let updatedTotalAssetInvestmentByTRY =
-//       existedAsset.totalAssetInvestmentByTRY +
-//       transaction.investment * transaction.usdtry;
-//     let updatedTotalAssetQuantity =
-//       existedAsset.totalAssetQuantity +
-//       transaction.investment / transaction.priceByUSD;
-//     return {
-//       totalAssetInvestmentByUSD: updatedTotalAssetInvestmentByUSD,
-//       totalAssetInvestmentByEURO: updatedTotalAssetInvestmentByEURO,
-//       totalAssetInvestmentByTRY: updatedTotalAssetInvestmentByTRY,
-//       totalAssetQuantity: updatedTotalAssetQuantity,
-//       costByUSD: updatedTotalAssetInvestmentByUSD / updatedTotalAssetQuantity,
-//       costByEURO: updatedTotalAssetInvestmentByEURO / updatedTotalAssetQuantity,
-//       costByTRY: updatedTotalAssetInvestmentByTRY / updatedTotalAssetQuantity,
-//     };
-//   }
+  //   createAsset(createAssetDto: CreateAssetDto): Prisma.AssetCreateInput {
+  //     return {
+  //       symbol: createAssetDto.symbol,
+  //       type: createAssetDto.type,
+  //       totalAssetInvestmentByUSD: 0,
+  //       totalAssetInvestmentByEURO: 0,
+  //       totalAssetInvestmentByTRY: 0,
+  //       totalAssetQuantity: 0,
+  //       costByUSD: 0,
+  //       costByEURO: 0,
+  //       costByTRY: 0,
+  //     };
+  //   }
+  //   updateAsset(
+  //     existedAsset: Asset, // <-- correct type
+  //     transaction: Prisma.TransactionCreateInput,
+  //   ): Prisma.AssetUpdateInput {
+
+  //     let updatedTotalAssetInvestmentByUSD =
+  //       existedAsset.totalAssetInvestmentByUSD + transaction.investment;
+  //     let updatedTotalAssetInvestmentByEURO =
+  //       existedAsset.totalAssetInvestmentByEURO +
+  //       transaction.investment / transaction.eurusd;
+  //     let updatedTotalAssetInvestmentByTRY =
+  //       existedAsset.totalAssetInvestmentByTRY +
+  //       transaction.investment * transaction.usdtry;
+  //     let updatedTotalAssetQuantity =
+  //       existedAsset.totalAssetQuantity +
+  //       transaction.investment / transaction.priceByUSD;
+  //     return {
+  //       totalAssetInvestmentByUSD: updatedTotalAssetInvestmentByUSD,
+  //       totalAssetInvestmentByEURO: updatedTotalAssetInvestmentByEURO,
+  //       totalAssetInvestmentByTRY: updatedTotalAssetInvestmentByTRY,
+  //       totalAssetQuantity: updatedTotalAssetQuantity,
+  //       costByUSD: updatedTotalAssetInvestmentByUSD / updatedTotalAssetQuantity,
+  //       costByEURO: updatedTotalAssetInvestmentByEURO / updatedTotalAssetQuantity,
+  //       costByTRY: updatedTotalAssetInvestmentByTRY / updatedTotalAssetQuantity,
+  //     };
+  //   }
 }

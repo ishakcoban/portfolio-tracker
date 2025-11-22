@@ -9,11 +9,13 @@ import { PrismaService } from '../prisma.service';
 import { Portfolio, Prisma } from 'generated/prisma';
 import { PortfoliosDto } from './dto/find-all-portfolio.dto';
 import { PortfolioMapper } from './portfolio.mapper';
+import { RequestCurrentAssetPriceDto } from 'src/asset/request/current-asset-price-request';
 
 @Injectable()
 export class PortfolioService {
   constructor(
-    private prisma: PrismaService
+    private prisma: PrismaService,
+    private portfolioMapper: PortfolioMapper,
   ) {}
   async create(createPortfolioDto: CreatePortfolioDto) {
     const portfolio = await this.prisma.portfolio.findUnique({
@@ -38,12 +40,12 @@ export class PortfolioService {
     };
   }
 
-  async findAll(){
+  async findAll() {
     const portfolios = await this.prisma.portfolio.findMany({
       select: {
         id: true,
         name: true,
-        assets:true
+        assets: true,
       },
     });
     return portfolios;
@@ -56,7 +58,20 @@ export class PortfolioService {
       throw new NotFoundException(`Portfolio with ID ${id} not found`);
     }
 
-    return portfolio;
+    const assets = await this.prisma.asset.findMany({
+      where: { portfolioId: portfolio.id },
+      orderBy: {
+        initialWeight: 'desc',
+      },
+    });
+
+    if (!assets) {
+      throw new NotFoundException(`Assets not found`);
+    }
+
+    //const data = this.portfolioMapper.toDto(portfolio, assets);
+
+    return this.portfolioMapper.toDto(portfolio, assets);
   }
 
   async update(id: number, updatePortfolioDto: UpdatePortfolioDto) {
