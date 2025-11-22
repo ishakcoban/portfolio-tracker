@@ -4,6 +4,16 @@ import Asset from "../../components/Asset/Asset";
 import PortfolioStats from "../../components/PortfolioStats/PortfolioStats";
 import httpService from "../../services/httpService";
 import LoadingSpinner from "../../components/LoadingSpinner/LoadingSpinner";
+
+type Portfolio = {
+  id: number;
+  name: string;
+  totalRawInvestmentByUSD: number;
+  totalRawInvestmentByEURO: number;
+  totalRawInvestmentByTRY: number;
+  assets: Asset[];
+};
+
 type Asset = {
   id: number;
   symbol: string;
@@ -26,53 +36,57 @@ type Asset = {
 
 type PortfolioStats = {
   id: number;
-  symbol: string;
-  imageUrl: string;
+  name: string;
   totalRawInvestmentByUSD: number;
-  totalRawInvestmentEURO: number;
+  totalRawInvestmentByEURO: number;
   totalRawInvestmentByTRY: number;
-  totalQuantity: number;
-  averageCostByUSD: number;
-  averageCostByEURO: number;
-  averageCostByTRY: number;
-  initalWeight: number;
-  currentPrice: number;
   currentROI: number;
   currentEarning: number;
-  currentWeight: number;
   currentInvestment: number;
+  portfolioPie: {
+    label: string;
+    value: number;
+  }[];
 };
 export default function Dashboard() {
   const [assetData, setAssetData] = useState<Asset[] | null>(null);
-  const [portfolioStatsData, setPortfolioStatsData] = useState<string | null>(
-    null
-  );
+  const [portfolioStatsData, setPortfolioStatsData] =
+    useState<PortfolioStats | null>(null);
   const [diff, setDiff] = useState(12);
   const [value, setValue] = useState(0);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const assetDataRef = useRef<Asset[] | null>(null);
+  const portfolioStatsDataRef = useRef<PortfolioStats | null>(null);
 
   const fetchData = async () => {
     try {
-      const response = await httpService.get(`/portfolios/2`);
+      const response = await httpService.get(`/portfolios/6`);
       if (response.status === 200) {
+        console.log(response.data);
         const { assets, ...portfolioStats } = response.data;
 
         setPortfolioStatsData(portfolioStats);
         setAssetData(assets);
         assetDataRef.current = assets;
+        portfolioStatsDataRef.current = portfolioStats;
       }
     } catch (error: any) {
       if (error.status === 400) {
         console.log(error.response.data);
-        // setMessage("Invalid input!");
-        // setStatusCode(error.status);
       }
     }
   };
 
+  function omit<T extends object, K extends keyof T>(
+    obj: T,
+    keys: K[]
+  ): Omit<T, K> {
+    const result = { ...obj };
+    keys.forEach((key) => delete result[key]);
+    return result as Omit<T, K>;
+  }
   const fetchAssetLiveData = async () => {
-    if (assetDataRef.current) {
+    if (assetDataRef.current && portfolioStatsDataRef.current) {
       try {
         const filteredAssetData = assetDataRef.current.map(
           ({
@@ -96,37 +110,36 @@ export default function Dashboard() {
         );
 
         if (response.status === 201) {
+          const target = omit(response.data, ["assets"]);
+          const updatedPortfolioStatsData = (portfolioStatsDataRef.current = {
+            ...portfolioStatsDataRef.current,
+            ...target,
+          });
+
+          setPortfolioStatsData(updatedPortfolioStatsData);
           const updatedAssetData = assetDataRef.current.map((asset, index) => ({
             ...asset,
             currentPrice:
-              response.data[index]?.currentPrice ?? asset.currentPrice,
-            currentROI: response.data[index]?.currentROI ?? asset.currentROI,
+              response.data.assets[index]?.currentPrice ?? asset.currentPrice,
+            currentROI:
+              response.data.assets[index]?.currentROI ?? asset.currentROI,
             currentEarning:
-              response.data[index]?.currentEarning ?? asset.currentEarning,
+              response.data.assets[index]?.currentEarning ??
+              asset.currentEarning,
             currentInvestment:
-              response.data[index]?.currentInvestment ??
+              response.data.assets[index]?.currentInvestment ??
               asset.currentInvestment,
             currentWeight:
-              response.data[index]?.currentWeight ?? asset.currentWeight,
+              response.data.assets[index]?.currentWeight ?? asset.currentWeight,
           }));
 
           setAssetData(updatedAssetData);
           assetDataRef.current = updatedAssetData;
-          console.log(assetDataRef.current);
-          //  setSelectedPortfolio("");
-          //  setSelectedAsset("");
-          //  setPrice(0);
-          //  setInvestmentAmount(0);
-          //  setDate("");
-          //  setStatusCode(response.status);
-          //  onSuccess("transaction created!");
-          //  closePopup();
+          //console.log(assetDataRef.current);
         }
       } catch (error: any) {
         if (error.status === 400) {
           console.log(error.response.data);
-          // setMessage("Invalid input!");
-          // setStatusCode(error.status);
         }
       }
     }
@@ -159,12 +172,14 @@ export default function Dashboard() {
           </div>
         )}
       </div>
-      <div className="col-3 m-0 p-0 portfolio-stat-wrapper">
-        <div className="row m-0  py-3">
-          <div className="col-12 m-0 p-0 pe-3">
-            <PortfolioStats portfolioStats={portfolioStatsData} />
+      <div className="col-3 m-0 py-3 ps-0 pe-3 portfolio-stat-wrapper">
+        {portfolioStatsData && portfolioStatsData.currentInvestment != 0 ? (
+          <PortfolioStats portfolioStats={portfolioStatsData} />
+        ) : (
+          <div className="d-flex align-items-center justify-content-center">
+            <LoadingSpinner />
           </div>
-        </div>
+        )}
       </div>
     </div>
   );

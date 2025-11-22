@@ -1,26 +1,25 @@
-.navbar-wrapper{
-    background-color: $light-grey;
+.navbar-wrapper {
+  background-color: $light-grey;
 }
- 
-.create-portfolio-button {
-  background-color: rgb(161, 255, 20);
+
+.create-portfolio-asset-transaction-button {
+  background-color: transparent;
+  border-style: solid;
+  border-color: $white;
+  border-width: 2px;
   border-radius: 30px;
-  color: rgb(19, 19, 19);
-  font-weight: 600;
-  border: none;
+  color: $white;
+  font-weight: 500;
+  font-size: .9rem;
   cursor: pointer;
-  transition-duration: .2s;
-  transition-duration: .5s;
 }
 
-.create-portfolio-button:hover {
-  background-color: rgb(192, 255, 20);
-  transition-duration: .5s;
+.create-portfolio-asset-transaction-button:hover {
+  background-color: $white;
+  color: $light-grey;
 }
 
-.create-portfolio-button:active {
+.create-portfolio-asset-transaction-button:active {
   transform: scale(0.97);
-  transition-duration: .2s;
+  transition-duration: 0.2s;
 }
-
-

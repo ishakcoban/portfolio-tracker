@@ -21,7 +21,6 @@ export class AssetService {
     private currentMarketPriceResponse: CurrentMarketPriceResponse,
   ) {}
   async create(createAssetDto: CreateAssetDto) {
-    // Verify portfolio exists
     const portfolio = await this.portfolioService.findOne(
       createAssetDto.portfolioId,
     );
@@ -46,14 +45,18 @@ export class AssetService {
       },
     });
   }
-  counter: number = 1;
+
   async getCurrentMarketPrice(
     requestCurrentAssetPrice: RequestCurrentAssetPriceDto[],
   ) {
     try {
+      let totalRawInvestment = 0;
+      let currentInvestment = 0;
+      let currentEarning = 0;
       const result = await Promise.all(
         requestCurrentAssetPrice.map(async (asset) => {
           let url = '';
+
           switch (asset.type) {
             case AssetType.ETF || AssetType.INDEX:
               url =
@@ -80,13 +83,13 @@ export class AssetService {
 
           const response = await firstValueFrom(this.httpService.get(url));
 
-          // Create a NEW object for each iteration
           const priceResponse: CurrentMarketPriceResponse = {
             currentPrice: 0,
             currentROI: 0,
             currentInvestment: 0,
             currentEarning: 0,
             currentWeight: 0,
+            symbol: asset.symbol,
           };
 
           switch (asset.type) {
@@ -106,13 +109,9 @@ export class AssetService {
               priceResponse.currentPrice = Number(
                 Number(
                   response.data.chart.result[0].meta.regularMarketPrice /
-                    (await this.getCurrencyPrice('TRY')).toFixed(2),
-                ),
+                    (await this.getCurrencyPrice('TRY')),
+                ).toFixed(2),
               );
-
-              // this.currentMarketPriceResponseDto.status = this.checkMarketStatus(
-              //   response.data.chart.result[0].meta.tradingPeriods[0][0],
-              // );
 
               break;
           }
@@ -131,41 +130,72 @@ export class AssetService {
               100
             ).toFixed(2),
           );
-
+          totalRawInvestment += asset.totalRawInvestmentByUSD;
+          currentInvestment += priceResponse.currentInvestment;
           priceResponse.currentEarning = Number(
             (
               priceResponse.currentInvestment - asset.totalRawInvestmentByUSD
             ).toFixed(2),
           );
-
+          currentEarning += priceResponse.currentEarning;
           return priceResponse;
         }),
       );
 
-      return await this.calculateCurrentWeight(result);
+      const updatedAssets = await this.calculateCurrentWeight(result);
+      const updatedPortfolioPie = await this.createPortfolioPie(result);
+
+      return {
+        currentROI: Number(
+          ((currentInvestment * 100) / totalRawInvestment - 100).toFixed(2),
+        ),
+        currentEarning: Number(currentEarning.toFixed(2)),
+        currentInvestment: Number(currentInvestment.toFixed(2)),
+        assets: updatedAssets,
+        portfolioPie: updatedPortfolioPie,
+      };
     } catch (error) {
       throw error;
     }
   }
 
-  async calculateCurrentWeight(result: CurrentMarketPriceResponse[]) {
-    for (let i = 0; i < result.length; i++) {
+  async calculateCurrentWeight(assets: CurrentMarketPriceResponse[]) {
+    let totalCurrentInvestment = 0;
+    let portfolioCurrentRoi = 0;
+    for (let i = 0; i < assets.length; i++) {
+      totalCurrentInvestment += assets[i].currentInvestment;
       let currentTotalInvestment = 0;
 
-      for (let j = 0; j < result.length; j++) {
+      for (let j = 0; j < assets.length; j++) {
         if (i != j) {
-          currentTotalInvestment += result[j].currentInvestment;
+          currentTotalInvestment += assets[j].currentInvestment;
         }
       }
-      result[i].currentWeight = Number(
+      assets[i].currentWeight = Number(
         (
-          (100 * result[i].currentInvestment) /
-          (result[i].currentInvestment + currentTotalInvestment)
+          (100 * assets[i].currentInvestment) /
+          (assets[i].currentInvestment + currentTotalInvestment)
         ).toFixed(2),
       );
     }
 
-    return result;
+    portfolioCurrentRoi = totalCurrentInvestment;
+
+    return assets;
+  }
+
+  async createPortfolioPie(assets: CurrentMarketPriceResponse[]) {
+    const portfolioPie: any = [];
+    for (let i = 0; i < assets.length; i++) {
+      const slice = {
+        label: assets[i].symbol,
+        value: assets[i].currentWeight,
+      };
+
+      portfolioPie.push(slice);
+    }
+
+    return portfolioPie;
   }
 
   async getCurrencyPrice(currency: string) {
