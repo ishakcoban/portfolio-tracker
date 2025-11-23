@@ -23,7 +23,7 @@ type Props = {
   portfolioStats: PortfolioStats | null;
 };
 export default function PortfolioStats({ portfolioStats }: Props) {
-  console.log(portfolioStats)
+  
   return (
     <div className="portfolio-stats-wrapper py-3">
       {portfolioStats !== null &&

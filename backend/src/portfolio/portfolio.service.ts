@@ -70,7 +70,7 @@ export class PortfolioService {
     }
 
     //const data = this.portfolioMapper.toDto(portfolio, assets);
-console.log(portfolio)
+
     return this.portfolioMapper.toDto(portfolio, assets);
   }
 

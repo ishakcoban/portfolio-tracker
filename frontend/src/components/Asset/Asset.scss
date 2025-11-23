@@ -4,7 +4,7 @@
 }
 
 .asset-logo{
-    width: 30px;
+    width: 25px;
 }
 
 .asset-header{
@@ -21,6 +21,7 @@
 .asset-name{
     color:$asset-name-color;
     font-weight: medium;
+    font-size: .9rem;
 }
 
 .asset-current-price{
@@ -33,4 +34,14 @@
 
 .asset-earning{
     color: $green;
+}
+
+.asset-chart-button{
+    width: 30px;
+    height: 30px;
+    border-radius: 100%;
+}
+
+.asset-chart-button:hover{
+    background-color: #cdcdcd2b;
 }

@@ -13,7 +13,7 @@ export class TransactionService {
       where: { id: createTransactionDto.assetId },
     });
 
-    console.log(createTransactionDto)
+ 
     if (createTransactionDto.type === 'BUY') {
       const newTotalRawInvestmentByUSD =
         asset.totalRawInvestmentByUSD + createTransactionDto.investment;

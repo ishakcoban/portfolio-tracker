@@ -7,9 +7,9 @@ type PopupProps = {
 } & PropsWithChildren;
 export default function Popup({ children, onClose }: PopupProps) {
   return (
-    <div className="popup-overlay" onClick={onClose}>
+    <div className="popup-overlay">
       <div
-        className="popup-container mt-5"
+        className="popup-container my-5"
         onClick={(event) => event.stopPropagation()}
       >
         <div className="d-flex justify-content-end">

@@ -293,7 +293,7 @@ export default function CreateTransactionFom({ closePopup, onSuccess }: Props) {
           </div>
         }
         <button
-          className="create-portfolio-button py-1 px-3 my-2"
+          className="create-portfolio-asset-transaction-button py-1 px-3 my-2"
           onClick={submitHandler}
           disabled={isLoading}
         >
