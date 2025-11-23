@@ -13,7 +13,6 @@ export class TransactionService {
       where: { id: createTransactionDto.assetId },
     });
 
- 
     if (createTransactionDto.type === 'BUY') {
       const newTotalRawInvestmentByUSD =
         asset.totalRawInvestmentByUSD + createTransactionDto.investment;
@@ -66,14 +65,20 @@ export class TransactionService {
     }
   }
 
-  findAll() {
-    return `This action returns all transaction`;
-  }
+  async findOne(id: number) {
+    const transaction = await this.prisma.transaction.findUniqueOrThrow({
+      where: { id: id },
+    });
 
-  findOne(id: number) {
-    return `This action returns a #${id} transaction`;
+    return transaction;
   }
+  async findAllByAssetId(id: number) {
+    const transactions = await this.prisma.transaction.findMany({
+      where: { assetId: id },
+    });
 
+    return transactions;
+  }
   update(id: number, updateTransactionDto: UpdateTransactionDto) {
     return `This action updates a #${id} transaction`;
   }

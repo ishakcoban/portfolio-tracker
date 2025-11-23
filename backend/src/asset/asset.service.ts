@@ -305,11 +305,7 @@ export class AssetService {
     return `This action returns all asset`;
   }
   async findOne(id: number) {
-    const asset = await this.prisma.asset.findUnique({ where: { id } });
-
-    if (!asset) {
-      throw new NotFoundException(`Asset with ID ${id} not found`);
-    }
+    const asset = await this.prisma.asset.findUniqueOrThrow({ where: { id } });
 
     return asset;
   }

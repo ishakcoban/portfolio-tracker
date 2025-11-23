@@ -11,10 +11,14 @@ import { AssetService } from './asset.service';
 import { CreateAssetDto } from './dto/create-asset.dto';
 import { UpdateAssetDto } from './dto/update-asset.dto';
 import { RequestCurrentAssetPriceDto } from './request/current-asset-price-request';
+import { TransactionService } from 'src/transaction/transaction.service';
 
 @Controller('assets')
 export class AssetController {
-  constructor(private readonly assetService: AssetService) {}
+  constructor(
+    private readonly assetService: AssetService,
+    private readonly transactionService: TransactionService,
+  ) {}
 
   @Post()
   create(@Body() createAssetDto: CreateAssetDto) {
@@ -35,6 +39,11 @@ export class AssetController {
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.assetService.findOne(+id);
+  }
+
+  @Get(':id/transactions')
+  findTransactionsByAssetId(@Param('id') id: string) {
+    return this.transactionService.findAllByAssetId(+id);
   }
 
   @Get('line-chart/:id')

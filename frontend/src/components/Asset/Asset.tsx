@@ -3,9 +3,14 @@ import LoadingSpinner from "../LoadingSpinner/LoadingSpinner";
 import NumberFlow from "@number-flow/react";
 import LineChart from "../Charts/LineChart/LineChart";
 import { useState } from "react";
-import { Chart01Icon, Cancel01Icon } from "@hugeicons/core-free-icons";
+import {
+  Chart01Icon,
+  Cancel01Icon,
+  TransactionHistoryIcon,
+} from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import httpService from "../../services/httpService";
+import Popup from "../Popup/Popup";
 type Asset = {
   id: number;
   symbol: string;
@@ -34,10 +39,23 @@ type LineChartValue = {
 type Props = {
   asset: Asset;
 };
+
+type Transaction = {
+  id: number;
+  date: Date;
+  eurusd: number;
+  investment: number;
+  price: number;
+  type: string;
+  usdtry: number;
+  assetId: number;
+};
+
 export default function Asset({ asset }: Props) {
   const [lineChartStatus, setLineChartStatus] = useState(false);
   const [lineChartData, setLineChartData] = useState<LineChartValue>();
-
+  const [popupStatus, setPopupStatus] = useState<boolean>(false);
+  const [transactionData, setTransactionData] = useState<Transaction[]>();
   const changeLineChartStatus = async () => {
     if (!lineChartStatus) {
       try {
@@ -64,8 +82,86 @@ export default function Asset({ asset }: Props) {
     }
     setLineChartStatus(!lineChartStatus);
   };
+
+  const closePopup = () => {
+    setPopupStatus(false);
+  };
+
+  const openPopup = async () => {
+    setPopupStatus(true);
+    try {
+      const response = await httpService.get(
+        `assets/${asset?.id}/transactions`
+      );
+      if (response.status === 200) {
+        if (asset) {
+          setTransactionData(response.data);
+        }
+      }
+    } catch (error: any) {
+      if (error.status === 400) {
+        console.log(error.response.data);
+      }
+    }
+  };
+  const handleEdit = (id: number) => {};
+
+  const handleDelete = (id: number) => {};
+
   return (
     <div className="asset-wrapper py-3 px-4">
+      {popupStatus && (
+        <Popup onClose={closePopup}>
+          <div className="d-flex justify-content-center border-top border-bottom text-light mx-5 fs-5">{asset.symbol} - TRANSACTIONS</div>
+          <div className="table-container mb-5 mt-5 d-flex justify-content-center">
+            <table className="transaction-table">
+              <thead>
+                <tr>
+                  <th>Date</th>
+                  <th>Type</th>
+                  <th>Investment</th>
+                  <th>Price</th>
+                  <th>EURUSD</th>
+                  <th>USDTRY</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {transactionData?.map((transaction) => (
+                  <tr key={transaction.id}>
+                    <td className="text-light">
+                      {new Date(transaction.date).toLocaleString()}
+                    </td>
+                    <td className="text-success fw-bold">{transaction.type}</td>
+                    <td className="text-light">
+                      ${transaction.investment.toFixed(2)}
+                    </td>
+                    <td className="text-light">
+                      ${transaction.price.toFixed(2)}
+                    </td>
+                    <td className="text-light">{transaction.eurusd}</td>
+                    <td className="text-light">{transaction.usdtry}</td>
+                    <td>
+                      <button
+                        className="btn btn-light transaction-buttons "
+                        onClick={() => handleEdit(transaction.id)}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        className="btn transaction-buttons border text-danger border-danger ms-2"
+                        onClick={() => handleDelete(transaction.id)}
+                      >
+                        Delete
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </Popup>
+      )}
       {asset !== null && asset.currentPrice !== undefined ? (
         <div className="position-relative">
           <div className="row m-0 p-0 border-bottom">
@@ -80,15 +176,28 @@ export default function Asset({ asset }: Props) {
                   <div className="asset-name ms-2 fw-bold">{asset.symbol}</div>
                 </div>
 
-                <div className="asset-chart-button d-flex justify-content-center align-items-center">
-                  <HugeiconsIcon
-                    role="button"
-                    color="white"
-                    width={21}
-                    height={21}
-                    icon={Chart01Icon}
-                    onClick={changeLineChartStatus}
-                  />
+                <div className="d-flex justify-content-center align-items-center">
+                  <div className="asset-chart-button d-flex justify-content-center align-items-center">
+                    <HugeiconsIcon
+                      role="button"
+                      color="white"
+                      width={21}
+                      height={21}
+                      icon={TransactionHistoryIcon}
+                      onClick={openPopup}
+                    />
+                  </div>
+
+                  <div className="asset-chart-button d-flex justify-content-center align-items-center">
+                    <HugeiconsIcon
+                      role="button"
+                      color="white"
+                      width={21}
+                      height={21}
+                      icon={Chart01Icon}
+                      onClick={changeLineChartStatus}
+                    />
+                  </div>
                 </div>
               </div>
               <div className="d-flex justify-content-end py-2">
