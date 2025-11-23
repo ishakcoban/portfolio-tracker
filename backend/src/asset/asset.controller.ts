@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+} from '@nestjs/common';
 import { AssetService } from './asset.service';
 import { CreateAssetDto } from './dto/create-asset.dto';
 import { UpdateAssetDto } from './dto/update-asset.dto';
@@ -18,13 +26,20 @@ export class AssetController {
   }
 
   @Post('/current-market-price')
-  getCurrentMarketPrice(@Body() requestCurrentAssetPriceDto: RequestCurrentAssetPriceDto[]) {
+  getCurrentMarketPrice(
+    @Body() requestCurrentAssetPriceDto: RequestCurrentAssetPriceDto[],
+  ) {
     return this.assetService.getCurrentMarketPrice(requestCurrentAssetPriceDto);
   }
-  
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.assetService.findOne(+id);
+  }
+
+  @Get('line-chart/:id')
+  getLineChartValues(@Param('id') id: string) {
+    return this.assetService.getLineChartValues(+id);
   }
 
   @Patch(':id')

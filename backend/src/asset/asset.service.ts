@@ -90,6 +90,7 @@ export class AssetService {
             currentEarning: 0,
             currentWeight: 0,
             symbol: asset.symbol,
+            type: asset.type,
           };
 
           switch (asset.type) {
@@ -144,6 +145,7 @@ export class AssetService {
 
       const updatedAssets = await this.calculateCurrentWeight(result);
       const updatedPortfolioPie = await this.createPortfolioPie(result);
+      //const updatedLineChart = await this.calculateLineChartValues(result);
 
       return {
         currentROI: Number(
@@ -153,6 +155,7 @@ export class AssetService {
         currentInvestment: Number(currentInvestment.toFixed(2)),
         assets: updatedAssets,
         portfolioPie: updatedPortfolioPie,
+        // lineChart: updatedLineChart,
       };
     } catch (error) {
       throw error;
@@ -196,6 +199,94 @@ export class AssetService {
     }
 
     return portfolioPie;
+  }
+
+  async getLineChartValues(id: number) {
+    try {
+      const asset = await this.findOne(id);
+
+      const response = await firstValueFrom(
+        this.httpService.get(
+          asset.type === AssetType.ETF || asset.type === AssetType.INDEX
+            ? `https://query1.finance.yahoo.com/v8/finance/chart/${
+                asset.symbol === 'XU100' ? 'XU100.IS' : asset.symbol
+              }?interval=1d&range=360d`
+            : asset.type === AssetType.CRYPTO
+              ? `https://api.binance.com/api/v3/klines?symbol=${asset.symbol}USDT&interval=1d&limit=360`
+              : '',
+        ),
+      );
+
+      if (response.status == 200) {
+        let prices: number[] = [];
+        let timestamps: any[] = [];
+        let result: any;
+        let rawPrices: any;
+        let labels: any;
+        if (asset.type === AssetType.CRYPTO) {
+          response.data.map((candle: string[]) => {
+            timestamps.push(Math.floor(new Date(candle[0]).getTime() / 1000));
+            prices.push(parseFloat(candle[4]));
+          });
+        } else {
+          result = response.data.chart.result[0];
+
+          timestamps = result.timestamp;
+
+          rawPrices = result.indicators.quote[0].close;
+          prices = rawPrices.map((price: number) => Math.round(price));
+        }
+        let day = 0;
+        labels = prices.map((ts: number) => {
+          day++;
+          return 'Day ' + day;
+        });
+
+        return { pData: prices, xLabels: labels };
+      }
+    } catch (error) {}
+  }
+
+  async calculateLineChartValues(assets: CurrentMarketPriceResponse[]) {
+    try {
+      for (let i = 0; i < assets.length; i++) {
+        const asset = assets[i];
+        const response = await firstValueFrom(
+          this.httpService.get(
+            asset.type === AssetType.ETF || asset.type === AssetType.INDEX
+              ? `https://query1.finance.yahoo.com/v8/finance/chart/${
+                  asset.symbol === 'XU100' ? 'XU100.IS' : asset.symbol
+                }?interval=1d&range=360d`
+              : asset.type === AssetType.CRYPTO
+                ? `https://api.binance.com/api/v3/klines?symbol=${asset.symbol}USDT&interval=1d&limit=360`
+                : '',
+          ),
+        );
+
+        if (response.status == 200) {
+          return response.data;
+        }
+      }
+    } catch (error) {}
+
+    // this.httpService.createHttpRequest(
+    //   this.symbol == 'BTC' ||
+    //     this.symbol == 'PAXG' ||
+    //     this.symbol == 'ETH' ||
+    //     this.symbol == 'XRP'
+    //     ? `https://api.binance.com/api/v3/klines?symbol=${this.symbol}USDT&interval=1d&limit=15`
+    //     : `https://query1.finance.yahoo.com/v8/finance/chart/${
+    //         this.symbol === 'XU100'
+    //           ? 'XU100.IS'
+    //           : this.symbol === 'VIX'
+    //             ? '%5EVIX'
+    //             : this.symbol
+    //       }?interval=1d&range=15d`,
+    //   'GET',
+    //   {},
+    // );
+
+    //return portfolioPie;
   }
 
   async getCurrencyPrice(currency: string) {

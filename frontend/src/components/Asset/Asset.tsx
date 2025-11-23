@@ -1,7 +1,11 @@
 import "./Asset.scss";
 import LoadingSpinner from "../LoadingSpinner/LoadingSpinner";
 import NumberFlow from "@number-flow/react";
-
+import LineChart from "../Charts/LineChart/LineChart";
+import { useState } from "react";
+import { Chart01Icon, Cancel01Icon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
+import httpService from "../../services/httpService";
 type Asset = {
   id: number;
   symbol: string;
@@ -21,27 +25,71 @@ type Asset = {
   currentInvestment: number;
 };
 
+type LineChartValue = {
+  xLabels: string[];
+  pData: number[];
+  currentEarning: number;
+};
+
 type Props = {
-  asset: Asset | null;
+  asset: Asset;
 };
 export default function Asset({ asset }: Props) {
+  const [lineChartStatus, setLineChartStatus] = useState(false);
+  const [lineChartData, setLineChartData] = useState<LineChartValue>();
+
+  const changeLineChartStatus = async () => {
+    if (!lineChartStatus) {
+      try {
+        const response = await httpService.get(
+          `/assets/line-chart/${asset?.id}`
+        );
+        if (response.status === 200) {
+          if (asset) {
+            const value: LineChartValue = {
+              pData: response.data.pData,
+              xLabels: response.data.xLabels,
+              currentEarning: +asset?.currentEarning,
+            };
+
+            setLineChartData(value);
+            setLineChartStatus(!lineChartStatus);
+          }
+        }
+      } catch (error: any) {
+        if (error.status === 400) {
+          console.log(error.response.data);
+        }
+      }
+    }
+    setLineChartStatus(!lineChartStatus);
+  };
   return (
     <div className="asset-wrapper py-3 px-4">
       {asset !== null && asset.currentPrice !== undefined ? (
-        <>
+        <div className="position-relative">
           <div className="row m-0 p-0 border-bottom">
             <div className="col-12 m-0 p-0 px-3 d-flex flex-column justify-content-center">
-              <div className="d-flex">
+              <div className="d-flex justify-content-between">
                 <div className="d-flex align-items-center">
                   <img
                     src={asset.imageUrl}
                     className="asset-logo"
                     alt="Asset logo"
                   />
-                  <div className="asset-name ms-3 fw-bold">{asset.symbol}</div>
+                  <div className="asset-name ms-2 fw-bold">{asset.symbol}</div>
                 </div>
 
-                <div className="bg-warning"></div>
+                <div className="asset-chart-button d-flex justify-content-center align-items-center">
+                  <HugeiconsIcon
+                    role="button"
+                    color="white"
+                    width={21}
+                    height={21}
+                    icon={Chart01Icon}
+                    onClick={changeLineChartStatus}
+                  />
+                </div>
               </div>
               <div className="d-flex justify-content-end py-2">
                 <div className="asset-current-price border-end pe-2 d-flex">
@@ -73,7 +121,7 @@ export default function Asset({ asset }: Props) {
                     spinTiming={{ duration: 1500, easing: "ease" }}
                     value={asset.currentROI}
                   /> */}
-                  <span>{asset.currentROI}%</span>
+                  <span>{Math.abs(asset.currentROI)}%</span>
                 </div>
 
                 <div
@@ -82,7 +130,7 @@ export default function Asset({ asset }: Props) {
                     (asset.currentEarning < 0 && " text-danger")
                   }
                 >
-                  <span>${asset.currentEarning}</span>
+                  <span>${Math.abs(asset.currentEarning)}</span>
                   {/* <NumberFlow
                     format={{
                       notation: "standard",
@@ -191,7 +239,31 @@ export default function Asset({ asset }: Props) {
               </div>
             </div>
           </div>
-        </>
+
+          {lineChartStatus && (
+            <div className="position-absolute top-0 w-100 h-100">
+              <div className="position-relative w-100 h-100">
+                {lineChartData && <LineChart chartData={lineChartData} />}
+
+                <div className="position-absolute top-0 w-100 text-end">
+                  <div className="d-flex align-items-center justify-content-between px-3">
+                    <div className="text-light">Last 365 Days</div>
+                    <div className="asset-chart-button d-flex justify-content-center align-items-center">
+                      <HugeiconsIcon
+                        role="button"
+                        color="white"
+                        width={25}
+                        height={25}
+                        icon={Cancel01Icon}
+                        onClick={changeLineChartStatus}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
       ) : (
         <div className=" d-flex justify-content-center align-items-center">
           <LoadingSpinner />

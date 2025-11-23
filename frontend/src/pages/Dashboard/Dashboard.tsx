@@ -5,15 +5,6 @@ import PortfolioStats from "../../components/PortfolioStats/PortfolioStats";
 import httpService from "../../services/httpService";
 import LoadingSpinner from "../../components/LoadingSpinner/LoadingSpinner";
 
-type Portfolio = {
-  id: number;
-  name: string;
-  totalRawInvestmentByUSD: number;
-  totalRawInvestmentByEURO: number;
-  totalRawInvestmentByTRY: number;
-  assets: Asset[];
-};
-
 type Asset = {
   id: number;
   symbol: string;
@@ -52,8 +43,6 @@ export default function Dashboard() {
   const [assetData, setAssetData] = useState<Asset[] | null>(null);
   const [portfolioStatsData, setPortfolioStatsData] =
     useState<PortfolioStats | null>(null);
-  const [diff, setDiff] = useState(12);
-  const [value, setValue] = useState(0);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const assetDataRef = useRef<Asset[] | null>(null);
   const portfolioStatsDataRef = useRef<PortfolioStats | null>(null);
@@ -62,7 +51,6 @@ export default function Dashboard() {
     try {
       const response = await httpService.get(`/portfolios/6`);
       if (response.status === 200) {
-        console.log(response.data);
         const { assets, ...portfolioStats } = response.data;
 
         setPortfolioStatsData(portfolioStats);
