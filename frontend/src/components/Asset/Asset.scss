@@ -1,47 +1,78 @@
-.asset-wrapper{
-    background-color: $light-grey;
-    border-radius: 12px;
+.asset-wrapper {
+  background-color: $light-grey;
+  border-radius: 12px;
 }
 
-.asset-logo{
-    width: 25px;
+.asset-logo {
+  width: 25px;
 }
 
-.asset-header{
-    color: $orange;
-    font-size: .6rem;
+.asset-header {
+  color: $orange;
+  font-size: 0.6rem;
 }
 
-.asset-value{
-    color: $asset-value-color;
-    font-size: 1rem;
-    font-weight: 400;
+.asset-value {
+  color: $asset-value-color;
+  font-size: 1rem;
+  font-weight: 400;
 }
 
-.asset-name{
-    color:$asset-name-color;
-    font-weight: medium;
-    font-size: .9rem;
+.asset-name {
+  color: $asset-name-color;
+  font-weight: medium;
+  font-size: 0.9rem;
 }
 
-.asset-current-price{
-    color: $asset-value-color;
+.asset-current-price {
+  color: $asset-value-color;
 }
 
-.asset-roi{
-    color: $green;
+.asset-roi {
+  color: $green;
 }
 
-.asset-earning{
-    color: $green;
+.asset-earning {
+  color: $green;
 }
 
-.asset-chart-button{
-    width: 30px;
-    height: 30px;
-    border-radius: 100%;
+.asset-chart-button {
+  width: 30px;
+  height: 30px;
+  border-radius: 100%;
 }
 
-.asset-chart-button:hover{
-    background-color: #cdcdcd2b;
+.asset-chart-button:hover {
+  background-color: #cdcdcd2b;
+}
+
+//*********
+
+.table-container {
+  overflow-x: auto;
+  font-size: 0.8rem;
+}
+
+.transaction-table {
+  border-collapse: collapse;
+}
+
+.transaction-table thead th {
+  color: $orange; /* Light text */
+}
+
+.transaction-table th,
+.transaction-table td {
+  padding: 12px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+}
+
+.transaction-table th {
+  font-weight: bold;
+  color: #333;
+}
+
+.transaction-buttons {
+  font-size: 0.8rem !important;
 }

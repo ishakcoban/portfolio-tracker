@@ -12,14 +12,14 @@ export class TransactionController {
     return this.transactionService.create(createTransactionDto);
   }
 
-  @Get()
-  findAll() {
-    return this.transactionService.findAll();
-  }
-
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.transactionService.findOne(+id);
+  }
+
+    @Get(':id')
+  findAllByAssetId(@Param('id') id: string) {
+    return this.transactionService.findAllByAssetId(+id);
   }
 
   @Patch(':id')
