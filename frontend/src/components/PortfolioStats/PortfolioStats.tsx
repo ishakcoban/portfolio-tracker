@@ -1,38 +1,65 @@
-import React from "react";
+import React, { useState } from "react";
 import "./PortfolioStats.scss";
 import CircularChart from "../Charts/PieChart/CircularChart";
 import NumberFlow from "@number-flow/react";
 import LoadingSpinner from "../LoadingSpinner/LoadingSpinner";
-
+import {
+  ArrowAllDirectionFreeIcons,
+  ArrowUp01FreeIcons,
+  ArrowUp01Icon,
+  ArrowUp02Icon,
+  ArrowUp03Icon,
+  ArrowUp04Icon,
+  ArrowUp05Icon,
+  ArrowUpDoubleIcon,
+} from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { useStore } from "../../store";
 type PortfolioStats = {
   id: number;
   name: string;
   totalRawInvestmentByUSD: number;
   totalRawInvestmentByEURO: number;
   totalRawInvestmentByTRY: number;
-  currentROI: number;
-  currentEarning: number;
-  currentInvestment: number;
+  currentROIByUSD: number;
+  currentROIByEURO: number;
+  currentROIByTRY: number;
+  currentEarningByUSD: number;
+  currentEarningByEURO: number;
+  currentEarningByTRY: number;
+  currentInvestmentByUSD: number;
+  currentInvestmentByEURO: number;
+  currentInvestmentByTRY: number;
   portfolioPie: {
     label: string;
     value: number;
   }[];
 };
 
+type CurrencyPair = {
+  id: number;
+  currentRoiByUSD: number;
+  currentRoiByEURO: number;
+  currentRoiByTRY: number;
+};
+
 type Props = {
   portfolioStats: PortfolioStats | null;
 };
 export default function PortfolioStats({ portfolioStats }: Props) {
-  
+  const [currencyPairData, setCurrencyPairData] = useState<CurrencyPair>();
+  const { currency } = useStore();
   return (
     <div className="portfolio-stats-wrapper py-3">
       {portfolioStats !== null &&
-      portfolioStats.currentInvestment !== undefined ? (
+      portfolioStats.currentInvestmentByUSD !== undefined ? (
         <div className="position-relative d-flex justify-content-center align-items-center">
-          <CircularChart portfolioPie={portfolioStats.portfolioPie} />
+          <div className="mt-3">
+            <CircularChart portfolioPie={portfolioStats.portfolioPie} />
+          </div>
           <div
             className="position-absolute top-0 text-center"
-            style={{ marginTop: "70px" }}
+            style={{ marginTop: "85px" }}
           >
             <div className="d-flex justify-content-center align-items-center">
               <div
@@ -49,7 +76,9 @@ export default function PortfolioStats({ portfolioStats }: Props) {
             </div>
             {/*  */}
             <div className="portfolio-current-price">
-              <span>$</span>
+              <span>
+                {currency === "USD" ? "$" : currency === "EUR" ? "€" : "₺"}
+              </span>
 
               <NumberFlow
                 format={{
@@ -58,17 +87,28 @@ export default function PortfolioStats({ portfolioStats }: Props) {
                   signDisplay: "never",
                 }}
                 spinTiming={{ duration: 1500, easing: "ease" }}
-                value={portfolioStats.currentInvestment}
+                value={
+                  currency === "USD"
+                    ? portfolioStats.currentInvestmentByUSD
+                    : currency === "EUR"
+                      ? portfolioStats.currentInvestmentByEURO
+                      : portfolioStats.currentInvestmentByTRY
+                }
               />
             </div>
             {/*  */}
             <div
-              className="d-flex justify-content-center py-2"
+              className="d-flex justify-content-center py-2 fw-bold"
               style={{ fontSize: ".8rem" }}
             >
               <div
                 className={
-                  "asset-roi border-end pe-2 d-flex"
+                  "border-end pe-2 d-flex text-success " +
+                  (currency === "USD"
+                    ? portfolioStats.currentROIByUSD < 0 && " text-danger"
+                    : currency === "EUR"
+                      ? portfolioStats.currentROIByEURO < 0 && " text-danger"
+                      : portfolioStats.currentROIByTRY < 0 && " text-danger")
                   // (asset.currentROI < 0 && " text-danger")
                 }
               >
@@ -81,16 +121,38 @@ export default function PortfolioStats({ portfolioStats }: Props) {
                   spinTiming={{ duration: 1500, easing: "ease" }}
                   value={portfolioStats.currentROI}
                 /> */}
-                <span>{portfolioStats.currentROI}%</span>
+                <span>
+                  {currency === "USD"
+                    ? portfolioStats.currentROIByUSD
+                    : currency === "EUR"
+                      ? portfolioStats.currentROIByEURO
+                      : portfolioStats.currentROIByTRY}
+                  %
+                </span>
               </div>
 
               <div
                 className={
-                  "asset-earning ps-2 d-flex"
+                  "ps-2 d-flex text-success " +
+                  (currency === "USD"
+                    ? portfolioStats.currentEarningByUSD < 0 && " text-danger"
+                    : currency === "EUR"
+                      ? portfolioStats.currentEarningByEURO < 0 &&
+                        " text-danger"
+                      : portfolioStats.currentEarningByTRY < 0 &&
+                        " text-danger")
                   // (asset.currentEarning < 0 && " text-danger")
                 }
               >
-                <span>${portfolioStats.currentEarning}</span>
+                <span>
+                  {currency === "USD" ? "$" : currency === "EUR" ? "€" : "₺"}
+
+                  {currency === "USD"
+                    ? portfolioStats.currentEarningByUSD
+                    : currency === "EUR"
+                      ? portfolioStats.currentEarningByEURO
+                      : portfolioStats.currentEarningByTRY}
+                </span>
                 {/* <NumberFlow
                   format={{
                     notation: "standard",
@@ -104,10 +166,12 @@ export default function PortfolioStats({ portfolioStats }: Props) {
             </div>
             {/*  */}
             <div className="portfolio-raw-investment-header mt-3">
-              RAW INVESTMENT
+              TOTAL ORIGINAL CAPITAL
             </div>
-            <div className="portfolio-raw-investment-value">
-              <span>$</span>
+            <div className="portfolio-raw-investment-value fw-bold">
+              <span>
+                {currency === "USD" ? "$" : currency === "EUR" ? "€" : "₺"}
+              </span>
 
               <NumberFlow
                 format={{
@@ -116,13 +180,65 @@ export default function PortfolioStats({ portfolioStats }: Props) {
                   signDisplay: "never",
                 }}
                 spinTiming={{ duration: 1500, easing: "ease" }}
-                value={portfolioStats.totalRawInvestmentByUSD}
+                value={
+                  currency === "USD"
+                    ? portfolioStats.totalRawInvestmentByUSD
+                    : currency === "EUR"
+                      ? portfolioStats.totalRawInvestmentByEURO
+                      : portfolioStats.totalRawInvestmentByTRY
+                }
               />
             </div>
           </div>
         </div>
       ) : (
-        <div className=" d-flex justify-content-center align-items-center">
+        <div className="d-flex justify-content-center align-items-center">
+          <LoadingSpinner />
+        </div>
+      )}
+      {portfolioStats ? (
+        <div className="currency-pairs-wrapper mx-4 border-top mt-2">
+          <div className="row m-0 p-0 py-3">
+            <div className="col-4 m-0 p-0 ps-5 d-flex flex-column align-items-center">
+              USD
+              <div
+                className={
+                  portfolioStats?.currentEarningByUSD > 0
+                    ? "text-success"
+                    : "text-danger"
+                }
+              >
+                {portfolioStats?.currentROIByUSD}%
+              </div>
+            </div>
+            <div className="col-4 m-0 p-0 d-flex flex-column justify-content-center align-items-center">
+              EURO
+              <div
+                className={
+                  portfolioStats?.currentEarningByEURO > 0
+                    ? "text-success"
+                    : "text-danger"
+                }
+              >
+                {portfolioStats?.currentROIByEURO}%
+              </div>
+            </div>
+            <div className="col-4 m-0 p-0 pe-5 d-flex flex-column align-items-center">
+              TRY
+              <div
+                className={
+                  portfolioStats?.currentEarningByTRY > 0
+                    ? "text-success"
+                    : "text-danger"
+                }
+              >
+                {portfolioStats?.currentROIByTRY}%
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="d-flex justify-content-center align-items-center">
           <LoadingSpinner />
         </div>
       )}
