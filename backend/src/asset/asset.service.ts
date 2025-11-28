@@ -50,11 +50,21 @@ export class AssetService {
     requestCurrentAssetPrice: RequestCurrentAssetPriceDto[],
   ) {
     try {
-      let totalRawInvestment = 0;
-      let currentInvestment = 0;
-      let currentEarning = 0;
+      let totalRawInvestmentByUSD = 0;
+      let totalRawInvestmentByEURO = 0;
+      let totalRawInvestmentByTRY = 0;
+
+      let currentInvestmentByUSD = 0;
+      let currentInvestmentByEURO = 0;
+      let currentInvestmentByTRY = 0;
+
+      let currentEarningByUSD = 0;
+      let currentEarningByEURO = 0;
+      let currentEarningByTRY = 0;
+
       const result = await Promise.all(
         requestCurrentAssetPrice.map(async (asset) => {
+          
           let url = '';
 
           switch (asset.type) {
@@ -84,10 +94,18 @@ export class AssetService {
           const response = await firstValueFrom(this.httpService.get(url));
 
           const priceResponse: CurrentMarketPriceResponse = {
-            currentPrice: 0,
-            currentROI: 0,
-            currentInvestment: 0,
-            currentEarning: 0,
+            currentPriceByUSD: 0,
+            currentPriceByEURO: 0,
+            currentPriceByTRY: 0,
+            currentROIByUSD: 0,
+            currentROIByEURO: 0,
+            currentROIByTRY: 0,
+            currentEarningByUSD: 0,
+            currentEarningByEURO: 0,
+            currentEarningByTRY: 0,
+            currentInvestmentByUSD: 0,
+            currentInvestmentByEURO: 0,
+            currentInvestmentByTRY: 0,
             currentWeight: 0,
             symbol: asset.symbol,
             type: asset.type,
@@ -95,50 +113,154 @@ export class AssetService {
 
           switch (asset.type) {
             case AssetType.ETF:
-              priceResponse.currentPrice = Number(
+              priceResponse.currentPriceByUSD = Number(
                 Number(
                   response.data.chart.result[0].meta.regularMarketPrice,
                 ).toFixed(2),
               );
+              asset.currentAssetPriceByUSD = priceResponse.currentPriceByUSD;
+              priceResponse.currentPriceByEURO = Number(
+                Number(
+                  response.data.chart.result[0].meta.regularMarketPrice *
+                    (await this.getCurrencyPrice('EUR')),
+                ).toFixed(2),
+              );
+              asset.currentAssetPriceByEURO = priceResponse.currentPriceByEURO;
+              priceResponse.currentPriceByTRY = Number(
+                Number(
+                  response.data.chart.result[0].meta.regularMarketPrice *
+                    (await this.getCurrencyPrice('TRY')),
+                ).toFixed(2),
+              );
+              asset.currentAssetPriceByTRY = priceResponse.currentPriceByTRY;
               break;
             case AssetType.CRYPTO:
-              priceResponse.currentPrice = Number(
+              priceResponse.currentPriceByUSD = Number(
                 Number(response.data.price).toFixed(2),
               );
+              asset.currentAssetPriceByUSD = priceResponse.currentPriceByUSD;
+              priceResponse.currentPriceByEURO = Number(
+                Number(
+                  response.data.price * (await this.getCurrencyPrice('EUR')),
+                ).toFixed(2),
+              );
+              asset.currentAssetPriceByEURO = priceResponse.currentPriceByEURO;
+              
+              priceResponse.currentPriceByTRY = Number(
+                Number(
+                  response.data.price * (await this.getCurrencyPrice('TRY')),
+                ).toFixed(2),
+              );
+              asset.currentAssetPriceByTRY = priceResponse.currentPriceByTRY;
               break;
             case AssetType.INDEX:
-              priceResponse.currentPrice = Number(
+              priceResponse.currentPriceByUSD = Number(
                 Number(
                   response.data.chart.result[0].meta.regularMarketPrice /
                     (await this.getCurrencyPrice('TRY')),
                 ).toFixed(2),
               );
+              asset.currentAssetPriceByUSD = priceResponse.currentPriceByUSD;
+
+              priceResponse.currentPriceByEURO = Number(
+                Number(
+                  (response.data.chart.result[0].meta.regularMarketPrice /
+                    (await this.getCurrencyPrice('TRY')) 
+                ).toFixed(2)),
+              );
+              asset.currentAssetPriceByEURO = priceResponse.currentPriceByEURO;
+
+              priceResponse.currentPriceByTRY = Number(
+                Number(
+                  response.data.chart.result[0].meta.regularMarketPrice,
+                ).toFixed(2),
+              );
+              asset.currentAssetPriceByTRY = priceResponse.currentPriceByTRY;
 
               break;
           }
 
-          priceResponse.currentROI = Number(
+          priceResponse.currentROIByUSD = Number(
             (
-              (priceResponse.currentPrice * 100) / asset.averageCostByUSD -
+              (priceResponse.currentPriceByUSD * 100) / asset.averageCostByUSD -
               100
             ).toFixed(2),
           );
+          asset.currentAssetROIByUSD = priceResponse.currentROIByUSD;
+          priceResponse.currentROIByEURO = Number(
+            (
+              (priceResponse.currentPriceByEURO * 100) /
+                asset.averageCostByEURO -
+              100
+            ).toFixed(2),
+          );
+          asset.currentAssetROIByEURO = priceResponse.currentROIByEURO;
+          
+          priceResponse.currentROIByTRY = Number(
+            (
+              (priceResponse.currentPriceByTRY * 100) / asset.averageCostByTRY -
+              100
+            ).toFixed(2),
+          );
+          asset.currentAssetROIByTRY = priceResponse.currentROIByTRY;
 
-          priceResponse.currentInvestment = Number(
+          priceResponse.currentInvestmentByUSD = Number(
             (
               (asset.totalRawInvestmentByUSD *
-                (100 + priceResponse.currentROI)) /
+                (100 + priceResponse.currentROIByUSD)) /
               100
             ).toFixed(2),
           );
-          totalRawInvestment += asset.totalRawInvestmentByUSD;
-          currentInvestment += priceResponse.currentInvestment;
-          priceResponse.currentEarning = Number(
+          asset.currentAssetInvestmentByUSD = priceResponse.currentInvestmentByUSD;
+          priceResponse.currentInvestmentByEURO = Number(
             (
-              priceResponse.currentInvestment - asset.totalRawInvestmentByUSD
+              (asset.totalRawInvestmentByEURO *
+                (100 + priceResponse.currentROIByEURO)) /
+              100
             ).toFixed(2),
           );
-          currentEarning += priceResponse.currentEarning;
+          asset.currentAssetInvestmentByEURO = priceResponse.currentInvestmentByEURO;
+          priceResponse.currentInvestmentByTRY = Number(
+            (
+              (asset.totalRawInvestmentByTRY *
+                (100 + priceResponse.currentROIByTRY)) /
+              100
+            ).toFixed(2),
+          );
+          asset.currentAssetInvestmentByTRY = priceResponse.currentInvestmentByTRY;
+          totalRawInvestmentByUSD += asset.totalRawInvestmentByUSD;
+          totalRawInvestmentByEURO += asset.totalRawInvestmentByEURO;
+          totalRawInvestmentByTRY += asset.totalRawInvestmentByTRY;
+          currentInvestmentByUSD += priceResponse.currentInvestmentByUSD;
+          currentInvestmentByEURO += priceResponse.currentInvestmentByEURO;
+          currentInvestmentByTRY += priceResponse.currentInvestmentByTRY;
+          priceResponse.currentEarningByUSD = Number(
+            (
+              priceResponse.currentInvestmentByUSD -
+              asset.totalRawInvestmentByUSD
+            ).toFixed(2),
+          );
+          asset.currentAssetEarningByUSD = priceResponse.currentEarningByUSD;
+          priceResponse.currentEarningByEURO = Number(
+            (
+              priceResponse.currentInvestmentByEURO -
+              asset.totalRawInvestmentByEURO
+            ).toFixed(2),
+          );
+          asset.currentAssetEarningByEURO = priceResponse.currentEarningByEURO;
+          priceResponse.currentEarningByTRY = Number(
+            (
+              priceResponse.currentInvestmentByTRY -
+              asset.totalRawInvestmentByTRY
+            ).toFixed(2),
+          );
+          asset.currentAssetEarningByTRY = priceResponse.currentEarningByTRY;
+          asset.currentAssetROIByUSD = asset.currentAssetInvestmentByUSD * 100 / asset.totalRawInvestmentByUSD - 100;
+          asset.currentAssetROIByEURO = asset.currentAssetInvestmentByEURO * 100 / asset.totalRawInvestmentByEURO - 100;
+          asset.currentAssetROIByTRY = asset.currentAssetInvestmentByTRY * 100 / asset.totalRawInvestmentByTRY - 100;
+          currentEarningByUSD += priceResponse.currentEarningByUSD;
+          currentEarningByEURO += priceResponse.currentEarningByEURO;
+          currentEarningByTRY += priceResponse.currentEarningByTRY;
           return priceResponse;
         }),
       );
@@ -148,11 +270,29 @@ export class AssetService {
       //const updatedLineChart = await this.calculateLineChartValues(result);
 
       return {
-        currentROI: Number(
-          ((currentInvestment * 100) / totalRawInvestment - 100).toFixed(2),
+        currentROIByUSD: Number(
+          ((currentInvestmentByUSD * 100) / totalRawInvestmentByUSD - 100).toFixed(
+            2,
+          ),
         ),
-        currentEarning: Number(currentEarning.toFixed(2)),
-        currentInvestment: Number(currentInvestment.toFixed(2)),
+        currentROIByEURO: Number(
+          (
+            (currentInvestmentByEURO * 100) / totalRawInvestmentByEURO -
+            100
+          ).toFixed(2),
+        ),
+        currentROIByTRY: Number(
+          (
+            (currentInvestmentByTRY * 100) / totalRawInvestmentByTRY -
+            100
+          ).toFixed(2),
+        ),
+        currentEarningByUSD: Number(currentEarningByUSD.toFixed(2)),
+        currentEarningByEURO: Number(currentEarningByEURO.toFixed(2)),
+        currentEarningByTRY: Number(currentEarningByTRY.toFixed(2)),
+        currentInvestmentByUSD: Number(currentInvestmentByUSD.toFixed(2)),
+        currentInvestmentByEURO: Number(currentInvestmentByEURO.toFixed(2)),
+        currentInvestmentByTRY: Number(currentInvestmentByTRY.toFixed(2)),
         assets: updatedAssets,
         portfolioPie: updatedPortfolioPie,
         // lineChart: updatedLineChart,
@@ -166,18 +306,18 @@ export class AssetService {
     let totalCurrentInvestment = 0;
     let portfolioCurrentRoi = 0;
     for (let i = 0; i < assets.length; i++) {
-      totalCurrentInvestment += assets[i].currentInvestment;
+      totalCurrentInvestment += assets[i].currentInvestmentByUSD;
       let currentTotalInvestment = 0;
 
       for (let j = 0; j < assets.length; j++) {
         if (i != j) {
-          currentTotalInvestment += assets[j].currentInvestment;
+          currentTotalInvestment += assets[j].currentInvestmentByUSD;
         }
       }
       assets[i].currentWeight = Number(
         (
-          (100 * assets[i].currentInvestment) /
-          (assets[i].currentInvestment + currentTotalInvestment)
+          (100 * assets[i].currentInvestmentByUSD) /
+          (assets[i].currentInvestmentByUSD + currentTotalInvestment)
         ).toFixed(2),
       );
     }

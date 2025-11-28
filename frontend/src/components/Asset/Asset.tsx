@@ -11,23 +11,33 @@ import {
 import { HugeiconsIcon } from "@hugeicons/react";
 import httpService from "../../services/httpService";
 import Popup from "../Popup/Popup";
+import { useStore } from "../../store";
+
 type Asset = {
   id: number;
   symbol: string;
   imageUrl: string;
   totalRawInvestmentByUSD: number;
-  totalRawInvestmentEURO: number;
+  totalRawInvestmentByEURO: number;
   totalRawInvestmentByTRY: number;
   totalQuantity: number;
   averageCostByUSD: number;
   averageCostByEURO: number;
   averageCostByTRY: number;
   initialWeight: number;
-  currentPrice: number;
-  currentROI: number;
-  currentEarning: number;
+  currentPriceByUSD: number;
+  currentPriceByEURO: number;
+  currentPriceByTRY: number;
+  currentROIByUSD: number;
+  currentROIByEURO: number;
+  currentROIByTRY: number;
+  currentEarningByUSD: number;
+  currentEarningByEURO: number;
+  currentEarningByTRY: number;
   currentWeight: number;
-  currentInvestment: number;
+  currentInvestmentByUSD: number;
+  currentInvestmentByEURO: number;
+  currentInvestmentByTRY: number;
 };
 
 type LineChartValue = {
@@ -56,6 +66,9 @@ export default function Asset({ asset }: Props) {
   const [lineChartData, setLineChartData] = useState<LineChartValue>();
   const [popupStatus, setPopupStatus] = useState<boolean>(false);
   const [transactionData, setTransactionData] = useState<Transaction[]>();
+  //const [currency, setCurrency] = useState("USD");
+  const { currency } = useStore();
+
   const changeLineChartStatus = async () => {
     if (!lineChartStatus) {
       try {
@@ -67,7 +80,7 @@ export default function Asset({ asset }: Props) {
             const value: LineChartValue = {
               pData: response.data.pData,
               xLabels: response.data.xLabels,
-              currentEarning: +asset?.currentEarning,
+              currentEarning: +asset?.currentEarningByUSD,
             };
 
             setLineChartData(value);
@@ -112,7 +125,9 @@ export default function Asset({ asset }: Props) {
     <div className="asset-wrapper py-3 px-4">
       {popupStatus && (
         <Popup onClose={closePopup}>
-          <div className="d-flex justify-content-center border-top border-bottom text-light mx-5 fs-5">{asset.symbol} - TRANSACTIONS</div>
+          <div className="d-flex justify-content-center border-top border-bottom text-light mx-5 fs-5">
+            {asset.symbol} - TRANSACTIONS
+          </div>
           <div className="table-container mb-5 mt-5 d-flex justify-content-center">
             <table className="transaction-table">
               <thead>
@@ -162,7 +177,7 @@ export default function Asset({ asset }: Props) {
           </div>
         </Popup>
       )}
-      {asset !== null && asset.currentPrice !== undefined ? (
+      {asset !== null && asset.currentPriceByUSD !== undefined ? (
         <div className="position-relative">
           <div className="row m-0 p-0 border-bottom">
             <div className="col-12 m-0 p-0 px-3 d-flex flex-column justify-content-center">
@@ -202,23 +217,35 @@ export default function Asset({ asset }: Props) {
               </div>
               <div className="d-flex justify-content-end py-2">
                 <div className="asset-current-price border-end pe-2 d-flex">
-                  <span>${asset.currentPrice}</span>
+                  <span>
+                    {currency === "USD" ? "$" : currency === "EUR" ? "€" : "₺"}
+                  </span>
 
-                  {/* <NumberFlow
+                  <NumberFlow
                     format={{
                       notation: "standard",
 
                       signDisplay: "never",
                     }}
-                    spinTiming={{ duration: 1500, easing: "ease" }}
-                    value={asset.currentPrice}
-                  /> */}
+                    spinTiming={{ duration: 0, easing: "ease" }}
+                    value={
+                      currency === "USD"
+                        ? asset.currentPriceByUSD
+                        : currency === "EUR"
+                          ? asset.currentPriceByEURO
+                          : asset.currentPriceByTRY
+                    }
+                  />
                 </div>
 
                 <div
                   className={
-                    "asset-roi border-end px-2 d-flex" +
-                    (asset.currentROI < 0 && " text-danger")
+                    "border-end px-2 d-flex text-success " +
+                    (currency === "USD"
+                      ? asset.currentROIByUSD < 0 && " text-danger"
+                      : currency === "EUR"
+                        ? asset.currentROIByEURO < 0 && " text-danger"
+                        : asset.currentROIByTRY < 0 && " text-danger")
                   }
                 >
                   {/* <NumberFlow
@@ -230,62 +257,82 @@ export default function Asset({ asset }: Props) {
                     spinTiming={{ duration: 1500, easing: "ease" }}
                     value={asset.currentROI}
                   /> */}
-                  <span>{Math.abs(asset.currentROI)}%</span>
+                  <span>
+                    {Math.abs(
+                      currency === "USD"
+                        ? asset.currentROIByUSD
+                        : currency === "EUR"
+                          ? asset.currentROIByEURO
+                          : asset.currentROIByTRY
+                    )}
+                    %
+                  </span>
                 </div>
 
                 <div
                   className={
-                    "asset-earning ps-2 d-flex" +
-                    (asset.currentEarning < 0 && " text-danger")
+                    "ps-2 d-flex text-success " +
+                    (currency === "USD"
+                      ? asset.currentEarningByUSD < 0 && " text-danger"
+                      : currency === "EUR"
+                        ? asset.currentEarningByEURO < 0 && " text-danger"
+                        : asset.currentEarningByTRY < 0 && " text-danger")
                   }
                 >
-                  <span>${Math.abs(asset.currentEarning)}</span>
-                  {/* <NumberFlow
+                  <span>
+                    {currency === "USD" ? "$" : currency === "EUR" ? "€" : "₺"}
+                  </span>
+                  <NumberFlow
                     format={{
                       notation: "standard",
 
                       signDisplay: "never",
                     }}
-                    spinTiming={{ duration: 1500, easing: "ease" }}
-                    value={asset.currentEarning}
-                  /> */}
+                    spinTiming={{ duration: 0, easing: "ease" }}
+                    value={Math.abs(
+                      currency === "USD"
+                        ? asset.currentEarningByUSD
+                        : currency === "EUR"
+                          ? asset.currentEarningByEURO
+                          : asset.currentEarningByTRY
+                    )}
+                  />
                 </div>
               </div>
             </div>
-            <div className="col-4 m-0 p-0 d-flex flex-column justify-content-center"></div>
           </div>
-          <div className="mt-3 px-3 d-flex justify-content-between align-items-center">
-            <div className="m-0 p-0">
+
+          <div className="row m-0 p-0 ps-4 pt-3">
+            <div className="col-4 m-0 p-0">
               <div className="asset-header">Initial Weight</div>
               <div className="asset-value d-flex">
-                {/* <NumberFlow
-                  format={{
-                    style: "decimal",
-
-                    signDisplay: "never",
-                  }}
-                  spinTiming={{ duration: 1500, easing: "ease" }}
-                  value={asset.initialWeight}
-                /> */}
                 <span>{asset.initialWeight}%</span>
               </div>
             </div>
-            <div className="m-0 p-0">
-              <div className="asset-header">Raw Investment</div>
+            <div className="col-4 m-0 p-0">
+              <div className="asset-header">Original Capital</div>
               <div className="asset-value d-flex">
-                <span>${asset.totalRawInvestmentByUSD}</span>
-                {/* <NumberFlow
+                <span>
+                  {currency === "USD" ? "$" : currency === "EUR" ? "€" : "₺"}
+                </span>
+                <NumberFlow
                   format={{
                     notation: "standard",
 
                     signDisplay: "never",
                   }}
-                  spinTiming={{ duration: 1500, easing: "ease" }}
-                  value={asset.totalRawInvestmentByUSD}
-                /> */}
+                  spinTiming={{ duration: 0, easing: "ease" }}
+                  value={
+                    currency === "USD"
+                      ? asset.totalRawInvestmentByUSD
+                      : currency === "EUR"
+                        ? asset.totalRawInvestmentByEURO
+                        : asset.totalRawInvestmentByTRY
+                  }
+                />
               </div>
             </div>
-            <div className="m-0 p-0">
+            <div className="col-4 m-0 p-0">
               <div className="asset-header">Total Quantity</div>
               <div className="asset-value">
                 {asset.totalQuantity}
@@ -301,8 +348,9 @@ export default function Asset({ asset }: Props) {
               </div>
             </div>
           </div>
-          <div className="mt-3 px-3 d-flex justify-content-between align-items-center">
-            <div className="m-0 p-0">
+
+          <div className="row m-0 p-0 ps-4 pt-3">
+            <div className="col-4 m-0 p-0">
               <div className="asset-header">Current Weight</div>
               <div className="asset-value d-flex">
                 {/* <NumberFlow
@@ -317,34 +365,51 @@ export default function Asset({ asset }: Props) {
                 <span>{asset.currentWeight}%</span>
               </div>
             </div>
-            <div className="m-0 p-0">
+            <div className="col-4 m-0 p-0">
               <div className="asset-header">Current Investment</div>
               <div className="asset-value d-flex">
-                <span>${asset.currentInvestment}</span>
-                {/* <NumberFlow
+                <span>
+                  {currency === "USD" ? "$" : currency === "EUR" ? "€" : "₺"}
+                </span>
+
+                <NumberFlow
                   format={{
                     notation: "standard",
 
                     signDisplay: "never",
                   }}
-                  spinTiming={{ duration: 1500, easing: "ease" }}
-                  value={asset.currentInvestment}
-                /> */}
+                  spinTiming={{ duration: 0, easing: "ease" }}
+                  value={
+                    currency === "USD"
+                      ? asset.currentInvestmentByUSD
+                      : currency === "EUR"
+                        ? asset.currentInvestmentByEURO
+                        : asset.currentInvestmentByTRY
+                  }
+                />
               </div>
             </div>
-            <div className="m-0 p-0">
+            <div className="col-4 m-0 p-0">
               <div className="asset-header">Average Cost</div>
               <div className="asset-value d-flex">
-                <span>${asset.averageCostByUSD}</span>
-                {/* <NumberFlow
+                <span>
+                  {currency === "USD" ? "$" : currency === "EUR" ? "€" : "₺"}
+                </span>
+                <NumberFlow
                   format={{
                     notation: "standard",
 
                     signDisplay: "never",
                   }}
-                  spinTiming={{ duration: 1500, easing: "ease" }}
-                  value={asset.averageCostByUSD}
-                /> */}
+                  spinTiming={{ duration: 0, easing: "ease" }}
+                  value={
+                    currency === "USD"
+                      ? asset.averageCostByUSD
+                      : currency === "EUR"
+                        ? asset.averageCostByEURO
+                        : asset.averageCostByTRY
+                  }
+                />
               </div>
             </div>
           </div>

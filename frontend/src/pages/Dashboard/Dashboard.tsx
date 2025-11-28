@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import "./Dashboard.scss";
 import Asset from "../../components/Asset/Asset";
 import PortfolioStats from "../../components/PortfolioStats/PortfolioStats";
@@ -11,18 +11,26 @@ type Asset = {
   type: string;
   imageUrl: string;
   totalRawInvestmentByUSD: number;
-  totalRawInvestmentEURO: number;
+  totalRawInvestmentByEURO: number;
   totalRawInvestmentByTRY: number;
   totalQuantity: number;
   averageCostByUSD: number;
   averageCostByEURO: number;
   averageCostByTRY: number;
   initialWeight: number;
-  currentPrice: number;
-  currentROI: number;
-  currentEarning: number;
+  currentPriceByUSD: number;
+  currentPriceByEURO: number;
+  currentPriceByTRY: number;
+  currentROIByUSD: number;
+  currentROIByEURO: number;
+  currentROIByTRY: number;
+  currentEarningByUSD: number;
+  currentEarningByEURO: number;
+  currentEarningByTRY: number;
   currentWeight: number;
-  currentInvestment: number;
+  currentInvestmentByUSD: number;
+  currentInvestmentByEURO: number;
+  currentInvestmentByTRY: number;
 };
 
 type PortfolioStats = {
@@ -31,9 +39,16 @@ type PortfolioStats = {
   totalRawInvestmentByUSD: number;
   totalRawInvestmentByEURO: number;
   totalRawInvestmentByTRY: number;
-  currentROI: number;
-  currentEarning: number;
-  currentInvestment: number;
+  currentROIByUSD: number;
+  currentROIByEURO: number;
+  currentROIByTRY: number;
+  currentEarningByUSD: number;
+  currentEarningByEURO: number;
+  currentEarningByTRY: number;
+  currentInvestmentByUSD: number;
+  currentInvestmentByEURO: number;
+  currentInvestmentByTRY: number;
+
   portfolioPie: {
     label: string;
     value: number;
@@ -82,13 +97,21 @@ export default function Dashboard() {
             symbol,
             type,
             averageCostByUSD,
+            averageCostByEURO,
+            averageCostByTRY,
             totalRawInvestmentByUSD,
+            totalRawInvestmentByEURO,
+            totalRawInvestmentByTRY,
           }) => ({
             id,
             symbol,
             type,
             averageCostByUSD,
+            averageCostByEURO,
+            averageCostByTRY,
             totalRawInvestmentByUSD,
+            totalRawInvestmentByEURO,
+            totalRawInvestmentByTRY,
           })
         );
 
@@ -98,6 +121,7 @@ export default function Dashboard() {
         );
 
         if (response.status === 201) {
+          //console.log(response.data)
           const target = omit(response.data, ["assets"]);
           const updatedPortfolioStatsData = (portfolioStatsDataRef.current = {
             ...portfolioStatsDataRef.current,
@@ -107,20 +131,49 @@ export default function Dashboard() {
           setPortfolioStatsData(updatedPortfolioStatsData);
           const updatedAssetData = assetDataRef.current.map((asset, index) => ({
             ...asset,
-            currentPrice:
-              response.data.assets[index]?.currentPrice ?? asset.currentPrice,
-            currentROI:
-              response.data.assets[index]?.currentROI ?? asset.currentROI,
-            currentEarning:
-              response.data.assets[index]?.currentEarning ??
-              asset.currentEarning,
-            currentInvestment:
-              response.data.assets[index]?.currentInvestment ??
-              asset.currentInvestment,
+            currentPriceByUSD:
+              response.data.assets[index]?.currentPriceByUSD ??
+              asset.currentPriceByUSD,
+            currentPriceByEURO:
+              response.data.assets[index]?.currentPriceByEURO ??
+              asset.currentPriceByEURO,
+            currentPriceByTRY:
+              response.data.assets[index]?.currentPriceByTRY ??
+              asset.currentPriceByTRY,
+            /**/
+            currentROIByUSD:
+              response.data.assets[index]?.currentROIByUSD ??
+              asset.currentROIByUSD,
+            currentROIByEURO:
+              response.data.assets[index]?.currentROIByEURO ??
+              asset.currentROIByEURO,
+            currentROIByTRY:
+              response.data.assets[index]?.currentROIByTRY ??
+              asset.currentROIByTRY,
+            /**/
+            currentEarningByUSD:
+              response.data.assets[index]?.currentEarningByUSD ??
+              asset.currentEarningByUSD,
+            currentEarningByEURO:
+              response.data.assets[index]?.currentEarningByEURO ??
+              asset.currentEarningByEURO,
+            currentEarningByTRY:
+              response.data.assets[index]?.currentEarningByTRY ??
+              asset.currentEarningByTRY,
+            /**/
+            currentInvestmentByUSD:
+              response.data.assets[index]?.currentInvestmentByUSD ??
+              asset.currentInvestmentByUSD,
+            currentInvestmentByEURO:
+              response.data.assets[index]?.currentInvestmentByEURO ??
+              asset.currentInvestmentByEURO,
+            currentInvestmentByTRY:
+              response.data.assets[index]?.currentInvestmentByTRY ??
+              asset.currentInvestmentByTRY,
             currentWeight:
               response.data.assets[index]?.currentWeight ?? asset.currentWeight,
           }));
-
+          //console.log(response.data.assets[0])
           setAssetData(updatedAssetData);
           assetDataRef.current = updatedAssetData;
           //console.log(assetDataRef.current);
@@ -161,7 +214,8 @@ export default function Dashboard() {
         )}
       </div>
       <div className="col-3 m-0 py-3 ps-0 pe-3 portfolio-stat-wrapper">
-        {portfolioStatsData && portfolioStatsData.currentInvestment != 0 ? (
+        {portfolioStatsData &&
+        portfolioStatsData.currentInvestmentByTRY != 0 ? (
           <PortfolioStats portfolioStats={portfolioStatsData} />
         ) : (
           <div className="d-flex align-items-center justify-content-center">
