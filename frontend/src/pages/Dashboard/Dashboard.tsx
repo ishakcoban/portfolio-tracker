@@ -4,6 +4,7 @@ import Asset from "../../components/Asset/Asset";
 import PortfolioStats from "../../components/PortfolioStats/PortfolioStats";
 import httpService from "../../services/httpService";
 import LoadingSpinner from "../../components/LoadingSpinner/LoadingSpinner";
+import { useStore } from "../../store";
 
 type Asset = {
   id: number;
@@ -61,7 +62,7 @@ export default function Dashboard() {
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const assetDataRef = useRef<Asset[] | null>(null);
   const portfolioStatsDataRef = useRef<PortfolioStats | null>(null);
-
+  const { currency } = useStore();
   const fetchData = async () => {
     try {
       const response = await httpService.get(`/portfolios/6`);
@@ -212,7 +213,43 @@ export default function Dashboard() {
             <LoadingSpinner />
           </div>
         )}
+
+        <div className="row m-0 px-3 mb-3 pt-3">
+          <div className="col-12 m-0 p-0 text-light">
+            <div className="row m-0 py-3 year-section">
+              <div className="col-1 m-0 p-0"></div>
+              <div className="col-1 m-0 p-0 text-center">
+                <div className="year-text-header fw-bold">2025</div>
+                <div
+                  className={
+                    "year-text-roi mt-1 text-success " +
+                    (currency === "USD"
+                      ? portfolioStatsData!.currentROIByUSD < 0 &&
+                        " text-danger"
+                      : currency === "EUR"
+                        ? portfolioStatsData!.currentROIByEURO < 0 &&
+                          " text-danger"
+                        : portfolioStatsData!.currentROIByTRY < 0 &&
+                          " text-danger")
+                  }
+                >
+                  %
+                  {currency === "USD"
+                    ? portfolioStatsData?.currentROIByUSD
+                    : currency === "EUR"
+                      ? portfolioStatsData?.currentROIByEURO
+                      : portfolioStatsData?.currentROIByTRY}
+                </div>
+              </div>
+              <div className="col-1 m-0 p-0 text-center">
+                <div className="year-text-header fw-bold">2026</div>
+                <div className="year-text-roi mt-1 text-light"></div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
+
       <div className="col-3 m-0 py-3 ps-0 pe-3 portfolio-stat-wrapper">
         {portfolioStatsData &&
         portfolioStatsData.currentInvestmentByTRY != 0 ? (
