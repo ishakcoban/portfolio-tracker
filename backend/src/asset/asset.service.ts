@@ -64,7 +64,6 @@ export class AssetService {
 
       const result = await Promise.all(
         requestCurrentAssetPrice.map(async (asset) => {
-          
           let url = '';
 
           switch (asset.type) {
@@ -145,7 +144,7 @@ export class AssetService {
                 ).toFixed(2),
               );
               asset.currentAssetPriceByEURO = priceResponse.currentPriceByEURO;
-              
+
               priceResponse.currentPriceByTRY = Number(
                 Number(
                   response.data.price * (await this.getCurrencyPrice('TRY')),
@@ -164,9 +163,12 @@ export class AssetService {
 
               priceResponse.currentPriceByEURO = Number(
                 Number(
-                  (response.data.chart.result[0].meta.regularMarketPrice /
-                    (await this.getCurrencyPrice('TRY')) 
-                ).toFixed(2)),
+                  (
+                    (response.data.chart.result[0].meta.regularMarketPrice /
+                      (await this.getCurrencyPrice('TRY'))) *
+                    (await this.getCurrencyPrice('EUR'))
+                  ).toFixed(2),
+                ),
               );
               asset.currentAssetPriceByEURO = priceResponse.currentPriceByEURO;
 
@@ -195,7 +197,7 @@ export class AssetService {
             ).toFixed(2),
           );
           asset.currentAssetROIByEURO = priceResponse.currentROIByEURO;
-          
+
           priceResponse.currentROIByTRY = Number(
             (
               (priceResponse.currentPriceByTRY * 100) / asset.averageCostByTRY -
@@ -211,7 +213,8 @@ export class AssetService {
               100
             ).toFixed(2),
           );
-          asset.currentAssetInvestmentByUSD = priceResponse.currentInvestmentByUSD;
+          asset.currentAssetInvestmentByUSD =
+            priceResponse.currentInvestmentByUSD;
           priceResponse.currentInvestmentByEURO = Number(
             (
               (asset.totalRawInvestmentByEURO *
@@ -219,7 +222,8 @@ export class AssetService {
               100
             ).toFixed(2),
           );
-          asset.currentAssetInvestmentByEURO = priceResponse.currentInvestmentByEURO;
+          asset.currentAssetInvestmentByEURO =
+            priceResponse.currentInvestmentByEURO;
           priceResponse.currentInvestmentByTRY = Number(
             (
               (asset.totalRawInvestmentByTRY *
@@ -227,7 +231,8 @@ export class AssetService {
               100
             ).toFixed(2),
           );
-          asset.currentAssetInvestmentByTRY = priceResponse.currentInvestmentByTRY;
+          asset.currentAssetInvestmentByTRY =
+            priceResponse.currentInvestmentByTRY;
           totalRawInvestmentByUSD += asset.totalRawInvestmentByUSD;
           totalRawInvestmentByEURO += asset.totalRawInvestmentByEURO;
           totalRawInvestmentByTRY += asset.totalRawInvestmentByTRY;
@@ -255,9 +260,18 @@ export class AssetService {
             ).toFixed(2),
           );
           asset.currentAssetEarningByTRY = priceResponse.currentEarningByTRY;
-          asset.currentAssetROIByUSD = asset.currentAssetInvestmentByUSD * 100 / asset.totalRawInvestmentByUSD - 100;
-          asset.currentAssetROIByEURO = asset.currentAssetInvestmentByEURO * 100 / asset.totalRawInvestmentByEURO - 100;
-          asset.currentAssetROIByTRY = asset.currentAssetInvestmentByTRY * 100 / asset.totalRawInvestmentByTRY - 100;
+          asset.currentAssetROIByUSD =
+            (asset.currentAssetInvestmentByUSD * 100) /
+              asset.totalRawInvestmentByUSD -
+            100;
+          asset.currentAssetROIByEURO =
+            (asset.currentAssetInvestmentByEURO * 100) /
+              asset.totalRawInvestmentByEURO -
+            100;
+          asset.currentAssetROIByTRY =
+            (asset.currentAssetInvestmentByTRY * 100) /
+              asset.totalRawInvestmentByTRY -
+            100;
           currentEarningByUSD += priceResponse.currentEarningByUSD;
           currentEarningByEURO += priceResponse.currentEarningByEURO;
           currentEarningByTRY += priceResponse.currentEarningByTRY;
@@ -271,9 +285,10 @@ export class AssetService {
 
       return {
         currentROIByUSD: Number(
-          ((currentInvestmentByUSD * 100) / totalRawInvestmentByUSD - 100).toFixed(
-            2,
-          ),
+          (
+            (currentInvestmentByUSD * 100) / totalRawInvestmentByUSD -
+            100
+          ).toFixed(2),
         ),
         currentROIByEURO: Number(
           (
