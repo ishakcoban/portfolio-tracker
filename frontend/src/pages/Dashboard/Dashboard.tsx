@@ -5,6 +5,7 @@ import PortfolioStats from "../../components/PortfolioStats/PortfolioStats";
 import httpService from "../../services/httpService";
 import LoadingSpinner from "../../components/LoadingSpinner/LoadingSpinner";
 import { useStore } from "../../store";
+import AssetBarChart from "../../components/Charts/BarChart/BarChart";
 
 type Asset = {
   id: number;
@@ -196,10 +197,34 @@ export default function Dashboard() {
 
     return () => clearInterval(intervalRef.current!);
   }, []);
+  useEffect(() => {
+    const updateHeight = () => {
+      const navbar = document.querySelector('.navbar-wrapper'); // Use your actual navbar class/id
+      if (navbar) {
+        const navbarHeight = navbar.getBoundingClientRect().height;
+        document.documentElement.style.setProperty('--navbar-height', `${navbarHeight}px`);
+      }
+    };
 
+    updateHeight();
+    window.addEventListener('resize', updateHeight);
+    
+    return () => window.removeEventListener('resize', updateHeight);
+  }, []);
   return (
-    <div className="row m-0 p-0">
-      <div className="col-9 m-0 p-0">
+    <div className="row m-0 p-0 ">
+      <div className="col-9 m-0 p-0 dashboard-left-section">
+        <div className="row m-0 p-0">
+          <div className="col-6 m-0 p-0 ps-3 pt-3">
+            {assetData ? (
+              <AssetBarChart assets ={assetData} />
+            ) : (
+              <div className="d-flex align-items-center justify-content-center">
+                <LoadingSpinner />
+              </div>
+            )}
+          </div>
+        </div>
         {assetData ? (
           <div className="row m-0 ps-3">
             {assetData?.map((asset: Asset) => (
@@ -213,41 +238,42 @@ export default function Dashboard() {
             <LoadingSpinner />
           </div>
         )}
-
-        <div className="row m-0 px-3 mb-3 pt-3">
-          <div className="col-12 m-0 p-0 text-light">
-            <div className="row m-0 py-3 year-section">
-              <div className="col-1 m-0 p-0"></div>
-              <div className="col-1 m-0 p-0 text-center">
-                <div className="year-text-header fw-bold">2025</div>
-                <div
-                  className={
-                    "year-text-roi mt-1 text-success " +
-                    (currency === "USD"
-                      ? portfolioStatsData!.currentROIByUSD < 0 &&
-                        " text-danger"
-                      : currency === "EUR"
-                        ? portfolioStatsData!.currentROIByEURO < 0 &&
+        {portfolioStatsData && (
+          <div className="row m-0 px-3 mb-3 pt-3">
+            <div className="col-12 m-0 p-0 text-light">
+              <div className="row m-0 py-3 year-section">
+                <div className="col-1 m-0 p-0"></div>
+                <div className="col-1 m-0 p-0 text-center">
+                  <div className="year-text-header fw-bold">2025</div>
+                  <div
+                    className={
+                      "year-text-roi mt-1 text-success " +
+                      (currency === "USD"
+                        ? portfolioStatsData.currentROIByUSD < 0 &&
                           " text-danger"
-                        : portfolioStatsData!.currentROIByTRY < 0 &&
-                          " text-danger")
-                  }
-                >
-                  %
-                  {currency === "USD"
-                    ? portfolioStatsData?.currentROIByUSD
-                    : currency === "EUR"
-                      ? portfolioStatsData?.currentROIByEURO
-                      : portfolioStatsData?.currentROIByTRY}
+                        : currency === "EUR"
+                          ? portfolioStatsData.currentROIByEURO < 0 &&
+                            " text-danger"
+                          : portfolioStatsData.currentROIByTRY < 0 &&
+                            " text-danger")
+                    }
+                  >
+                    %
+                    {currency === "USD"
+                      ? portfolioStatsData.currentROIByUSD
+                      : currency === "EUR"
+                        ? portfolioStatsData.currentROIByEURO
+                        : portfolioStatsData.currentROIByTRY}
+                  </div>
                 </div>
-              </div>
-              <div className="col-1 m-0 p-0 text-center">
-                <div className="year-text-header fw-bold">2026</div>
-                <div className="year-text-roi mt-1 text-light"></div>
+                <div className="col-1 m-0 p-0 text-center">
+                  <div className="year-text-header fw-bold">2026</div>
+                  <div className="year-text-roi mt-1 text-light"></div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
 
       <div className="col-3 m-0 py-3 ps-0 pe-3 portfolio-stat-wrapper">
