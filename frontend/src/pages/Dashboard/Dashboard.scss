@@ -12,3 +12,11 @@
 .year-text-roi{
     font-size: .8rem;
 }
+
+.dashboard-left-section {
+  height: calc(100dvh - var(--navbar-height, 0px));
+  overflow-y: auto;
+  overflow-x: hidden;
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
