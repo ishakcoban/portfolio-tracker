@@ -13,15 +13,15 @@ const chartSetting = {
       },
     },
   ],
-  height: 300,
+  height: 301,
   sx: {
     "& .MuiChartsAxis-line": {
-      stroke: "#d1d5db",
+      stroke: "#d1d5db !important",
       color:"#d1d5db",
-      strokeWidth: 3,
+      strokeWidth: 2,
     },
     "& .MuiChartsAxis-tick": {
-      stroke: "#d1d5db",
+      stroke: "#d1d5db !important",
     },
     "& .MuiChartsGrid-line": {
       stroke: "#e5e7eb",
@@ -137,7 +137,7 @@ export default function AssetBarChart({ assets }: Props) {
   }));
 
   return (
-    <div className="bar-chart-wrapper p-4">
+    <div className="bar-chart-wrapper pt-4 pb-2 px-4">
       <BarChart
         dataset={dataset}
         xAxis={[

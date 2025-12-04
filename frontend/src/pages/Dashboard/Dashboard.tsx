@@ -6,6 +6,7 @@ import httpService from "../../services/httpService";
 import LoadingSpinner from "../../components/LoadingSpinner/LoadingSpinner";
 import { useStore } from "../../store";
 import AssetBarChart from "../../components/Charts/BarChart/BarChart";
+import TradingviewChart from "../../components/Charts/TradingviewChart/TradingviewChart";
 
 type Asset = {
   id: number;
@@ -199,43 +200,42 @@ export default function Dashboard() {
   }, []);
   useEffect(() => {
     const updateHeight = () => {
-      const navbar = document.querySelector('.navbar-wrapper'); // Use your actual navbar class/id
+      const navbar = document.querySelector(".navbar-wrapper"); // Use your actual navbar class/id
       if (navbar) {
         const navbarHeight = navbar.getBoundingClientRect().height;
-        document.documentElement.style.setProperty('--navbar-height', `${navbarHeight}px`);
+        document.documentElement.style.setProperty(
+          "--navbar-height",
+          `${navbarHeight}px`
+        );
       }
     };
 
     updateHeight();
-    window.addEventListener('resize', updateHeight);
-    
-    return () => window.removeEventListener('resize', updateHeight);
+    window.addEventListener("resize", updateHeight);
+
+    return () => window.removeEventListener("resize", updateHeight);
   }, []);
   return (
     <div className="row m-0 p-0 ">
       <div className="col-9 m-0 p-0 dashboard-left-section">
         <div className="row m-0 p-0">
           <div className="col-6 m-0 p-0 ps-3 pt-3">
-            {assetData ? (
-              <AssetBarChart assets ={assetData} />
-            ) : (
-              <div className="d-flex align-items-center justify-content-center">
-                <LoadingSpinner />
-              </div>
-            )}
+            {/* <LineOverviewChart /> */}
+            {/* <LOC/> */}
+            <TradingviewChart/>
+          </div>
+          <div className="col-6 m-0 p-0 px-3 pt-3">
+            {assetData && <AssetBarChart assets={assetData} />}
           </div>
         </div>
-        {assetData ? (
+
+        {assetData && (
           <div className="row m-0 ps-3">
             {assetData?.map((asset: Asset) => (
               <div key={asset.id} className="col-4 m-0 p-0 pt-3 pe-3">
                 <Asset asset={asset} />
               </div>
             ))}
-          </div>
-        ) : (
-          <div className="d-flex align-items-center justify-content-center">
-            <LoadingSpinner />
           </div>
         )}
         {portfolioStatsData && (
@@ -278,14 +278,12 @@ export default function Dashboard() {
 
       <div className="col-3 m-0 py-3 ps-0 pe-3 portfolio-stat-wrapper">
         {portfolioStatsData &&
-        portfolioStatsData.currentInvestmentByTRY != 0 ? (
-          <PortfolioStats portfolioStats={portfolioStatsData} />
-        ) : (
-          <div className="d-flex align-items-center justify-content-center">
-            <LoadingSpinner />
-          </div>
-        )}
+          portfolioStatsData.currentInvestmentByTRY != 0 && (
+            <PortfolioStats portfolioStats={portfolioStatsData} />
+          )}
       </div>
+
+      
     </div>
   );
 }

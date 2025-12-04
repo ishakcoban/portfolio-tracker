@@ -12,6 +12,7 @@ import { firstValueFrom } from 'rxjs';
 import { HttpService } from '@nestjs/axios';
 import { AssetType } from 'generated/prisma';
 import { CurrentMarketPriceResponse } from './response/current-market-price-response';
+import { Helper } from 'src/utils/helpers';
 @Injectable()
 export class AssetService {
   constructor(
@@ -121,14 +122,14 @@ export class AssetService {
               priceResponse.currentPriceByEURO = Number(
                 Number(
                   response.data.chart.result[0].meta.regularMarketPrice *
-                    (await this.getCurrencyPrice('EUR')),
+                    (await Helper.getCurrencyPrice(this.httpService,'EUR')),
                 ).toFixed(2),
               );
               asset.currentAssetPriceByEURO = priceResponse.currentPriceByEURO;
               priceResponse.currentPriceByTRY = Number(
                 Number(
                   response.data.chart.result[0].meta.regularMarketPrice *
-                    (await this.getCurrencyPrice('TRY')),
+                    (await Helper.getCurrencyPrice(this.httpService,'TRY')),
                 ).toFixed(2),
               );
               asset.currentAssetPriceByTRY = priceResponse.currentPriceByTRY;
@@ -140,14 +141,14 @@ export class AssetService {
               asset.currentAssetPriceByUSD = priceResponse.currentPriceByUSD;
               priceResponse.currentPriceByEURO = Number(
                 Number(
-                  response.data.price * (await this.getCurrencyPrice('EUR')),
+                  response.data.price * (await Helper.getCurrencyPrice(this.httpService,'EUR')),
                 ).toFixed(2),
               );
               asset.currentAssetPriceByEURO = priceResponse.currentPriceByEURO;
 
               priceResponse.currentPriceByTRY = Number(
                 Number(
-                  response.data.price * (await this.getCurrencyPrice('TRY')),
+                  response.data.price * (await Helper.getCurrencyPrice(this.httpService,'TRY')),
                 ).toFixed(2),
               );
               asset.currentAssetPriceByTRY = priceResponse.currentPriceByTRY;
@@ -156,7 +157,7 @@ export class AssetService {
               priceResponse.currentPriceByUSD = Number(
                 Number(
                   response.data.chart.result[0].meta.regularMarketPrice /
-                    (await this.getCurrencyPrice('TRY')),
+                    (await Helper.getCurrencyPrice(this.httpService,'TRY')),
                 ).toFixed(2),
               );
               asset.currentAssetPriceByUSD = priceResponse.currentPriceByUSD;
@@ -165,8 +166,8 @@ export class AssetService {
                 Number(
                   (
                     (response.data.chart.result[0].meta.regularMarketPrice /
-                      (await this.getCurrencyPrice('TRY'))) *
-                    (await this.getCurrencyPrice('EUR'))
+                      (await Helper.getCurrencyPrice(this.httpService,'TRY'))) *
+                    (await Helper.getCurrencyPrice(this.httpService,'EUR'))
                   ).toFixed(2),
                 ),
               );
@@ -389,7 +390,12 @@ export class AssetService {
           timestamps = result.timestamp;
 
           rawPrices = result.indicators.quote[0].close;
-          prices = rawPrices.map((price: number) => Math.round(price));
+          prices = rawPrices.map((value, i) => {
+            if (asset.symbol === 'XU100' && value === null) {
+              return Math.round(i === 0 ? rawPrices[1] : rawPrices[i - 1]);
+            }
+            return Math.round(value);
+          });
         }
         let day = 0;
         labels = prices.map((ts: number) => {
@@ -444,23 +450,11 @@ export class AssetService {
     //return portfolioPie;
   }
 
-  async getCurrencyPrice(currency: string) {
-    try {
-      const response = await firstValueFrom(
-        this.httpService.get('https://open.exchangerate-api.com/v6/latest/USD'),
-      );
-
-      return response.data.rates[currency];
-    } catch (error) {
-      throw error;
-    }
-  }
-
   findAll() {
     return `This action returns all asset`;
   }
   async findOne(id: number) {
-    const asset = await this.prisma.asset.findUniqueOrThrow({ where: { id } });
+    const asset = await this.prisma.asset.findUniqueOrThrow({ where: { id } } );
 
     return asset;
   }
