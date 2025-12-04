@@ -31,6 +31,11 @@ export class PortfolioController {
     return this.portfolioService.findOne(+id);
   }
 
+  @Get(':id/line-overview-chart')
+  getValuesForLineOverviewChart(@Param('id') id: string) {
+    return this.portfolioService.calculatePortfolioValueForLightweightChart(+id);
+  }
+
   @Patch(':id')
   update(
     @Param('id') id: string,

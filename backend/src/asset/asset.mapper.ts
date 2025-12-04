@@ -9,20 +9,13 @@ export class AssetMapper {
       id: asset.id,
       symbol: asset.symbol,
       portfolioId: asset.portfolioId,
-      totalRawInvestmentByUSD: Number(
-        Number(asset.totalRawInvestmentByUSD).toFixed(2),
-      ),
-
-      totalRawInvestmentByEURO: Number(
-        Number(asset.totalRawInvestmentByEURO).toFixed(2),
-      ),
-      totalRawInvestmentByTRY: Number(
-        Number(asset.totalRawInvestmentByTRY).toFixed(2),
-      ),
-      totalQuantity: Number(Number(asset.totalQuantity).toFixed(2)),
-      averageCostByUSD: Number(Number(asset.averageCostByUSD).toFixed(2)),
-      averageCostByEURO: Number(Number(asset.averageCostByEURO).toFixed(2)),
-      averageCostByTRY: Number(Number(asset.averageCostByTRY).toFixed(2)),
+      totalRawInvestmentByUSD: asset.totalRawInvestmentByUSD,
+      totalRawInvestmentByEURO: asset.totalRawInvestmentByEURO,
+      totalRawInvestmentByTRY: asset.totalRawInvestmentByTRY,
+      totalQuantity: asset.totalQuantity,
+      averageCostByUSD: asset.averageCostByUSD,
+      averageCostByEURO: asset.averageCostByEURO,
+      averageCostByTRY: asset.averageCostByTRY,
       type: asset.type,
       imageUrl: asset.imageUrl,
       initialWeight: asset.initialWeight,

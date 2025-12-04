@@ -74,29 +74,29 @@ export default function PortfolioStats({ portfolioStats }: Props) {
               </div>
               <div className="text-danger fw-bold">LIVE</div>
             </div>
-            {/*  */}
+
             <div className="portfolio-current-price">
               <span>
                 {currency === "USD" ? "$" : currency === "EUR" ? "€" : "₺"}
+
+                <NumberFlow
+                  format={{
+                    notation: "standard",
+
+                    signDisplay: "never",
+                  }}
+                  spinTiming={{ duration: 1500, easing: "ease" }}
+                  value={
+                    currency === "USD"
+                      ? portfolioStats.currentInvestmentByUSD
+                      : currency === "EUR"
+                        ? portfolioStats.currentInvestmentByEURO
+                        : portfolioStats.currentInvestmentByTRY
+                  }
+                />
               </span>
-
-              <NumberFlow
-                format={{
-                  notation: "standard",
-
-                  signDisplay: "never",
-                }}
-                spinTiming={{ duration: 1500, easing: "ease" }}
-                value={
-                  currency === "USD"
-                    ? portfolioStats.currentInvestmentByUSD
-                    : currency === "EUR"
-                      ? portfolioStats.currentInvestmentByEURO
-                      : portfolioStats.currentInvestmentByTRY
-                }
-              />
             </div>
-            {/*  */}
+
             <div
               className="d-flex justify-content-center py-2 fw-bold"
               style={{ fontSize: ".8rem" }}
@@ -109,24 +109,23 @@ export default function PortfolioStats({ portfolioStats }: Props) {
                     : currency === "EUR"
                       ? portfolioStats.currentROIByEURO < 0 && " text-danger"
                       : portfolioStats.currentROIByTRY < 0 && " text-danger")
-                  // (asset.currentROI < 0 && " text-danger")
                 }
               >
-                {/* <NumberFlow
-                  format={{
-                    style: "decimal",
-
-                    signDisplay: "never",
-                  }}
-                  spinTiming={{ duration: 1500, easing: "ease" }}
-                  value={portfolioStats.currentROI}
-                /> */}
                 <span>
-                  {currency === "USD"
-                    ? portfolioStats.currentROIByUSD
-                    : currency === "EUR"
-                      ? portfolioStats.currentROIByEURO
-                      : portfolioStats.currentROIByTRY}
+                  <NumberFlow
+                    format={{
+                      notation: "standard",
+                      signDisplay: "never",
+                    }}
+                    animated={false}
+                    value={
+                      currency === "USD"
+                        ? portfolioStats.currentROIByUSD
+                        : currency === "EUR"
+                          ? portfolioStats.currentROIByEURO
+                          : portfolioStats.currentROIByTRY
+                    }
+                  />
                   %
                 </span>
               </div>
@@ -141,53 +140,52 @@ export default function PortfolioStats({ portfolioStats }: Props) {
                         " text-danger"
                       : portfolioStats.currentEarningByTRY < 0 &&
                         " text-danger")
-                  // (asset.currentEarning < 0 && " text-danger")
                 }
               >
                 <span>
                   {currency === "USD" ? "$" : currency === "EUR" ? "€" : "₺"}
+                  <NumberFlow
+                    format={{
+                      notation: "standard",
 
-                  {currency === "USD"
-                    ? portfolioStats.currentEarningByUSD
-                    : currency === "EUR"
-                      ? portfolioStats.currentEarningByEURO
-                      : portfolioStats.currentEarningByTRY}
+                      signDisplay: "never",
+                    }}
+                    animated={false}
+                    value={
+                      currency === "USD"
+                        ? portfolioStats.currentEarningByUSD
+                        : currency === "EUR"
+                          ? portfolioStats.currentEarningByEURO
+                          : portfolioStats.currentEarningByTRY
+                    }
+                  />
                 </span>
-                {/* <NumberFlow
-                  format={{
-                    notation: "standard",
-
-                    signDisplay: "never",
-                  }}
-                  spinTiming={{ duration: 1500, easing: "ease" }}
-                  value={portfolioStats.currentEarning}
-                /> */}
               </div>
             </div>
-            {/*  */}
+
             <div className="portfolio-raw-investment-header mt-3">
               TOTAL ORIGINAL CAPITAL
             </div>
             <div className="portfolio-raw-investment-value fw-bold">
               <span>
                 {currency === "USD" ? "$" : currency === "EUR" ? "€" : "₺"}
+
+                <NumberFlow
+                  format={{
+                    notation: "standard",
+
+                    signDisplay: "never",
+                  }}
+                  animated={false}
+                  value={
+                    currency === "USD"
+                      ? portfolioStats.totalRawInvestmentByUSD
+                      : currency === "EUR"
+                        ? portfolioStats.totalRawInvestmentByEURO
+                        : portfolioStats.totalRawInvestmentByTRY
+                  }
+                />
               </span>
-
-              <NumberFlow
-                format={{
-                  notation: "standard",
-
-                  signDisplay: "never",
-                }}
-                spinTiming={{ duration: 1500, easing: "ease" }}
-                value={
-                  currency === "USD"
-                    ? portfolioStats.totalRawInvestmentByUSD
-                    : currency === "EUR"
-                      ? portfolioStats.totalRawInvestmentByEURO
-                      : portfolioStats.totalRawInvestmentByTRY
-                }
-              />
             </div>
           </div>
         </div>
@@ -208,7 +206,18 @@ export default function PortfolioStats({ portfolioStats }: Props) {
                     : "text-danger"
                 }
               >
-                {portfolioStats?.currentROIByUSD}%
+                <span>
+                  <NumberFlow
+                    format={{
+                      notation: "standard",
+
+                      signDisplay: "never",
+                    }}
+                    animated={false}
+                    value={portfolioStats?.currentROIByUSD}
+                  />
+                  %
+                </span>
               </div>
             </div>
             <div className="col-4 m-0 p-0 d-flex flex-column justify-content-center align-items-center">
@@ -220,7 +229,17 @@ export default function PortfolioStats({ portfolioStats }: Props) {
                     : "text-danger"
                 }
               >
-                {portfolioStats?.currentROIByEURO}%
+                <span></span>
+                <NumberFlow
+                  format={{
+                    notation: "standard",
+
+                    signDisplay: "never",
+                  }}
+                  animated={false}
+                  value={portfolioStats?.currentROIByEURO}
+                />
+                %
               </div>
             </div>
             <div className="col-4 m-0 p-0 pe-5 d-flex flex-column align-items-center">
@@ -232,7 +251,18 @@ export default function PortfolioStats({ portfolioStats }: Props) {
                     : "text-danger"
                 }
               >
-                {portfolioStats?.currentROIByTRY}%
+                <span>
+                  <NumberFlow
+                    format={{
+                      notation: "standard",
+
+                      signDisplay: "never",
+                    }}
+                    animated={false}
+                    value={portfolioStats?.currentROIByTRY}
+                  />
+                  %
+                </span>
               </div>
             </div>
           </div>

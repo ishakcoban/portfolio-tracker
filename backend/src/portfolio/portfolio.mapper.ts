@@ -1,20 +1,27 @@
-import { Asset, Portfolio } from 'generated/prisma';
+import { Prisma } from 'generated/prisma';
 import { PortfolioDto } from './dto/portfolio-dto';
-import { AssetMapper } from 'src/asset/asset.mapper';
 import { Injectable } from '@nestjs/common';
+import { AssetMapper } from 'src/asset/asset.mapper';
 
 @Injectable()
 export class PortfolioMapper {
-  constructor(private readonly assetMapper: AssetMapper) {}
-
-  toDto(portfolio: Portfolio, assets: Asset[]): PortfolioDto {
+  constructor(private assetMapper: AssetMapper) {}
+  toDto(
+    portfolio: Prisma.PortfolioGetPayload<{
+      include: {
+        assets: {
+          include: { transactions: true };
+        };
+      };
+    }>,
+  ): PortfolioDto {
     return {
       id: portfolio.id,
       name: portfolio.name,
       totalRawInvestmentByUSD: portfolio.totalRawInvestmentByUSD,
       totalRawInvestmentByEURO: portfolio.totalRawInvestmentByEURO,
       totalRawInvestmentByTRY: portfolio.totalRawInvestmentByTRY,
-      assets: this.assetMapper.toDtoList(assets),
+      assets: this.assetMapper.toDtoList(portfolio.assets),
     };
   }
 

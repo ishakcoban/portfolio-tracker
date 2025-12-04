@@ -15,6 +15,7 @@ import {
 } from 'class-validator';
 import { AssetType } from 'generated/prisma/client';
 
+
 export class AssetDto {
   @IsNumber()
   id: number;

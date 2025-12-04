@@ -75,6 +75,9 @@ export class TransactionService {
   async findAllByAssetId(id: number) {
     const transactions = await this.prisma.transaction.findMany({
       where: { assetId: id },
+      orderBy: {
+        date: 'asc',
+      },
     });
 
     return transactions;
