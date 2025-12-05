@@ -1,4 +1,3 @@
-import React, { useState } from "react";
 import "./PortfolioStats.scss";
 import CircularChart from "../Charts/PieChart/CircularChart";
 import NumberFlow from "@number-flow/react";
@@ -15,6 +14,9 @@ import {
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useStore } from "../../store";
+import FearGreedIndex from "../FearAndGreedIndex/FearGreedIndex";
+import { useEffect, useState } from "react";
+import httpService from "../../services/httpService";
 type PortfolioStats = {
   id: number;
   name: string;
@@ -36,19 +38,45 @@ type PortfolioStats = {
   }[];
 };
 
-type CurrencyPair = {
-  id: number;
-  currentRoiByUSD: number;
-  currentRoiByEURO: number;
-  currentRoiByTRY: number;
-};
-
 type Props = {
   portfolioStats: PortfolioStats | null;
 };
+
+type FearAndGreedIndex = {
+  vix: {
+    type: string;
+    value: number;
+  };
+  crypto: {
+    type: string;
+    value: number;
+  };
+};
 export default function PortfolioStats({ portfolioStats }: Props) {
-  const [currencyPairData, setCurrencyPairData] = useState<CurrencyPair>();
   const { currency } = useStore();
+  const [fearAndGreedIndexData, setFearAndGreedIndexData] =
+    useState<FearAndGreedIndex>();
+
+  const fetchData = async () => {
+    try {
+      const response = await httpService.get(
+        "/portfolios/fear-and-greed-index"
+      );
+
+      if (response.status === 200) {
+        setFearAndGreedIndexData(response.data);
+      }
+    } catch (error: any) {
+      if (error.status === 400) {
+        console.log(error.response.data);
+      }
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+    //fetchVixData();
+  }, []);
   return (
     <div className="portfolio-stats-wrapper py-3">
       {portfolioStats !== null &&
@@ -195,8 +223,8 @@ export default function PortfolioStats({ portfolioStats }: Props) {
         </div>
       )}
       {portfolioStats ? (
-        <div className="currency-pairs-wrapper mx-4 border-top mt-2">
-          <div className="row m-0 p-0 py-3">
+        <div className="currency-pairs-wrapper mx-4 border-top border-bottom mt-2">
+          <div className="row m-0 p-0 py-1">
             <div className="col-4 m-0 p-0 ps-5 d-flex flex-column align-items-center">
               USD
               <div
@@ -271,6 +299,19 @@ export default function PortfolioStats({ portfolioStats }: Props) {
         <div className="d-flex justify-content-center align-items-center">
           <LoadingSpinner />
         </div>
+      )}
+
+      {fearAndGreedIndexData && fearAndGreedIndexData?.crypto != undefined ? (
+        <div className="row m-0 p-0 mt-3">
+          <div className="col-6 m-0 p-0 d-flex justify-content-end align-items-center pe-3 ps-5">
+            <FearGreedIndex data={fearAndGreedIndexData.vix} />
+          </div>
+          <div className="col-6 m-0 p-0 d-flex justify-content-start align-items-center ps-3 pe-5">
+            <FearGreedIndex data={fearAndGreedIndexData.crypto} />
+          </div>
+        </div>
+      ) : (
+        <LoadingSpinner />
       )}
     </div>
   );

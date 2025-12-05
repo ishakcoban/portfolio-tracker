@@ -244,7 +244,7 @@ export class PortfolioService {
     data.low = 100000 * (1 + roiByLowPrice);
     data.close = 100000 * (1 + roiByClosePrice);
     indexInfo.push(data);
-    console.log(indexInfo);
+    //console.log(indexInfo);
     //console.log('totalOriginalCapital: ' + totalOriginalCapital);
     //console.log('totalCurrentInvestment: ' + totalCurrentInvestment);
     //console.log('index value: ' + indexValue);
@@ -300,5 +300,53 @@ export class PortfolioService {
     await this.prisma.portfolio.delete({
       where: { id },
     });
+  }
+
+  async getFearAndGreedIndex() {
+    let data: {
+      vix: {
+        type: string;
+        value: number;
+      };
+      crypto: {
+        type: string;
+        value: number;
+      };
+    } = {
+      vix: {
+        type: 'VIX',
+        value: 0,
+      },
+      crypto: {
+        type: 'CRYPTO',
+        value: 0,
+      },
+    };
+
+    // for vix
+    try {
+      const response = await firstValueFrom(
+        this.httpService.get(
+          'https://query1.finance.yahoo.com/v8/finance/chart/^VIX?interval=1d&range=1d',
+        ),
+      );
+
+      if (response.status == 200) {
+        data.vix.value = +response.data.chart.result[0].meta.regularMarketPrice;
+      }
+    } catch (error) {}
+
+    // for crypto
+    try {
+      const response = await firstValueFrom(
+        this.httpService.get('https://api.alternative.me/fng/?limit=1'),
+      );
+
+      if (response.status == 200) {
+        data.crypto.value = +response.data.data[0].value;
+      }
+    } catch (error) {}
+
+    return data;
   }
 }
