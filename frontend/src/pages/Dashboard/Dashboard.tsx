@@ -270,6 +270,8 @@ export default function Dashboard() {
                   <div className="year-text-header fw-bold">2026</div>
                   <div className="year-text-roi mt-1 text-light"></div>
                 </div>
+           
+              
               </div>
             </div>
           </div>
@@ -283,7 +285,7 @@ export default function Dashboard() {
           )}
       </div>
 
-      
+   
     </div>
   );
 }

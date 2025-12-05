@@ -25,6 +25,10 @@ export class PortfolioController {
   findAll() {
     return this.portfolioService.findAll();
   }
+  @Get('fear-and-greed-index')
+  getFearAndGreedIndex() {
+    return this.portfolioService.getFearAndGreedIndex();
+  }
 
   @Get(':id')
   findOne(@Param('id') id: string) {
@@ -33,8 +37,11 @@ export class PortfolioController {
 
   @Get(':id/line-overview-chart')
   getValuesForLineOverviewChart(@Param('id') id: string) {
-    return this.portfolioService.calculatePortfolioValueForLightweightChart(+id);
+    return this.portfolioService.calculatePortfolioValueForLightweightChart(
+      +id,
+    );
   }
+
 
   @Patch(':id')
   update(
