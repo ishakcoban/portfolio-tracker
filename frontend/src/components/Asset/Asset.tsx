@@ -55,6 +55,7 @@ type Transaction = {
   date: Date;
   eurusd: number;
   investment: number;
+  quantity: number;
   price: number;
   type: string;
   usdtry: number;
@@ -135,6 +136,7 @@ export default function Asset({ asset }: Props) {
                   <th>Date</th>
                   <th>Type</th>
                   <th>Investment</th>
+                  <th>Quantity</th>
                   <th>Price</th>
                   <th>EURUSD</th>
                   <th>USDTRY</th>
@@ -150,6 +152,9 @@ export default function Asset({ asset }: Props) {
                     <td className="text-success fw-bold">{transaction.type}</td>
                     <td className="text-light">
                       ${transaction.investment.toFixed(2)}
+                    </td>
+                     <td className="text-light">
+                      {transaction.quantity.toFixed(3)}
                     </td>
                     <td className="text-light">
                       ${transaction.price.toFixed(2)}
@@ -432,7 +437,7 @@ export default function Asset({ asset }: Props) {
 
                 <div className="position-absolute top-0 w-100 text-end">
                   <div className="d-flex align-items-center justify-content-between px-3">
-                    <div className="text-light">Last 365 Days</div>
+                    <div className="text-light">Last 90 Days</div>
                     <div className="asset-chart-button d-flex justify-content-center align-items-center">
                       <HugeiconsIcon
                         role="button"

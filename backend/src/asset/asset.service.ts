@@ -6,8 +6,7 @@ import {
 import { UpdateAssetDto } from './dto/update-asset.dto';
 import { PrismaService } from '../prisma.service';
 import { CreateAssetDto } from './dto/create-asset.dto';
-import { PortfolioService } from 'src/portfolio/portfolio.service';
-import { RequestCurrentAssetPriceDto } from './request/current-asset-price-request';
+import { CurrentAssetPriceRequest } from './request/current-asset-price-request';
 import { firstValueFrom } from 'rxjs';
 import { HttpService } from '@nestjs/axios';
 import { AssetType } from 'generated/prisma';
@@ -17,18 +16,17 @@ import { Helper } from 'src/utils/helpers';
 export class AssetService {
   constructor(
     private prisma: PrismaService,
-    private portfolioService: PortfolioService,
+    //private portfolioService: PortfolioService,
     private readonly httpService: HttpService,
-    private currentMarketPriceResponse: CurrentMarketPriceResponse,
   ) {}
   async create(createAssetDto: CreateAssetDto) {
-    const portfolio = await this.portfolioService.findOne(
-      createAssetDto.portfolioId,
-    );
+    const portfolio = await this.prisma.portfolio.findFirstOrThrow({
+      where: { id: createAssetDto.portfolioId },
+    });
     const asset = await this.prisma.asset.findUnique({
       where: { symbol: createAssetDto.symbol },
     });
-
+    console.log(asset);
     if (!portfolio) {
       throw new NotFoundException(`Portfolio is not found!`);
     }
@@ -48,7 +46,7 @@ export class AssetService {
   }
 
   async getCurrentMarketPrice(
-    requestCurrentAssetPrice: RequestCurrentAssetPriceDto[],
+    requestCurrentAssetPrice: CurrentAssetPriceRequest[],
   ) {
     try {
       let totalRawInvestmentByUSD = 0;
@@ -122,14 +120,14 @@ export class AssetService {
               priceResponse.currentPriceByEURO = Number(
                 Number(
                   response.data.chart.result[0].meta.regularMarketPrice *
-                    (await Helper.getCurrencyPrice(this.httpService,'EUR')),
+                    (await Helper.getCurrencyPrice(this.httpService, 'EUR')),
                 ).toFixed(2),
               );
               asset.currentAssetPriceByEURO = priceResponse.currentPriceByEURO;
               priceResponse.currentPriceByTRY = Number(
                 Number(
                   response.data.chart.result[0].meta.regularMarketPrice *
-                    (await Helper.getCurrencyPrice(this.httpService,'TRY')),
+                    (await Helper.getCurrencyPrice(this.httpService, 'TRY')),
                 ).toFixed(2),
               );
               asset.currentAssetPriceByTRY = priceResponse.currentPriceByTRY;
@@ -141,14 +139,16 @@ export class AssetService {
               asset.currentAssetPriceByUSD = priceResponse.currentPriceByUSD;
               priceResponse.currentPriceByEURO = Number(
                 Number(
-                  response.data.price * (await Helper.getCurrencyPrice(this.httpService,'EUR')),
+                  response.data.price *
+                    (await Helper.getCurrencyPrice(this.httpService, 'EUR')),
                 ).toFixed(2),
               );
               asset.currentAssetPriceByEURO = priceResponse.currentPriceByEURO;
 
               priceResponse.currentPriceByTRY = Number(
                 Number(
-                  response.data.price * (await Helper.getCurrencyPrice(this.httpService,'TRY')),
+                  response.data.price *
+                    (await Helper.getCurrencyPrice(this.httpService, 'TRY')),
                 ).toFixed(2),
               );
               asset.currentAssetPriceByTRY = priceResponse.currentPriceByTRY;
@@ -157,7 +157,7 @@ export class AssetService {
               priceResponse.currentPriceByUSD = Number(
                 Number(
                   response.data.chart.result[0].meta.regularMarketPrice /
-                    (await Helper.getCurrencyPrice(this.httpService,'TRY')),
+                    (await Helper.getCurrencyPrice(this.httpService, 'TRY')),
                 ).toFixed(2),
               );
               asset.currentAssetPriceByUSD = priceResponse.currentPriceByUSD;
@@ -166,8 +166,11 @@ export class AssetService {
                 Number(
                   (
                     (response.data.chart.result[0].meta.regularMarketPrice /
-                      (await Helper.getCurrencyPrice(this.httpService,'TRY'))) *
-                    (await Helper.getCurrencyPrice(this.httpService,'EUR'))
+                      (await Helper.getCurrencyPrice(
+                        this.httpService,
+                        'TRY',
+                      ))) *
+                    (await Helper.getCurrencyPrice(this.httpService, 'EUR'))
                   ).toFixed(2),
                 ),
               );
@@ -366,9 +369,9 @@ export class AssetService {
           asset.type === AssetType.ETF || asset.type === AssetType.INDEX
             ? `https://query1.finance.yahoo.com/v8/finance/chart/${
                 asset.symbol === 'XU100' ? 'XU100.IS' : asset.symbol
-              }?interval=1d&range=360d`
+              }?interval=1d&range=90d`
             : asset.type === AssetType.CRYPTO
-              ? `https://api.binance.com/api/v3/klines?symbol=${asset.symbol}USDT&interval=1d&limit=360`
+              ? `https://api.binance.com/api/v3/klines?symbol=${asset.symbol}USDT&interval=1d&limit=90`
               : '',
         ),
       );
@@ -454,7 +457,16 @@ export class AssetService {
     return `This action returns all asset`;
   }
   async findOne(id: number) {
-    const asset = await this.prisma.asset.findUniqueOrThrow({ where: { id } } );
+    const asset = await this.prisma.asset.findUniqueOrThrow({ where: { id } });
+
+    return asset;
+  }
+
+  async findOneWithTransactions(id: number) {
+    const asset = await this.prisma.asset.findUniqueOrThrow({
+      where: { id },
+      include: { transactions: true },
+    });
 
     return asset;
   }

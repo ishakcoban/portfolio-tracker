@@ -6,6 +6,8 @@ import { PortfolioMapper } from './portfolio.mapper';
 import { HttpModule } from '@nestjs/axios';
 import { TransactionService } from 'src/transaction/transaction.service';
 import { AssetMapper } from 'src/asset/asset.mapper';
+import { AssetService } from 'src/asset/asset.service';
+import { TransactionMapper } from 'src/transaction/transaction.mapper';
 
 @Module({
   controllers: [PortfolioController],
@@ -14,8 +16,10 @@ import { AssetMapper } from 'src/asset/asset.mapper';
     PortfolioService,
     PrismaService,
     PortfolioMapper,
+    AssetMapper,
+    AssetService,
     TransactionService,
-    AssetMapper
+    TransactionMapper
   ],
 })
 export class PortfolioModule {}

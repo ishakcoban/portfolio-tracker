@@ -1,5 +1,7 @@
+import { Injectable } from '@nestjs/common';
 import { AssetType } from 'generated/prisma';
 
+@Injectable()
 export class CurrentMarketPriceResponse {
   symbol: string;
   type: AssetType;

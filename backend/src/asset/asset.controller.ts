@@ -10,7 +10,7 @@ import {
 import { AssetService } from './asset.service';
 import { CreateAssetDto } from './dto/create-asset.dto';
 import { UpdateAssetDto } from './dto/update-asset.dto';
-import { RequestCurrentAssetPriceDto } from './request/current-asset-price-request';
+import { CurrentAssetPriceRequest } from './request/current-asset-price-request';
 import { TransactionService } from 'src/transaction/transaction.service';
 
 @Controller('assets')
@@ -31,7 +31,7 @@ export class AssetController {
 
   @Post('/current-market-price')
   getCurrentMarketPrice(
-    @Body() requestCurrentAssetPriceDto: RequestCurrentAssetPriceDto[],
+    @Body() requestCurrentAssetPriceDto: CurrentAssetPriceRequest[],
   ) {
     return this.assetService.getCurrentMarketPrice(requestCurrentAssetPriceDto);
   }

@@ -23,6 +23,7 @@ export default function CreateTransactionFom({ closePopup, onSuccess }: Props) {
   const [typeText, setTypeText] = useState<string>("");
   const [imageUrlText, setImageUrlText] = useState<string>("");
   const [investmentAmount, setInvestmentAmount] = useState<number>(0);
+  const [saleAmount, setSaleAmount] = useState<number>(0);
   const [price, setPrice] = useState<number>(0);
   const [date, setDate] = useState<string>("");
   const [portfolios, setPortfolios] = useState<Portfolio[]>([]);
@@ -57,35 +58,59 @@ export default function CreateTransactionFom({ closePopup, onSuccess }: Props) {
   }, []);
 
   const submitHandler = async () => {
-    const data = {
-      assetId: +selectedAsset,
-      type: transactionType,
-      investment: +investmentAmount,
-      price: +price,
-      usdtry:USDTRY,
-      eurusd:EURUSD,
-      date: date,
-    };
+    let data = {};
+    switch (transactionType) {
+      case "BUY":
+        data = {
+          assetId: +selectedAsset,
+          type: transactionType,
+          investment: +investmentAmount,
+          price: +price,
+          usdtry: USDTRY,
+          eurusd: EURUSD,
+          date: date,
+        };
+        break;
+
+      case "SELL":
+        data = {
+          assetId: +selectedAsset,
+          type: transactionType,
+          quantity: +(saleAmount / price),
+          salePrice: +price,
+          date: date,
+        };
+        break;
+    }
 
     console.log(data);
     setMessage("");
     setIsLoading(true);
     setTimeout(async () => {
       try {
-        const response = await httpService.post("/transactions", data);
+        const response =
+          transactionType == "BUY"
+            ? await httpService.post("/transactions", data)
+            : await httpService.post("/transactions/sale", data);
         if (response.status === 201) {
           setSelectedPortfolio("");
           setSelectedAsset("");
           setPrice(0);
-          setInvestmentAmount(0);
           setDate("");
           setStatusCode(response.status);
           onSuccess("transaction created!");
-          closePopup();
+          
+          if (transactionType == "BUY") {
+            setInvestmentAmount(0);
+          } else {
+            setSaleAmount(0);
+          }
+
+        //  closePopup();
         }
       } catch (error: any) {
         if (error.status === 400) {
-          console.log(error.response.data)
+          console.log(error.response.data);
           setMessage("Invalid input!");
           setStatusCode(error.status);
         }
@@ -187,40 +212,61 @@ export default function CreateTransactionFom({ closePopup, onSuccess }: Props) {
                 ></input>
               </CustomInput>
 
-              <CustomInput header="USDTRY">
-                <input
-                  type="number"
-                  className="input-style"
-                  value={USDTRY}
-                  name="usdtry"
-                  onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
-                    setUSDTRY(+event.target.value)
-                  }
-                ></input>
-              </CustomInput>
+              {transactionType == "BUY" && (
+                <>
+                  <CustomInput header="USDTRY">
+                    <input
+                      type="number"
+                      className="input-style"
+                      value={USDTRY}
+                      name="usdtry"
+                      onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+                        setUSDTRY(+event.target.value)
+                      }
+                    ></input>
+                  </CustomInput>
 
-              <CustomInput header="EURUSD">
-                <input
-                  type="number"
-                  className="input-style"
-                  value={EURUSD}
-                  name="price"
-                  onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
-                    setEURUSD(+event.target.value)
-                  }
-                ></input>
-              </CustomInput>
-              <CustomInput header="Investment Amount">
-                <input
-                  type="number"
-                  className="input-style"
-                  value={investmentAmount}
-                  name="investmentAmount"
-                  onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
-                    setInvestmentAmount(+event.target.value)
-                  }
-                ></input>
-              </CustomInput>
+                  <CustomInput header="EURUSD">
+                    <input
+                      type="number"
+                      className="input-style"
+                      value={EURUSD}
+                      name="price"
+                      onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+                        setEURUSD(+event.target.value)
+                      }
+                    ></input>
+                  </CustomInput>
+                </>
+              )}
+              {transactionType == "BUY" && (
+                <CustomInput header="Investment Amount">
+                  <input
+                    type="number"
+                    className="input-style"
+                    value={investmentAmount}
+                    name="investmentAmount"
+                    onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+                      setInvestmentAmount(+event.target.value)
+                    }
+                  ></input>
+                </CustomInput>
+              )}
+
+              {transactionType == "SELL" && (
+                <CustomInput header="Sale Amount">
+                  <input
+                    type="number"
+                    className="input-style"
+                    value={saleAmount
+                    }
+                    name="saleAmount"
+                    onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+                      setSaleAmount(+event.target.value)
+                    }
+                  ></input>
+                </CustomInput>
+              )}
 
               <CustomInput header="Transaction Date">
                 <input

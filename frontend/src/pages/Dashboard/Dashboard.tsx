@@ -65,9 +65,10 @@ export default function Dashboard() {
   const assetDataRef = useRef<Asset[] | null>(null);
   const portfolioStatsDataRef = useRef<PortfolioStats | null>(null);
   const { currency } = useStore();
+  const { pID } = useStore();
   const fetchData = async () => {
     try {
-      const response = await httpService.get(`/portfolios/6`);
+      const response = await httpService.get(`/portfolios/${pID}`);
       if (response.status === 200) {
         const { assets, ...portfolioStats } = response.data;
 
@@ -190,14 +191,14 @@ export default function Dashboard() {
   };
 
   useEffect(() => {
-    fetchData();
+    pID != -1 && fetchData();
 
     intervalRef.current = setInterval(() => {
       fetchAssetLiveData();
     }, 2000);
 
     return () => clearInterval(intervalRef.current!);
-  }, []);
+  }, [pID]);
   useEffect(() => {
     const updateHeight = () => {
       const navbar = document.querySelector(".navbar-wrapper"); // Use your actual navbar class/id
@@ -222,7 +223,7 @@ export default function Dashboard() {
           <div className="col-6 m-0 p-0 ps-3 pt-3">
             {/* <LineOverviewChart /> */}
             {/* <LOC/> */}
-            <TradingviewChart/>
+            <TradingviewChart />
           </div>
           <div className="col-6 m-0 p-0 px-3 pt-3">
             {assetData && <AssetBarChart assets={assetData} />}
@@ -270,8 +271,6 @@ export default function Dashboard() {
                   <div className="year-text-header fw-bold">2026</div>
                   <div className="year-text-roi mt-1 text-light"></div>
                 </div>
-           
-              
               </div>
             </div>
           </div>
@@ -284,8 +283,6 @@ export default function Dashboard() {
             <PortfolioStats portfolioStats={portfolioStatsData} />
           )}
       </div>
-
-   
     </div>
   );
 }

@@ -1,3 +1,4 @@
+import { Injectable } from '@nestjs/common';
 import { IsDate, isDate, IsDateString, IsEnum, IsInt, IsNotEmpty, IsNumber, Min, NotEquals } from 'class-validator';
 
 export enum TransactionType {
@@ -5,7 +6,7 @@ export enum TransactionType {
   SELL = 'SELL'
 }
 
-export class CreateTransactionDto {
+export class CreateTransactionRequest {
   @IsInt()
   assetId: number;
   @IsEnum(TransactionType, { message: 'Type must be a valid TransactionType' })
