@@ -59,8 +59,11 @@ export default function Navbar() {
           Create Transaction
         </button>
         <div className="me-4 d-flex justify-content-center align-items-center">
-         
-          <DropdownButton></DropdownButton>
+          <DropdownButton currencyUsage={false}></DropdownButton>
+        </div>
+
+        <div className="me-4 d-flex justify-content-center align-items-center">
+          <DropdownButton currencyUsage={true}></DropdownButton>
         </div>
 
         {popupType && (

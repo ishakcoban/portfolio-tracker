@@ -1,25 +1,46 @@
 import React, { useState, useRef, useEffect } from "react";
 import "./DropdownButton.scss";
 import { useStore } from "../../store";
+import httpService from "../../services/httpService";
 interface Currency {
   code: string;
   symbol: string;
 }
 
+interface Portfolio {
+  id: number;
+  name: string;
+}
 const currencies: Currency[] = [
   { code: "USD", symbol: "$" },
   { code: "EUR", symbol: "€" },
   { code: "TRY", symbol: "₺" },
 ];
 
-export default function DropdownButton() {
+type Props = {
+  currencyUsage: boolean;
+};
+export default function DropdownButton({ currencyUsage }: Props) {
   const [selectedCurrency, setSelectedCurrency] = useState<Currency>(
     currencies[0]
   );
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const { currency, setCurrency } = useStore();
+  const [portfolios, setPortfolios] = useState<Portfolio[]>([]);
+  const { currency, setPortfolioId, setCurrency } = useStore();
+
+  const fetchData = async () => {
+    try {
+      const response = await httpService.get("/portfolios");
+
+      console.log(response.data);
+      if (response.status == 200) {
+        setPortfolios(response.data);
+      }
+    } catch (error) {}
+  };
   useEffect(() => {
+    !currencyUsage && fetchData();
     const handleClickOutside = (event: MouseEvent) => {
       if (
         dropdownRef.current &&
@@ -41,6 +62,12 @@ export default function DropdownButton() {
     setIsOpen(false);
   };
 
+  const handlePortfolio = (id: number) => {
+    //setSelectedCurrency(currency);
+    setPortfolioId(id);
+    setIsOpen(false);
+  };
+
   return (
     <>
       <div className="d-flex align-items-center justify-content-center">
@@ -52,7 +79,7 @@ export default function DropdownButton() {
             <div className="d-flex align-items-center gap-3">
               <div className="currency-code-wrapper pe-2">
                 <div className="fw-semibold text-dark">
-                  {selectedCurrency.code}
+                  {portfolios.length > 0 ? "Portfolio" : selectedCurrency.code}
                 </div>
               </div>
             </div>
@@ -73,22 +100,40 @@ export default function DropdownButton() {
 
           {isOpen && (
             <div className="dropdown-menu-custom bg-white rounded shadow-lg">
-              {currencies.map((currency) => (
-                <button
-                  key={currency.code}
-                  onClick={() => handleSelect(currency)}
-                  className={`currency-item d-flex align-items-center gap-3 ${
-                    selectedCurrency.code === currency.code ? "active" : ""
-                  }`}
-                >
-                  <div className="flex-grow-1 py-1 px-1">
-                    <div className="fw-semibold text-dark">{currency.code}</div>
-                  </div>
-                  <span className="text-muted fw-medium">
-                    {currency.symbol}
-                  </span>
-                </button>
-              ))}
+              {portfolios.length > 0
+                ? portfolios.map((portfolio) => (
+                    <button
+                      key={portfolio.id}
+                      onClick={() => handlePortfolio(portfolio.id)}
+                      className={`currency-item d-flex align-items-center gap-3 ${
+                        portfolio.id === portfolio.id ? "active" : ""
+                      }`}
+                    >
+                      <div className="flex-grow-1 py-1 px-1">
+                        <div className="fw-semibold text-dark">
+                          {portfolio.name}
+                        </div>
+                      </div>
+                    </button>
+                  ))
+                : currencies.map((currency) => (
+                    <button
+                      key={currency.code}
+                      onClick={() => handleSelect(currency)}
+                      className={`currency-item d-flex align-items-center gap-3 ${
+                        selectedCurrency.code === currency.code ? "active" : ""
+                      }`}
+                    >
+                      <div className="flex-grow-1 py-1 px-1">
+                        <div className="fw-semibold text-dark">
+                          {currency.code}
+                        </div>
+                      </div>
+                      <span className="text-muted fw-medium">
+                        {currency.symbol}
+                      </span>
+                    </button>
+                  ))}
             </div>
           )}
         </div>

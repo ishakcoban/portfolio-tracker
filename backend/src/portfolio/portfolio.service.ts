@@ -9,10 +9,8 @@ import { PrismaService } from '../prisma.service';
 import { Asset, AssetType, Portfolio, Prisma } from 'generated/prisma';
 import { PortfoliosDto } from './dto/find-all-portfolio.dto';
 import { PortfolioMapper } from './portfolio.mapper';
-import { RequestCurrentAssetPriceDto } from 'src/asset/request/current-asset-price-request';
 import { firstValueFrom } from 'rxjs';
 import { HttpService } from '@nestjs/axios';
-import { TransactionService } from 'src/transaction/transaction.service';
 import { Helper } from 'src/utils/helpers';
 
 @Injectable()
@@ -20,8 +18,7 @@ export class PortfolioService {
   constructor(
     private prisma: PrismaService,
     private portfolioMapper: PortfolioMapper,
-    private readonly httpService: HttpService,
-    private transactionService: TransactionService,
+    private readonly httpService: HttpService
   ) {}
   async create(createPortfolioDto: CreatePortfolioDto) {
     const portfolio = await this.prisma.portfolio.findUnique({
@@ -51,7 +48,8 @@ export class PortfolioService {
       select: {
         id: true,
         name: true,
-      },
+        assets:true
+      }
     });
     return portfolios;
   }

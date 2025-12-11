@@ -43,15 +43,16 @@ model Asset {
 }
 
 model Transaction {
-  id            Int             @id @default(autoincrement())
-  type          TransactionType
-  price         Float
-  usdtry        Float
-  eurusd        Float
-  investment    Float
-  date          DateTime
-  asset         Asset?          @relation(fields: [assetId], references: [id])
-  assetId       Int?
+  id         Int             @id @default(autoincrement())
+  type       TransactionType
+  price      Float
+  quantity   Float
+  usdtry     Float
+  eurusd     Float
+  investment Float
+  date       DateTime
+  asset      Asset?          @relation(fields: [assetId], references: [id])
+  assetId    Int?
 }
 
 enum AssetStatus {
