@@ -408,7 +408,7 @@ export default function Asset({ asset }: Props) {
             <div className="col-4 m-0 p-0">
               <div className="asset-header">Average Cost</div>
               <div className="asset-value d-flex">
-                <span>
+                <span className="">
                   {currency === "USD" ? "$" : currency === "EUR" ? "€" : "₺"}
                   <NumberFlow
                     format={{

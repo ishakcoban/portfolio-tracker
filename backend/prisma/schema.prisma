@@ -15,12 +15,24 @@ generator client {
 }
 
 model Portfolio {
-  id                       Int     @id @default(autoincrement())
-  name                     String  @unique
-  totalRawInvestmentByUSD  Float   @default(0)
-  totalRawInvestmentByEURO Float   @default(0)
-  totalRawInvestmentByTRY  Float   @default(0)
+  id                       Int                    @id @default(autoincrement())
+  name                     String                 @unique
+  totalRawInvestmentByUSD  Float                  @default(0)
+  totalRawInvestmentByEURO Float                  @default(0)
+  totalRawInvestmentByTRY  Float                  @default(0)
   assets                   Asset[]
+  dailyChanges             PortfolioDailyChange[]
+}
+
+model PortfolioDailyChange {
+  id          Int       @id @default(autoincrement())
+  open        Float
+  high        Float
+  low         Float
+  close       Float
+  time        String
+  portfolio   Portfolio @relation(fields: [portfolioId], references: [id])
+  portfolioId Int
 }
 
 model Asset {

@@ -49,6 +49,8 @@ export class AssetService {
     requestCurrentAssetPrice: CurrentAssetPriceRequest[],
   ) {
     try {
+      const date = new Date(Date.now()).toISOString().split('T')[0];
+      
       let totalRawInvestmentByUSD = 0;
       let totalRawInvestmentByEURO = 0;
       let totalRawInvestmentByTRY = 0;
@@ -120,14 +122,14 @@ export class AssetService {
               priceResponse.currentPriceByEURO = Number(
                 Number(
                   response.data.chart.result[0].meta.regularMarketPrice *
-                    (await Helper.getCurrencyPrice(this.httpService, 'EUR')),
+                    (await Helper.getExchangeRatesByDate(this.httpService, 'EUR',date)),
                 ).toFixed(2),
               );
               asset.currentAssetPriceByEURO = priceResponse.currentPriceByEURO;
               priceResponse.currentPriceByTRY = Number(
                 Number(
                   response.data.chart.result[0].meta.regularMarketPrice *
-                    (await Helper.getCurrencyPrice(this.httpService, 'TRY')),
+                    (await Helper.getExchangeRatesByDate(this.httpService, 'TRY',date)),
                 ).toFixed(2),
               );
               asset.currentAssetPriceByTRY = priceResponse.currentPriceByTRY;
@@ -140,7 +142,7 @@ export class AssetService {
               priceResponse.currentPriceByEURO = Number(
                 Number(
                   response.data.price *
-                    (await Helper.getCurrencyPrice(this.httpService, 'EUR')),
+                    (await Helper.getExchangeRatesByDate(this.httpService, 'EUR',date)),
                 ).toFixed(2),
               );
               asset.currentAssetPriceByEURO = priceResponse.currentPriceByEURO;
@@ -148,7 +150,7 @@ export class AssetService {
               priceResponse.currentPriceByTRY = Number(
                 Number(
                   response.data.price *
-                    (await Helper.getCurrencyPrice(this.httpService, 'TRY')),
+                    (await Helper.getExchangeRatesByDate(this.httpService, 'TRY',date)),
                 ).toFixed(2),
               );
               asset.currentAssetPriceByTRY = priceResponse.currentPriceByTRY;
@@ -157,7 +159,7 @@ export class AssetService {
               priceResponse.currentPriceByUSD = Number(
                 Number(
                   response.data.chart.result[0].meta.regularMarketPrice /
-                    (await Helper.getCurrencyPrice(this.httpService, 'TRY')),
+                    (await Helper.getExchangeRatesByDate(this.httpService, 'TRY',date)),
                 ).toFixed(2),
               );
               asset.currentAssetPriceByUSD = priceResponse.currentPriceByUSD;
@@ -166,11 +168,12 @@ export class AssetService {
                 Number(
                   (
                     (response.data.chart.result[0].meta.regularMarketPrice /
-                      (await Helper.getCurrencyPrice(
+                      (await Helper.getExchangeRatesByDate(
                         this.httpService,
                         'TRY',
+                        date
                       ))) *
-                    (await Helper.getCurrencyPrice(this.httpService, 'EUR'))
+                    (await Helper.getExchangeRatesByDate(this.httpService, 'EUR',date))
                   ).toFixed(2),
                 ),
               );

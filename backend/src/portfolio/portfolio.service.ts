@@ -81,6 +81,8 @@ export class PortfolioService {
     }
   }
   async calculatePortfolioValueForLightweightChart(id: number) {
+
+    //await Helper.getExchangeRatesByDate(this.httpService,"TRY","2025-12-15");
     const portfolio = await this.findOne(id);
 
     const totalOriginalCapital = portfolio.totalRawInvestmentByUSD;
@@ -106,7 +108,7 @@ export class PortfolioService {
     };
 
     for (const asset of portfolio.assets) {
-      const url = Helper.findURLForChartByAssetType(asset.type, asset.symbol);
+      const url ="Helper.findURLForChartByAssetType(asset.type, asset.symbol)";
       try {
         const response = await firstValueFrom(this.httpService.get(url));
 
@@ -152,29 +154,12 @@ export class PortfolioService {
               data.time = new Date(candle[0]).toISOString().split('T')[0];
             });
 
-            // response.data.map((candle: string[]) => {
-            //   let open = parseFloat(candle[1]);
-            //   let high = parseFloat(candle[2]);
-            //   let low = parseFloat(candle[3]);
-            //   let close = parseFloat(candle[4]);
-            //   //console.log(close)
-            //   let roi =
-            //     (close - asset.averageCostByUSD) / asset.averageCostByUSD;
-            //   let currentAssetInvestmentByClosePrice =
-            //     asset.totalRawInvestmentByUSD * (1 + roi);
-            //
-            //   // console.log(currentAssetInvestmentByClosePrice)
-            //   //let date = new Date(candle[0]).toISOString().split('T')[0];
-            //
-            //   // console.log(totalCurrentInvestment)
-            //   return currentAssetInvestmentByClosePrice;
-            // });
           } else {
             const data = response.data.chart.result[0];
 
             timestamps = data.timestamp;
             const quotes = data.indicators.quote[0];
-            //console.log(timestamps);
+     
             timestamps.forEach(async (t: number, i: number) => {
               let b =
                 asset.type === AssetType.INDEX
@@ -242,45 +227,9 @@ export class PortfolioService {
     data.low = 100000 * (1 + roiByLowPrice);
     data.close = 100000 * (1 + roiByClosePrice);
     indexInfo.push(data);
-    //console.log(indexInfo);
-    //console.log('totalOriginalCapital: ' + totalOriginalCapital);
-    //console.log('totalCurrentInvestment: ' + totalCurrentInvestment);
-    //console.log('index value: ' + indexValue);
 
     return indexInfo;
 
-    // Build index starting from 100000
-    // let indexValue = 100000;
-    // averageCost.map((index, j) => {
-    //   let prevDate = j - 1 <= 0 ? 0 : averageCost[j - 1].date;
-    //   let actualDate = index.date;
-    //   let nextDate =
-    //     j + 1 >= averageCost.length ? 0 : averageCost[j + 1].date;
-    //   //console.log("avergcc" + averageCost[j + 1].date)
-    //   closePrices.map((item, i, arr) => {
-    //     if (
-    //       j == averageCost.length - 1 &&
-    //       actualDate > item.date &&
-    //       nextDate > item.date
-    //     ) {
-    // const prevClose = arr[i - 1].close;
-    // const roi = item.close / prevClose - 1;
-    // indexValue =
-    //   indexValue *
-    //   ((100 + ((prevClose * 100) / index.averageCost - 100)) / 100);
-    // result.push({
-    //   date: item.date,
-    //   close: item.close,
-    //   averageCost: 0,
-    //   roi: roi,
-    //   index: indexValue,
-    // });
-    //   }
-    //     });
-    //   });
-    // }
-
-    //return result;
   }
 
   async update(id: number, updatePortfolioDto: UpdatePortfolioDto) {

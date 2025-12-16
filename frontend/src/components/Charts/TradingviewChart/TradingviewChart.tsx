@@ -32,13 +32,15 @@ const TradingviewChart: React.FC<TradingviewChartProps> = ({ data }) => {
     "candlestick"
   );
   const [chartData, setChartData] = useState<LineChart[]>();
-
+  const hasFetched = useRef(false);
   const fetchData = async () => {
     try {
       const response = await httpService.get(
-        `/portfolios/6/line-overview-chart`
+        `/portfolio-daily-changes/portfolio/6`
       );
       if (response.status === 200) {
+        console.log("worked");
+        console.log(response.data);
         sampleData.current = response.data;
       }
     } catch (error: any) {
@@ -49,13 +51,15 @@ const TradingviewChart: React.FC<TradingviewChartProps> = ({ data }) => {
   };
 
   useEffect(() => {
+    if (hasFetched.current) return;
+    hasFetched.current = true;
     fetchData();
   }, []);
 
   useEffect(() => {
     if (!chartContainerRef.current) return;
     if (sampleData.current.length == 0) return;
-   
+
     // Create chart
     chartRef.current = createChart(chartContainerRef.current, {
       width: chartContainerRef.current.clientWidth,
