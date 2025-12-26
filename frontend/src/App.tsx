@@ -3,7 +3,7 @@ import reactLogo from "./assets/react.svg";
 import viteLogo from "/vite.svg";
 import "./App.css";
 import Navbar from "./components/Navbar/Navbar";
-import Asset from "./components/Asset/Asset";
+import Asset from "./components/Asset/AssetGridView/AssetGridView";
 import NumberFlow, { NumberFlowGroup } from "@number-flow/react";
 import clsx from "clsx/lite";
 import Dashboard from "./pages/Dashboard/Dashboard";
