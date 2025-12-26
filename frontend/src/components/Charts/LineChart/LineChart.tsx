@@ -38,6 +38,7 @@ export default function LineChart({ chartData }: Props) {
           disableAxisListener
         >
           <LinePlot />
+          <div>{chartData?.currentEarning}</div>
         </ChartContainer>
       ) : (
         <LoadingSpinner />

@@ -1,7 +1,7 @@
-import "./Asset.scss";
-import LoadingSpinner from "../LoadingSpinner/LoadingSpinner";
+import "./AssetGridView.scss";
+import LoadingSpinner from "../../LoadingSpinner/LoadingSpinner";
 import NumberFlow from "@number-flow/react";
-import LineChart from "../Charts/LineChart/LineChart";
+import LineChart from "../../Charts/LineChart/LineChart";
 import { useState } from "react";
 import {
   Chart01Icon,
@@ -9,9 +9,9 @@ import {
   TransactionHistoryIcon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
-import httpService from "../../services/httpService";
-import Popup from "../Popup/Popup";
-import { useStore } from "../../store";
+import httpService from "../../../services/httpService";
+import Popup from "../../Popup/Popup";
+import { useStore } from "../../../store";
 
 type Asset = {
   id: number;
@@ -62,7 +62,7 @@ type Transaction = {
   assetId: number;
 };
 
-export default function Asset({ asset }: Props) {
+export default function AssetGridView({ asset }: Props) {
   const [lineChartStatus, setLineChartStatus] = useState(false);
   const [lineChartData, setLineChartData] = useState<LineChartValue>();
   const [popupStatus, setPopupStatus] = useState<boolean>(false);
