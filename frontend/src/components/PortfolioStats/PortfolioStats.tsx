@@ -126,12 +126,12 @@ export default function PortfolioStats({ portfolioStats }: Props) {
             </div>
 
             <div
-              className="d-flex justify-content-center py-2 fw-bold"
+              className="row m-0 p-0 fw-bold py-2"
               style={{ fontSize: ".8rem" }}
             >
               <div
                 className={
-                  "border-end pe-2 d-flex text-success " +
+                  "col-6 m-0 p-0 border-end text-success text-end pe-2 py-1 " +
                   (currency === "USD"
                     ? portfolioStats.currentROIByUSD < 0 && " text-danger"
                     : currency === "EUR"
@@ -157,10 +157,9 @@ export default function PortfolioStats({ portfolioStats }: Props) {
                   %
                 </span>
               </div>
-
               <div
                 className={
-                  "ps-2 d-flex text-success " +
+                  "col-6 m-0 p-0 text-success text-start ps-2 py-1 " +
                   (currency === "USD"
                     ? portfolioStats.currentEarningByUSD < 0 && " text-danger"
                     : currency === "EUR"
@@ -301,7 +300,7 @@ export default function PortfolioStats({ portfolioStats }: Props) {
         </div>
       )}
 
-      {fearAndGreedIndexData && fearAndGreedIndexData?.crypto != undefined ? (
+      {fearAndGreedIndexData && fearAndGreedIndexData?.crypto != undefined && (
         <div className="row m-0 p-0 mt-3">
           <div className="col-6 m-0 p-0 d-flex justify-content-end align-items-center pe-3 ps-5">
             <FearGreedIndex data={fearAndGreedIndexData.vix} />
@@ -310,8 +309,6 @@ export default function PortfolioStats({ portfolioStats }: Props) {
             <FearGreedIndex data={fearAndGreedIndexData.crypto} />
           </div>
         </div>
-      ) : (
-        <LoadingSpinner />
       )}
     </div>
   );

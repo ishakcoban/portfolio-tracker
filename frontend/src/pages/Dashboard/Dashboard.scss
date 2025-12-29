@@ -9,6 +9,11 @@
     border-radius: 12px;
 }
 
+.year-text-header{
+    color: $orange;
+    font-size: .9rem;
+
+}
 .year-text-roi{
     font-size: .8rem;
 }
@@ -22,5 +27,5 @@
 }
 
 .asset-selected-view-option{
-    background-color: #22BF75;
+    background-color: $orange;
 }

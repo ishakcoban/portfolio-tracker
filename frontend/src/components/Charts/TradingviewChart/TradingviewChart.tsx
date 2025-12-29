@@ -1,4 +1,4 @@
-import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { createChart, CandlestickSeries, LineSeries } from "lightweight-charts";
 import type {
   IChartApi,
@@ -8,6 +8,7 @@ import type {
 } from "lightweight-charts";
 import "./TradingviewChart.scss";
 import httpService from "../../../services/httpService";
+import LoadingSpinner from "../../LoadingSpinner/LoadingSpinner";
 interface TradingviewChartProps {
   data?: CandlestickData<Time>[];
 }
@@ -24,14 +25,12 @@ const TradingviewChart: React.FC<TradingviewChartProps> = ({ data }) => {
   const chartContainerRef = useRef<HTMLDivElement>(null);
   const sampleData = useRef<LineChart[]>([]);
   const chartRef = useRef<IChartApi | null>(null);
-  const chartRef123 = useRef<LineChart[] | null>(null);
   const seriesRef = useRef<
     ISeriesApi<"Candlestick"> | ISeriesApi<"Line"> | null
   >(null);
   const [chartType, setChartType] = useState<"candlestick" | "line">(
     "candlestick"
   );
-  const [chartData, setChartData] = useState<LineChart[]>();
   const hasFetched = useRef(false);
   const fetchData = async () => {
     try {
@@ -39,8 +38,6 @@ const TradingviewChart: React.FC<TradingviewChartProps> = ({ data }) => {
         `/portfolio-daily-changes/portfolio/6`
       );
       if (response.status === 200) {
-        console.log("worked");
-        console.log(response.data);
         sampleData.current = response.data;
       }
     } catch (error: any) {
@@ -93,86 +90,6 @@ const TradingviewChart: React.FC<TradingviewChartProps> = ({ data }) => {
       wickUpColor: "#26a69a",
       wickDownColor: "#ef5350",
     });
-
-    // Sample data if none provided
-    //console.log(chartRef123.current)
-    // const sampleData: CandlestickData<Time>[] = [
-    //   {
-    //     time: "2024-01-03" as Time,
-    //     open:
-    //       chartData != null && chartData != undefined
-    //         ? chartData[0].open
-    //         : 108,
-    //     high:
-    //       chartData != null && chartData != undefined
-    //         ? chartData[0].high
-    //         : 120,
-    //     low:
-    //       chartData != null && chartData != undefined
-    //         ? chartData[0].low
-    //         : 108,
-    //     close:
-    //       chartData != null && chartData != undefined
-    //         ? chartData[0].close
-    //         : 112,
-    //   },
-    // ];
-    //console.log(sampleData);
-    //   open: 105, //   time: "2024-01-02" as Time, // { // { time: "2024-01-01" as Time, open: 100, high: 110, low: 95, close: 105 },
-    //   high: 115,
-    //   low: 100,
-    //   close: 108,
-    // },
-    // {
-    //   time: "2024-01-03" as Time,
-    //   open: 108,
-    //   high: 120,
-    //   low: 105,
-    //   close: 112,
-    // },
-    // {
-    //   time: "2024-01-04" as Time,
-    //   open: 112,
-    //   high: 118,
-    //   low: 108,
-    //   close: 115,
-    // },
-    // {
-    //   time: "2024-01-05" as Time,
-    //   open: 115,
-    //   high: 125,
-    //   low: 112,
-    //   close: 120,
-    // },
-    // {
-    //   time: "2024-01-08" as Time,
-    //   open: 120,
-    //   high: 130,
-    //   low: 115,
-    //   close: 125,
-    // },
-    // {
-    //   time: "2024-01-09" as Time,
-    //   open: 125,
-    //   high: 128,
-    //   low: 118,
-    //   close: 122,
-    // },
-    // {
-    //   time: "2024-01-10" as Time,
-    //   open: 122,
-    //   high: 135,
-    //   low: 120,
-    //   close: 130,
-    // },
-    // {
-    //   time: "2024-01-11" as Time,
-    //   open: 122,
-    //   high: 160,
-    //   low: 120,
-    //   close: 160,
-    // },
-    //
 
     seriesRef.current.setData(sampleData.current);
 
@@ -300,6 +217,13 @@ const TradingviewChart: React.FC<TradingviewChartProps> = ({ data }) => {
       className="lightweight-chart-wrapper pt-4 pb-2 px-4"
       style={{ position: "relative" }}
     >
+      {sampleData.current.length > 0 ? (
+        <div ref={chartContainerRef} />
+      ) : (
+        <div className="pb-2  d-flex justify-content-center align-items-center">
+          <LoadingSpinner />
+        </div>
+      )}
       {/* <div style={{ marginBottom: "10px" }}>
         <button
           onClick={toggleChartType}
@@ -315,7 +239,6 @@ const TradingviewChart: React.FC<TradingviewChartProps> = ({ data }) => {
           Toggle to {chartType === "candlestick" ? "Line" : "Candlestick"} Chart
         </button>
       </div> */}
-      <div ref={chartContainerRef} />
     </div>
   );
 };

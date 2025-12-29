@@ -228,20 +228,20 @@ export default function Dashboard() {
     return () => window.removeEventListener("resize", updateHeight);
   }, []);
   return (
-    <div className="row m-0 p-0 ">
+    <div className="row m-0 p-0">
       <div className="col-9 m-0 p-0 dashboard-left-section">
-        <div className="row m-0 p-0">
-          <div className="col-6 m-0 p-0 ps-3 pt-3">
-            {/* <LineOverviewChart /> */}
-            {/* <LOC/> */}
-            <TradingviewChart />
-          </div>
-          <div className="col-6 m-0 p-0 px-3 pt-3">
-            {assetData && <AssetBarChart assets={assetData} />}
-          </div>
-        </div>
         {assetData && (
-          <div className="d-flex justify-content-end align-items-center px-3 gap-2 mt-3">
+          <div className="row m-0 p-0">
+            <div className="col-6 m-0 p-0 ps-3 pt-3">
+              <TradingviewChart />
+            </div>
+            <div className="col-6 m-0 p-0 px-3 pt-3">
+              <AssetBarChart assets={assetData} />
+            </div>
+          </div>
+        )}
+        {assetData && (
+          <div className="d-flex justify-content-center align-items-center px-3 gap-2 mt-3">
             <div
               className={`d-flex justify-content-end align-items-center rounded p-1 ${selectedViewOption ? "asset-selected-view-option" : ""}`}
             >
@@ -289,12 +289,18 @@ export default function Dashboard() {
           <div className="row m-0 px-3 mb-3 pt-3">
             <div className="col-12 m-0 p-0 text-light">
               <div className="row m-0 py-3 year-section">
-                <div className="col-1 m-0 p-0"></div>
-                <div className="col-1 m-0 p-0 text-center">
+              
+                <div className="col-1 m-0 p-0 text-end pe-5">
+                  <div className="invisible">currencies</div>
+                  <div className="year-text-roi pt-2">$</div>
+                  <div className="year-text-roi">€</div>
+                  <div className="year-text-roi">₺</div>
+                </div>
+                <div className="col-1 m-0 p-0 text-start">
                   <div className="year-text-header fw-bold">2025</div>
                   <div
                     className={
-                      "year-text-roi mt-1 text-success " +
+                      "year-text-roi text-success pt-2 " +
                       (currency === "USD"
                         ? portfolioStatsData.currentROIByUSD < 0 &&
                           " text-danger"
@@ -305,17 +311,41 @@ export default function Dashboard() {
                             " text-danger")
                     }
                   >
-                    %
-                    {currency === "USD"
-                      ? portfolioStatsData.currentROIByUSD
-                      : currency === "EUR"
-                        ? portfolioStatsData.currentROIByEURO
-                        : portfolioStatsData.currentROIByTRY}
+                    %{portfolioStatsData.currentROIByUSD}
+                  </div>
+                  <div
+                    className={
+                      "year-text-roi text-success " +
+                      (currency === "USD"
+                        ? portfolioStatsData.currentROIByUSD < 0 &&
+                          " text-danger"
+                        : currency === "EUR"
+                          ? portfolioStatsData.currentROIByEURO < 0 &&
+                            " text-danger"
+                          : portfolioStatsData.currentROIByTRY < 0 &&
+                            " text-danger")
+                    }
+                  >
+                    %{portfolioStatsData.currentROIByEURO}
+                  </div>
+                  <div
+                    className={
+                      "year-text-roi text-success " +
+                      (currency === "USD"
+                        ? portfolioStatsData.currentROIByUSD < 0 &&
+                          " text-danger"
+                        : currency === "EUR"
+                          ? portfolioStatsData.currentROIByEURO < 0 &&
+                            " text-danger"
+                          : portfolioStatsData.currentROIByTRY < 0 &&
+                            " text-danger")
+                    }
+                  >
+                    %{portfolioStatsData.currentROIByTRY}
                   </div>
                 </div>
-                <div className="col-1 m-0 p-0 text-center">
+                <div className="col-1 m-0 p-0 text-start">
                   <div className="year-text-header fw-bold">2026</div>
-                  <div className="year-text-roi mt-1 text-light"></div>
                 </div>
               </div>
             </div>
