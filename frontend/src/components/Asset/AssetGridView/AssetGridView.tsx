@@ -183,7 +183,7 @@ export default function AssetGridView({ asset }: Props) {
         </Popup>
       )}
       {asset !== null && asset.currentPriceByUSD !== undefined ? (
-        <div className="position-relative">
+        <div className="position-relative text-nowrap">
           <div
             style={{ fontSize: ".9rem" }}
             className="row m-0 p-0 border-bottom"
@@ -383,7 +383,7 @@ export default function AssetGridView({ asset }: Props) {
             </div>
             <div className="col-4 m-0 p-0">
               <div className="asset-header">Current Investment</div>
-              <div className="asset-value d-flex">
+              <div className="asset-value">
                 <span>
                   {currency === "USD" ? "$" : currency === "EUR" ? "€" : "₺"}
 
@@ -407,7 +407,7 @@ export default function AssetGridView({ asset }: Props) {
             </div>
             <div className="col-4 m-0 p-0">
               <div className="asset-header">Average Cost</div>
-              <div className="asset-value d-flex">
+              <div className="asset-value">
                 <span className="">
                   {currency === "USD" ? "$" : currency === "EUR" ? "€" : "₺"}
                   <NumberFlow

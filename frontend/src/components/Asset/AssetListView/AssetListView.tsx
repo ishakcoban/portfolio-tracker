@@ -130,9 +130,9 @@ export default function AssetListView({ asset }: Props) {
           <div className="d-flex justify-content-center border-top border-bottom text-light mx-5 fs-5">
             {symbol} - TRANSACTIONS
           </div>
-          <div className="table-container mb-5 mt-5 d-flex justify-content-center">
-            <table className="transaction-table">
-              <thead>
+          <div className="table-container mb-5 mt-3 d-flex justify-content-center">
+            <table className="transaction-table table-borderless">
+              <thead className="border-bottom">
                 <tr>
                   <th>Date</th>
                   <th>Type</th>
@@ -141,7 +141,7 @@ export default function AssetListView({ asset }: Props) {
                   <th>Price</th>
                   <th>EURUSD</th>
                   <th>USDTRY</th>
-                  <th>Actions</th>
+                  <th></th>
                 </tr>
               </thead>
               <tbody>
@@ -193,19 +193,19 @@ export default function AssetListView({ asset }: Props) {
                   <th>Price</th>
                   <th>ROI</th>
                   <th>Earning</th>
-                  <th>Initial Weight</th>
-                  <th>Current Weight</th>
-                  <th>Total Quantity</th>
-                  <th>Average Cost</th>
-                  <th>Original Capital</th>
-                  <th>Current Investment</th>
+                  <th>IW</th>
+                  <th>CW</th>
+                  <th>TQ</th>
+                  <th>AC</th>
+                  <th>OC</th>
+                  <th>CI</th>
                   <th></th>
                 </tr>
               </thead>
               <tbody>
                 {asset?.map((asset) => (
                   <tr key={asset.id}>
-                    <td className="text-light">
+                    <td className="text-light pe-5">
                       <div
                         style={{ fontSize: ".9rem" }}
                         className="row m-0 p-0"
@@ -401,7 +401,7 @@ export default function AssetListView({ asset }: Props) {
                         />
                       </span>
                     </td>
-                    <td className="text-light text-nowrap">
+                    <td className="text-light text-nowrap fw-bold">
                       <span>
                         {currency === "USD"
                           ? "$"
@@ -485,6 +485,7 @@ export default function AssetListView({ asset }: Props) {
               </div>
             </div>
           )}
+          <div className="text-center" style={{color:"#D1D5DB",fontSize:".7rem"}}>IW : Initial Weight --- CW : Current Weight --- TQ : Total Quantity --- AC : Average Cost --- OC : Original Capital --- CI : Current Investment</div>
         </div>
       ) : (
         <div className=" d-flex justify-content-center align-items-center">

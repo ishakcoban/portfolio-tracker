@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import "./Navbar.scss";
 import Popup from "../Popup/Popup";
 import CreatePortfolioForm from "../Popup/CreatePortfolioForm/CreatePortfolioForm";
@@ -8,13 +8,73 @@ import SuccessMessageCard, {
 } from "../SuccessMessageCard/SuccessMessageCard";
 import CreateTransactionFom from "../Popup/CreateTransactionFom/CreateTransactionFom";
 import DropdownButton from "../Buttons/DropdownButton";
+import httpService from "../../services/httpService";
+import { useStore } from "../../store";
 
+interface Portfolio {
+  id: number;
+  name: string;
+}
+interface Currency {
+  id: number;
+  name: string;
+  symbol?: string;
+}
+interface Operation {
+  id: number;
+  name: string;
+}
+const currencyItems: Currency[] = [
+  { id: 1, name: "USD", symbol: "$" },
+  { id: 2, name: "EUR", symbol: "€" },
+  { id: 3, name: "TRY", symbol: "₺" },
+];
+
+const operationItems: Operation[] = [
+  { id: 1, name: "Portfolio" },
+  { id: 2, name: "Asset" },
+  { id: 3, name: "Transaction" },
+];
 export default function Navbar() {
   const [popupType, setPopupType] = useState<null | string>(null);
   const cardRef = useRef<SuccessMessageCardRef | null>(null);
+  const [portfolioItems, setPortfolioItems] = useState<Portfolio[]>([]);
+  const [selectedCurrency, setSelectedCurrency] = useState<Currency>(
+    currencyItems[0]
+  );
+  const { setPortfolioId, setCurrency } = useStore();
   const [message, setMessage] = useState("");
-  const [currency, setCurrency] = useState("");
-  useEffect(() => {}, []);
+
+  const fetchPortfolioData = async () => {
+    try {
+      const response = await httpService.get("/portfolios");
+
+      if (response.status == 200) {
+        setPortfolioItems(response.data);
+      }
+    } catch (error) {}
+  };
+
+  const handlePortfolio = (id: number) => {
+    setPortfolioId(id);
+  };
+
+  const handleCurrency = (id: number) => {
+    currencyItems.map((item) => {
+      if (id == item.id) {
+        setSelectedCurrency(item);
+        setCurrency(item.name);
+      }
+    });
+  };
+
+  const handleOperation = (id: number) => {
+    operationItems.map((item) => {
+      if (id == item.id) {
+        openPopup(item.name);
+      }
+    });
+  };
 
   const openPopup = (popupType: string) => {
     setPopupType(popupType);
@@ -30,58 +90,53 @@ export default function Navbar() {
     setPopupType(null);
   };
 
-  const handleCurrency = () => {};
+  useEffect(() => {
+    fetchPortfolioData();
+  }, []);
 
   return (
     <>
       <SuccessMessageCard ref={cardRef} message={message}></SuccessMessageCard>
-      <div className="navbar-wrapper d-flex justify-content-end">
-        {/* currency dropdown section bottom */}
-
-        {/* currency dropdown section above */}
-
-        <button
-          className="create-portfolio-asset-transaction-button py-1 px-3 my-2 me-4"
-          onClick={() => openPopup("create-portfolio")}
-        >
-          Create Portfolio
-        </button>
-        <button
-          className="create-portfolio-asset-transaction-button py-1 px-3 my-2 me-4"
-          onClick={() => openPopup("create-asset")}
-        >
-          Create Asset
-        </button>
-        <button
-          className="create-portfolio-asset-transaction-button py-1 px-3 my-2 me-4"
-          onClick={() => openPopup("create-transaction")}
-        >
-          Create Transaction
-        </button>
+      <div className="navbar-wrapper d-flex justify-content-end py-2">
         <div className="me-4 d-flex justify-content-center align-items-center">
-          <DropdownButton currencyUsage={false}></DropdownButton>
+          <DropdownButton
+          dropdownButtonInitialName ="Create"
+            items={operationItems}
+            func={handleOperation}
+          ></DropdownButton>
+        </div>
+        <div className="me-4 d-flex justify-content-center align-items-center">
+          <DropdownButton
+          dropdownButtonInitialName ="Portfolio"
+            items={portfolioItems}
+            func={handlePortfolio}
+          ></DropdownButton>
         </div>
 
         <div className="me-4 d-flex justify-content-center align-items-center">
-          <DropdownButton currencyUsage={true}></DropdownButton>
+          <DropdownButton
+          dropdownButtonInitialName ="USD"
+            items={currencyItems}
+            func={handleCurrency}
+          ></DropdownButton>
         </div>
 
         {popupType && (
           <Popup onClose={closePopup}>
-            {popupType === "create-portfolio" && (
+            {popupType === "Portfolio" && (
               <CreatePortfolioForm
                 closePopup={closePopup}
                 onSuccess={handleFormSuccess}
               ></CreatePortfolioForm>
             )}
 
-            {popupType === "create-asset" && (
+            {popupType === "Asset" && (
               <CreateAssetForm
                 closePopup={closePopup}
                 onSuccess={handleFormSuccess}
               ></CreateAssetForm>
             )}
-            {popupType === "create-transaction" && (
+            {popupType === "Transaction" && (
               <CreateTransactionFom
                 closePopup={closePopup}
                 onSuccess={handleFormSuccess}

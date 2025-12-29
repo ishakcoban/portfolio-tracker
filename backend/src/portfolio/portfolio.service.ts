@@ -18,7 +18,7 @@ export class PortfolioService {
   constructor(
     private prisma: PrismaService,
     private portfolioMapper: PortfolioMapper,
-    private readonly httpService: HttpService
+    private readonly httpService: HttpService,
   ) {}
   async create(createPortfolioDto: CreatePortfolioDto) {
     const portfolio = await this.prisma.portfolio.findUnique({
@@ -48,8 +48,8 @@ export class PortfolioService {
       select: {
         id: true,
         name: true,
-        assets:true
-      }
+        assets: true,
+      },
     });
     return portfolios;
   }
@@ -60,6 +60,11 @@ export class PortfolioService {
         where: { id },
         include: {
           assets: {
+            where: {
+              transactions: {
+                some: {},
+              },
+            },
             orderBy: {
               initialWeight: 'desc',
             },
@@ -81,7 +86,6 @@ export class PortfolioService {
     }
   }
   async calculatePortfolioValueForLightweightChart(id: number) {
-
     //await Helper.getExchangeRatesByDate(this.httpService,"TRY","2025-12-15");
     const portfolio = await this.findOne(id);
 
@@ -108,7 +112,7 @@ export class PortfolioService {
     };
 
     for (const asset of portfolio.assets) {
-      const url ="Helper.findURLForChartByAssetType(asset.type, asset.symbol)";
+      const url = 'Helper.findURLForChartByAssetType(asset.type, asset.symbol)';
       try {
         const response = await firstValueFrom(this.httpService.get(url));
 
@@ -153,13 +157,12 @@ export class PortfolioService {
 
               data.time = new Date(candle[0]).toISOString().split('T')[0];
             });
-
           } else {
             const data = response.data.chart.result[0];
 
             timestamps = data.timestamp;
             const quotes = data.indicators.quote[0];
-     
+
             timestamps.forEach(async (t: number, i: number) => {
               let b =
                 asset.type === AssetType.INDEX
@@ -229,7 +232,6 @@ export class PortfolioService {
     indexInfo.push(data);
 
     return indexInfo;
-
   }
 
   async update(id: number, updatePortfolioDto: UpdatePortfolioDto) {

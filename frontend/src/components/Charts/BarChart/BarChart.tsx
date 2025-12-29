@@ -1,5 +1,6 @@
 import { BarChart } from "@mui/x-charts/BarChart";
 import "./BarChart.scss";
+import LoadingSpinner from "../../LoadingSpinner/LoadingSpinner";
 const chartSetting = {
   yAxis: [
     {
@@ -17,7 +18,7 @@ const chartSetting = {
   sx: {
     "& .MuiChartsAxis-line": {
       stroke: "#d1d5db !important",
-      color:"#d1d5db",
+      color: "#d1d5db",
       strokeWidth: 2,
     },
     "& .MuiChartsAxis-tick": {
@@ -92,6 +93,7 @@ const generateColors = (count: number): string[] => {
 
 export default function AssetBarChart({ assets }: Props) {
   // Create dataset with currencies as x-axis
+  
   const dataset = [
     {
       currency: "USD",
@@ -124,7 +126,6 @@ export default function AssetBarChart({ assets }: Props) {
       ),
     },
   ];
-
   // Generate colors for assets
   const colors = generateColors(assets.length);
 
@@ -137,24 +138,30 @@ export default function AssetBarChart({ assets }: Props) {
   }));
 
   return (
-    <div className="bar-chart-wrapper pt-4 pb-2 px-4">
-      <BarChart
-        dataset={dataset}
-        xAxis={[
-          {
-            scaleType: "band" as const,
-            dataKey: "currency",
-            labelStyle: {
-              fill: "#6b7280",
+    <div className="bar-chart-wrapper pt-4 pb-2 px-4 d-flex justify-content-center align-items-center">
+      {!dataset.some(obj => 
+  Object.values(obj).some(value => value === undefined)
+) ? (
+        <BarChart
+          dataset={dataset}
+          xAxis={[
+            {
+              scaleType: "band" as const,
+              dataKey: "currency",
+              labelStyle: {
+                fill: "#6b7280",
+              },
+              tickLabelStyle: {
+                fill: "#9ca3af",
+              },
             },
-            tickLabelStyle: {
-              fill: "#9ca3af",
-            },
-          },
-        ]}
-        series={series}
-        {...chartSetting}
-      />
+          ]}
+          series={series}
+          {...chartSetting}
+        />
+      ) : (
+        <div className="pb-2"><LoadingSpinner /></div>
+      )}
     </div>
   );
 }
