@@ -8,5 +8,6 @@ body,
   background-color: $dark-grey;
   overflow: hidden;
   user-select: none;
-  font-family: "Poppins", sans-serif;
+  font-family: proxima-nova, sans-serif;
+  text-wrap-mode: nowrap;
 }

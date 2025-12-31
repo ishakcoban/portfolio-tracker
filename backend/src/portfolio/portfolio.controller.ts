@@ -30,6 +30,11 @@ export class PortfolioController {
     return this.portfolioService.getFearAndGreedIndex();
   }
 
+  @Get('currencies')
+  getCurrencies() {
+    return this.portfolioService.getCurrencies();
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.portfolioService.findOne(+id);
@@ -41,7 +46,6 @@ export class PortfolioController {
       +id,
     );
   }
-
 
   @Patch(':id')
   update(

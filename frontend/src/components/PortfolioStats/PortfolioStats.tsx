@@ -200,7 +200,7 @@ export default function PortfolioStats({ portfolioStats }: Props) {
                 <NumberFlow
                   format={{
                     notation: "standard",
-
+                    maximumFractionDigits: 2,
                     signDisplay: "never",
                   }}
                   animated={false}
