@@ -48,7 +48,7 @@ export default function Navbar() {
   const [currencies, setCurrencies] = useState<Currencies>();
   const { setPortfolioId, setCurrency } = useStore();
   const [message, setMessage] = useState("");
-
+  const navbarRef = useRef<HTMLDivElement>(null);
   const fetchPortfolioData = async () => {
     try {
       const response = await httpService.get("/portfolios");
@@ -104,6 +104,10 @@ export default function Navbar() {
   };
 
   useEffect(() => {
+    if (navbarRef.current) {
+      document.body.style.paddingTop = `${navbarRef.current.offsetHeight}px`;
+    }
+
     fetchPortfolioData();
     fetchCurrency();
   }, []);
@@ -112,15 +116,21 @@ export default function Navbar() {
     <>
       <SuccessMessageCard ref={cardRef} message={message}></SuccessMessageCard>
       <div className="navbar-wrapper d-flex justify-content-end py-2">
+        <div
+          ref={navbarRef}
+          className="navbar-logo me-auto align-self-center ps-4"
+        >
+          S H K C B N
+        </div>
         {currencies && (
-          <div className="d-flex">
+          <div className="d-flex justify-content-center align-items-center">
             <div
               style={{
                 borderRadius: "15px",
                 backgroundColor: "rgba(66, 84, 251, 0.3)",
-                color:"#C2C0B6",
+                color: "#C2C0B6",
               }}
-              className="me-4 d-flex justify-content-center align-items-center px-3 text-light"
+              className="d-flex justify-content-center align-items-center px-3 text-light me-4 py-1"
             >
               1$ :
               <NumberFlow
@@ -139,9 +149,9 @@ export default function Navbar() {
               style={{
                 borderRadius: "15px",
                 backgroundColor: "rgba(66, 84, 251, 0.3)",
-                color:"#C2C0B6",
+                color: "#C2C0B6",
               }}
-              className="me-4 d-flex justify-content-center align-items-center px-3 text-light"
+              className="d-flex justify-content-center align-items-center px-3 text-light me-4 py-1"
             >
               1€ :
               <NumberFlow

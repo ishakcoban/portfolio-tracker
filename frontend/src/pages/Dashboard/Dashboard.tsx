@@ -228,7 +228,7 @@ export default function Dashboard() {
     return () => window.removeEventListener("resize", updateHeight);
   }, []);
   return (
-    <div className="row m-0 p-0">
+    <div className="row m-0 p-0 pt-3">
       <div className="col-9 m-0 p-0 dashboard-left-section">
         {assetData && (
           <div className="row m-0 p-0">
@@ -289,7 +289,6 @@ export default function Dashboard() {
           <div className="row m-0 px-3 mb-3 pt-3">
             <div className="col-12 m-0 p-0 text-light">
               <div className="row m-0 py-3 year-section">
-              
                 <div className="col-1 m-0 p-0 text-end pe-5">
                   <div className="invisible">currencies</div>
                   <div className="year-text-roi pt-2">$</div>
