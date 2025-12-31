@@ -234,6 +234,31 @@ export class PortfolioService {
     return indexInfo;
   }
 
+  async getCurrencies() {
+    const date = new Date(Date.now()).toISOString().split('T')[0];
+
+    const data = {
+      usdtry: 0,
+      eurtry: 0,
+    };
+
+    const usdtry = await Helper.getExchangeRatesByDate(
+      this.httpService,
+      'TRY',
+      date,
+    );
+    const usdeur = await Helper.getExchangeRatesByDate(
+      this.httpService,
+      'EUR',
+      date,
+    );
+
+    data.usdtry = usdtry;
+    data.eurtry = usdtry / usdeur;
+
+    return data;
+  }
+
   async update(id: number, updatePortfolioDto: UpdatePortfolioDto) {
     await this.findOne(id);
 

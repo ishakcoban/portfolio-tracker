@@ -183,7 +183,7 @@ export default function AssetGridView({ asset }: Props) {
         </Popup>
       )}
       {asset !== null && asset.currentPriceByUSD !== undefined ? (
-        <div className="position-relative text-nowrap">
+        <div className="position-relative">
           <div
             style={{ fontSize: ".9rem" }}
             className="row m-0 p-0 border-bottom"
