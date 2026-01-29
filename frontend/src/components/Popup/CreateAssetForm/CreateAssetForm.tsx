@@ -48,7 +48,6 @@ export default function CreateAssetForm({ closePopup, onSuccess }: Props) {
       portfolioId: +selectedItem,
     };
 
-    console.log(data);
     setMessage("");
     setIsLoading(true);
     setTimeout(async () => {

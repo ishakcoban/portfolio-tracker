@@ -14,7 +14,7 @@ const chartSetting = {
       },
     },
   ],
-  height: 301,
+  height: 290,
   sx: {
     "& .MuiChartsAxis-line": {
       stroke: "#d1d5db !important",
@@ -32,8 +32,8 @@ const chartSetting = {
     },
     "& .MuiChartsLegend-label": {
       color: "#e5e7eb",
-      fontSize: "14px",
-      fontWeight: 500,
+      fontSize: "11px",
+      fontWeight: 600,
     },
   },
   grid: {
@@ -138,7 +138,7 @@ export default function AssetBarChart({ assets }: Props) {
   }));
 
   return (
-    <div className="bar-chart-wrapper pt-4 pb-2 px-4 d-flex justify-content-center align-items-center">
+    <div className="bar-chart-wrapper pt-4 pb-2 px-4 d-flex justify-content-center align-items-center h-100 w-100">
       {!dataset.some(obj => 
   Object.values(obj).some(value => value === undefined)
 ) ? (

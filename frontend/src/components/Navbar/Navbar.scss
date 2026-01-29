@@ -9,6 +9,22 @@
   box-shadow: 0 6px 12px rgba(0, 0, 0, 0.55);
 }
 
+.delete-portfolio-asset-transaction-button {
+  background-color: transparent;
+  border-style: solid;
+  border-width: 2px;
+  border-radius: 30px;
+  color: $white;
+  font-weight: 500;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.delete-portfolio-asset-transaction-button:hover {
+  background-color: #DC3545;
+  color: $light-grey;
+}
+
 .create-portfolio-asset-transaction-button {
   background-color: transparent;
   border-style: solid;

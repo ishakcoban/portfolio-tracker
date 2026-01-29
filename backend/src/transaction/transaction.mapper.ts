@@ -13,7 +13,7 @@ export class TransactionMapper {
       id: transaction.id,
       assetId: transaction.assetId!,
       type: transaction.type,
-      investment: transaction.investment,
+      investment: transaction.invested,
       quantity: transaction.quantity,
       price: transaction.price,
       eurusd: transaction.eurusd,

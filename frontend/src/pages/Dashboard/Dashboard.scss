@@ -4,20 +4,6 @@
     overflow-x: hidden;
 }
 
-.year-section{
-    background-color: $light-grey;
-    border-radius: 12px;
-}
-
-.year-text-header{
-    color: $orange;
-    font-size: .9rem;
-
-}
-.year-text-roi{
-    font-size: .8rem;
-}
-
 .dashboard-left-section {
   height: calc(100dvh - var(--navbar-height, 0px));
   overflow-y: auto;

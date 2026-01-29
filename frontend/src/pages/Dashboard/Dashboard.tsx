@@ -10,6 +10,7 @@ import { GridViewIcon, ListViewIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import AssetListView from "../../components/Asset/AssetListView/AssetListView";
 import AssetGridView from "../../components/Asset/AssetGridView/AssetGridView";
+import YearlyChange from "../../components/YearlyChange/YearlyChange";
 
 type Asset = {
   id: number;
@@ -54,11 +55,19 @@ type PortfolioStats = {
   currentInvestmentByUSD: number;
   currentInvestmentByEURO: number;
   currentInvestmentByTRY: number;
-
+  annualizedAverageROIByUSD: number;
+  annualizedAverageROIByEURO: number;
+  annualizedAverageROIByTRY: number;
   portfolioPie: {
     label: string;
     value: number;
   }[];
+};
+
+type YearlyChange = {
+  currentROIByUSD: number;
+  currentROIByEURO: number;
+  currentROIByTRY: number;
 };
 export default function Dashboard() {
   const [assetData, setAssetData] = useState<Asset[] | null>(null);
@@ -68,9 +77,8 @@ export default function Dashboard() {
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const assetDataRef = useRef<Asset[] | null>(null);
   const portfolioStatsDataRef = useRef<PortfolioStats | null>(null);
+  const { pID, setCurrentInvestment } = useStore();
 
-  const { currency } = useStore();
-  const { pID } = useStore();
   const changeSelectedViewOptionStatus = (status: boolean) => {
     if (status != selectedViewOption) {
       setSelectedViewOption(status);
@@ -136,7 +144,6 @@ export default function Dashboard() {
         );
 
         if (response.status === 201) {
-          //console.log(response.data)
           const target = omit(response.data, ["assets"]);
           const updatedPortfolioStatsData = (portfolioStatsDataRef.current = {
             ...portfolioStatsDataRef.current,
@@ -144,6 +151,12 @@ export default function Dashboard() {
           });
 
           setPortfolioStatsData(updatedPortfolioStatsData);
+
+          setCurrentInvestment({
+            byUSD: updatedPortfolioStatsData.currentInvestmentByUSD,
+            byEURO: updatedPortfolioStatsData.currentInvestmentByEURO,
+            byTRY: updatedPortfolioStatsData.currentInvestmentByTRY,
+          });
           const updatedAssetData = assetDataRef.current.map((asset, index) => ({
             ...asset,
             currentPriceByUSD:
@@ -188,10 +201,9 @@ export default function Dashboard() {
             currentWeight:
               response.data.assets[index]?.currentWeight ?? asset.currentWeight,
           }));
-          //console.log(response.data.assets[0])
+
           setAssetData(updatedAssetData);
           assetDataRef.current = updatedAssetData;
-          //console.log(assetDataRef.current);
         }
       } catch (error: any) {
         if (error.status === 400) {
@@ -231,11 +243,11 @@ export default function Dashboard() {
     <div className="row m-0 p-0 pt-3">
       <div className="col-9 m-0 p-0 dashboard-left-section">
         {assetData && (
-          <div className="row m-0 p-0">
-            <div className="col-6 m-0 p-0 ps-3 pt-3">
+          <div className="row m-0 p-0 d-flex">
+              <div className="col-6 m-0 p-0 ps-3 pt-3">
               <TradingviewChart />
-            </div>
-            <div className="col-6 m-0 p-0 px-3 pt-3">
+            </div>  
+            <div className="col-6 m-0 p-0 px-3 pt-3 d-flex">
               <AssetBarChart assets={assetData} />
             </div>
           </div>
@@ -285,71 +297,7 @@ export default function Dashboard() {
           </div>
         )}
 
-        {portfolioStatsData && (
-          <div className="row m-0 px-3 mb-3 pt-3">
-            <div className="col-12 m-0 p-0 text-light">
-              <div className="row m-0 py-3 year-section">
-                <div className="col-1 m-0 p-0 text-end pe-5">
-                  <div className="invisible">currencies</div>
-                  <div className="year-text-roi pt-2">$</div>
-                  <div className="year-text-roi">€</div>
-                  <div className="year-text-roi">₺</div>
-                </div>
-                <div className="col-1 m-0 p-0 text-start">
-                  <div className="year-text-header fw-bold">2025</div>
-                  <div
-                    className={
-                      "year-text-roi text-success pt-2 " +
-                      (currency === "USD"
-                        ? portfolioStatsData.currentROIByUSD < 0 &&
-                          " text-danger"
-                        : currency === "EUR"
-                          ? portfolioStatsData.currentROIByEURO < 0 &&
-                            " text-danger"
-                          : portfolioStatsData.currentROIByTRY < 0 &&
-                            " text-danger")
-                    }
-                  >
-                    %{portfolioStatsData.currentROIByUSD}
-                  </div>
-                  <div
-                    className={
-                      "year-text-roi text-success " +
-                      (currency === "USD"
-                        ? portfolioStatsData.currentROIByUSD < 0 &&
-                          " text-danger"
-                        : currency === "EUR"
-                          ? portfolioStatsData.currentROIByEURO < 0 &&
-                            " text-danger"
-                          : portfolioStatsData.currentROIByTRY < 0 &&
-                            " text-danger")
-                    }
-                  >
-                    %{portfolioStatsData.currentROIByEURO}
-                  </div>
-                  <div
-                    className={
-                      "year-text-roi text-success " +
-                      (currency === "USD"
-                        ? portfolioStatsData.currentROIByUSD < 0 &&
-                          " text-danger"
-                        : currency === "EUR"
-                          ? portfolioStatsData.currentROIByEURO < 0 &&
-                            " text-danger"
-                          : portfolioStatsData.currentROIByTRY < 0 &&
-                            " text-danger")
-                    }
-                  >
-                    %{portfolioStatsData.currentROIByTRY}
-                  </div>
-                </div>
-                <div className="col-1 m-0 p-0 text-start">
-                  <div className="year-text-header fw-bold">2026</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
+        {portfolioStatsData && <YearlyChange />}
       </div>
 
       <div className="col-3 m-0 py-3 ps-0 pe-3 portfolio-stat-wrapper">

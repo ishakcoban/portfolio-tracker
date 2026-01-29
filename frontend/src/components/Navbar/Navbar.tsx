@@ -6,7 +6,10 @@ import CreateAssetForm from "../Popup/CreateAssetForm/CreateAssetForm";
 import SuccessMessageCard, {
   type SuccessMessageCardRef,
 } from "../SuccessMessageCard/SuccessMessageCard";
-import CreateTransactionFom from "../Popup/CreateTransactionFom/CreateTransactionFom";
+//import CreateTransactionFom from "../Popup/CreateTransactionFom/CreateTransactionFom";
+//import { CreateTransactionFom } from "../Popup/CreateTransactionFom/CreateTransactionFom";
+//import { CreateTransactionFom } from "../Popup/CreateTransactionFom/CreateTransactionFom";
+import { CreateTransactionForm } from "../Popup/CreateTransactionFom/CreateTransactionFom";
 import DropdownButton from "../Buttons/DropdownButton";
 import httpService from "../../services/httpService";
 import { useStore } from "../../store";
@@ -123,7 +126,10 @@ export default function Navbar() {
           S H K C B N
         </div>
         {currencies && (
-          <div className="d-flex justify-content-center align-items-center">
+          <div
+            style={{ fontSize: ".9rem" }}
+            className="d-flex justify-content-center align-items-center"
+          >
             <div
               style={{
                 borderRadius: "15px",
@@ -207,11 +213,17 @@ export default function Navbar() {
                 onSuccess={handleFormSuccess}
               ></CreateAssetForm>
             )}
-            {popupType === "Transaction" && (
+            {/*popupType === "Transaction" && (
               <CreateTransactionFom
                 closePopup={closePopup}
                 onSuccess={handleFormSuccess}
               ></CreateTransactionFom>
+            )*/}
+            {popupType === "Transaction" && (
+              <CreateTransactionForm
+                closePopup={closePopup}
+                onSuccess={handleFormSuccess}
+              ></CreateTransactionForm>
             )}
           </Popup>
         )}

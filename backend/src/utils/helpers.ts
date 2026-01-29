@@ -29,9 +29,8 @@ export class Helper {
 
     switch (type) {
       case AssetType.ETF:
-      //  console.log(date)
         url = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?period1=${startDate}&period2=${endDate}&interval=1d`;
-      // console.log(url)
+
         break;
 
       case AssetType.INDEX:
@@ -77,5 +76,37 @@ export class Helper {
     } catch (error) {
       throw new BadRequestException(`Failed to fetch exchange rate`);
     }
+  }
+
+    static async getExchangeRatesByDate_secondver(
+    httpService: HttpService,
+    currency: string,
+    date: string,
+  ): Promise<number> {
+    try {
+      const url = `https://api.frankfurter.app/${date}?from=USD`;
+
+      const response = await firstValueFrom(httpService.get(url));
+
+      const rate = response.data?.rates?.[currency.toLocaleUpperCase()];
+
+      if (!rate) {
+        throw new BadRequestException(`Rate not found for usd → ${currency}`);
+      }
+      return rate;
+    } catch (error) {
+      throw new BadRequestException(`Failed to fetch exchange rate`);
+    }
+  }
+
+  static getLastDayOfYear(year?: number): Date {
+    const targetYear = year ?? new Date().getFullYear();
+    return new Date(targetYear, 11, 31);
+  }
+
+  // Alternative: returns formatted string
+  static getLastDayOfYearString(year?: number): string {
+    const lastDay = this.getLastDayOfYear(year);
+    return lastDay.toISOString().split('T')[0]; // Returns YYYY-MM-DD
   }
 }

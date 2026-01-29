@@ -269,8 +269,6 @@ export class PortfolioService {
   }
 
   async remove(id: number) {
-    await this.findOne(id);
-
     await this.prisma.portfolio.delete({
       where: { id },
     });

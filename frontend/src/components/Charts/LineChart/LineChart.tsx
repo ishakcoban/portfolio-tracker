@@ -31,7 +31,7 @@ export default function LineChart({ chartData }: Props) {
           yAxis={[{ position: "none" }]}
           sx={{
             [`& .${lineElementClasses.root}`]: {
-              stroke: chartData?.currentEarning > 0 ? "#22BF75" : "#FA4F58",
+              stroke: chartData?.currentEarning > 0 ? "#26A69A" : "#EF5350",
               strokeWidth: 2,
             },
           }}
