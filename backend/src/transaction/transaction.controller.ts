@@ -21,6 +21,11 @@ export class TransactionController {
     return this.transactionService.create(createTransactionRequest);
   }
 
+  @Post('/bulk')
+  createByBulk(@Body() createTransactionRequest: CreateTransactionRequest[]) {
+    return this.transactionService.createByBulk(createTransactionRequest);
+  }
+
   @Post('sale')
   sellTransaction(@Body() sellTransactionRequest: SellTransactionRequest) {
     return this.transactionService.sellTransactionByFIFO(

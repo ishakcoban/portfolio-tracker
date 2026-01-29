@@ -54,7 +54,7 @@ type Transaction = {
   id: number;
   date: Date;
   eurusd: number;
-  investment: number;
+  invested: number;
   quantity: number;
   price: number;
   type: string;
@@ -140,7 +140,7 @@ export default function AssetGridView({ asset }: Props) {
                   <th>Price</th>
                   <th>EURUSD</th>
                   <th>USDTRY</th>
-                  <th>Actions</th>
+                  <th></th>
                 </tr>
               </thead>
               <tbody>
@@ -149,9 +149,9 @@ export default function AssetGridView({ asset }: Props) {
                     <td className="text-light">
                       {new Date(transaction.date).toLocaleString()}
                     </td>
-                    <td className="text-success fw-bold">{transaction.type}</td>
+                    <td className={"text-green fw-bold " + (transaction.type == "SELL" && "text-red")}>{transaction.type}</td>
                     <td className="text-light">
-                      ${transaction.investment.toFixed(2)}
+                      ${transaction.invested.toFixed(2)}
                     </td>
                      <td className="text-light">
                       {transaction.quantity.toFixed(3)}
@@ -169,7 +169,7 @@ export default function AssetGridView({ asset }: Props) {
                         Edit
                       </button>
                       <button
-                        className="btn transaction-buttons border text-danger border-danger ms-2"
+                        className="btn transaction-buttons border text-red border-danger ms-2"
                         onClick={() => handleDelete(transaction.id)}
                       >
                         Delete
@@ -199,8 +199,8 @@ export default function AssetGridView({ asset }: Props) {
                   <div className="asset-name ms-2 fw-bold">{asset.symbol}</div>
                 </div>
 
-                <div className="d-flex justify-content-center align-items-center">
-                  <div className="asset-chart-button d-flex justify-content-center align-items-center">
+                <div className="d-flex justify-content-center align-items-center left-section-buttons">
+                  <div className="d-flex justify-content-center align-items-center asset-chart-button">
                     <HugeiconsIcon
                       role="button"
                       color="white"
@@ -211,7 +211,7 @@ export default function AssetGridView({ asset }: Props) {
                     />
                   </div>
 
-                  <div className="asset-chart-button d-flex justify-content-center align-items-center">
+                  <div className="d-flex justify-content-center align-items-center asset-chart-button">
                     <HugeiconsIcon
                       role="button"
                       color="white"
@@ -224,7 +224,7 @@ export default function AssetGridView({ asset }: Props) {
                 </div>
               </div>
               <div className="d-flex justify-content-end py-2">
-                <div className="asset-current-price border-end pe-2 d-flex">
+                <div className="asset-current-price border-end pe-2">
                   <span>
                     {currency === "USD" ? "$" : currency === "EUR" ? "€" : "₺"}
                     <NumberFlow
@@ -246,12 +246,12 @@ export default function AssetGridView({ asset }: Props) {
 
                 <div
                   className={
-                    "border-end px-2 d-flex text-success " +
+                    "border-end px-2 text-green " +
                     (currency === "USD"
-                      ? asset.currentROIByUSD < 0 && " text-danger"
+                      ? asset.currentROIByUSD < 0 && " text-red"
                       : currency === "EUR"
-                        ? asset.currentROIByEURO < 0 && " text-danger"
-                        : asset.currentROIByTRY < 0 && " text-danger")
+                        ? asset.currentROIByEURO < 0 && " text-red"
+                        : asset.currentROIByTRY < 0 && " text-red")
                   }
                 >
                   <span>
@@ -275,12 +275,12 @@ export default function AssetGridView({ asset }: Props) {
 
                 <div
                   className={
-                    "ps-2 d-flex text-success " +
+                    "ps-2 text-green " +
                     (currency === "USD"
-                      ? asset.currentEarningByUSD < 0 && " text-danger"
+                      ? asset.currentEarningByUSD < 0 && " text-red"
                       : currency === "EUR"
-                        ? asset.currentEarningByEURO < 0 && " text-danger"
-                        : asset.currentEarningByTRY < 0 && " text-danger")
+                        ? asset.currentEarningByEURO < 0 && " text-red"
+                        : asset.currentEarningByTRY < 0 && " text-red")
                   }
                 >
                   <span>
@@ -325,7 +325,7 @@ export default function AssetGridView({ asset }: Props) {
               </div>
             </div>
             <div className="col-4 m-0 p-0">
-              <div className="asset-header">Original Capital</div>
+              <div className="asset-header">Invested</div>
               <div className="asset-value d-flex">
                 <span>
                   {currency === "USD" ? "$" : currency === "EUR" ? "€" : "₺"}
@@ -367,7 +367,7 @@ export default function AssetGridView({ asset }: Props) {
           <div className="row m-0 p-0 ps-4 pt-3">
             <div className="col-4 m-0 p-0">
               <div className="asset-header">Current Weight</div>
-              <div className="asset-value d-flex">
+              <div className="asset-value">
                 <span>
                   <NumberFlow
                     format={{
@@ -382,7 +382,7 @@ export default function AssetGridView({ asset }: Props) {
               </div>
             </div>
             <div className="col-4 m-0 p-0">
-              <div className="asset-header">Current Investment</div>
+              <div className="asset-header">Current</div>
               <div className="asset-value">
                 <span>
                   {currency === "USD" ? "$" : currency === "EUR" ? "€" : "₺"}

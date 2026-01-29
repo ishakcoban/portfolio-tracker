@@ -16,7 +16,6 @@ import { Helper } from 'src/utils/helpers';
 export class AssetService {
   constructor(
     private prisma: PrismaService,
-    //private portfolioService: PortfolioService,
     private readonly httpService: HttpService,
   ) {}
   async create(createAssetDto: CreateAssetDto) {
@@ -26,7 +25,7 @@ export class AssetService {
     const asset = await this.prisma.asset.findUnique({
       where: { symbol: createAssetDto.symbol },
     });
-    console.log(asset);
+
     if (!portfolio) {
       throw new NotFoundException(`Portfolio is not found!`);
     }
@@ -50,7 +49,7 @@ export class AssetService {
   ) {
     try {
       const date = new Date(Date.now()).toISOString().split('T')[0];
-      
+
       let totalRawInvestmentByUSD = 0;
       let totalRawInvestmentByEURO = 0;
       let totalRawInvestmentByTRY = 0;
@@ -122,14 +121,22 @@ export class AssetService {
               priceResponse.currentPriceByEURO = Number(
                 Number(
                   response.data.chart.result[0].meta.regularMarketPrice *
-                    (await Helper.getExchangeRatesByDate(this.httpService, 'EUR',date)),
+                    (await Helper.getExchangeRatesByDate_secondver(
+                      this.httpService,
+                      'EUR',
+                      date,
+                    )),
                 ).toFixed(2),
               );
               asset.currentAssetPriceByEURO = priceResponse.currentPriceByEURO;
               priceResponse.currentPriceByTRY = Number(
                 Number(
                   response.data.chart.result[0].meta.regularMarketPrice *
-                    (await Helper.getExchangeRatesByDate(this.httpService, 'TRY',date)),
+                    (await Helper.getExchangeRatesByDate_secondver(
+                      this.httpService,
+                      'TRY',
+                      date,
+                    )),
                 ).toFixed(2),
               );
               asset.currentAssetPriceByTRY = priceResponse.currentPriceByTRY;
@@ -142,7 +149,11 @@ export class AssetService {
               priceResponse.currentPriceByEURO = Number(
                 Number(
                   response.data.price *
-                    (await Helper.getExchangeRatesByDate(this.httpService, 'EUR',date)),
+                    (await Helper.getExchangeRatesByDate_secondver(
+                      this.httpService,
+                      'EUR',
+                      date,
+                    )),
                 ).toFixed(2),
               );
               asset.currentAssetPriceByEURO = priceResponse.currentPriceByEURO;
@@ -150,7 +161,11 @@ export class AssetService {
               priceResponse.currentPriceByTRY = Number(
                 Number(
                   response.data.price *
-                    (await Helper.getExchangeRatesByDate(this.httpService, 'TRY',date)),
+                    (await Helper.getExchangeRatesByDate_secondver(
+                      this.httpService,
+                      'TRY',
+                      date,
+                    )),
                 ).toFixed(2),
               );
               asset.currentAssetPriceByTRY = priceResponse.currentPriceByTRY;
@@ -159,7 +174,11 @@ export class AssetService {
               priceResponse.currentPriceByUSD = Number(
                 Number(
                   response.data.chart.result[0].meta.regularMarketPrice /
-                    (await Helper.getExchangeRatesByDate(this.httpService, 'TRY',date)),
+                    (await Helper.getExchangeRatesByDate_secondver(
+                      this.httpService,
+                      'TRY',
+                      date,
+                    )),
                 ).toFixed(2),
               );
               asset.currentAssetPriceByUSD = priceResponse.currentPriceByUSD;
@@ -168,12 +187,16 @@ export class AssetService {
                 Number(
                   (
                     (response.data.chart.result[0].meta.regularMarketPrice /
-                      (await Helper.getExchangeRatesByDate(
+                      (await Helper.getExchangeRatesByDate_secondver(
                         this.httpService,
                         'TRY',
-                        date
+                        date,
                       ))) *
-                    (await Helper.getExchangeRatesByDate(this.httpService, 'EUR',date))
+                    (await Helper.getExchangeRatesByDate_secondver(
+                      this.httpService,
+                      'EUR',
+                      date,
+                    ))
                   ).toFixed(2),
                 ),
               );
@@ -288,8 +311,7 @@ export class AssetService {
 
       const updatedAssets = await this.calculateCurrentWeight(result);
       const updatedPortfolioPie = await this.createPortfolioPie(result);
-      //const updatedLineChart = await this.calculateLineChartValues(result);
-
+      const yearsCount = await this.prisma.portfolioYearlyChange.count();
       return {
         currentROIByUSD: Number(
           (
@@ -315,9 +337,29 @@ export class AssetService {
         currentInvestmentByUSD: Number(currentInvestmentByUSD.toFixed(2)),
         currentInvestmentByEURO: Number(currentInvestmentByEURO.toFixed(2)),
         currentInvestmentByTRY: Number(currentInvestmentByTRY.toFixed(2)),
+        annualizedAverageROIByUSD:
+          (Math.pow(
+            currentInvestmentByUSD / totalRawInvestmentByUSD,
+            1 / yearsCount,
+          ) -
+            1) *
+          100,
+        annualizedAverageROIByEURO:
+          (Math.pow(
+            currentInvestmentByEURO / totalRawInvestmentByEURO,
+            1 / yearsCount,
+          ) -
+            1) *
+          100,
+        annualizedAverageROIByTRY:
+          (Math.pow(
+            currentInvestmentByTRY / totalRawInvestmentByTRY,
+            1 / yearsCount,
+          ) -
+            1) *
+          100,
         assets: updatedAssets,
         portfolioPie: updatedPortfolioPie,
-        // lineChart: updatedLineChart,
       };
     } catch (error) {
       throw error;

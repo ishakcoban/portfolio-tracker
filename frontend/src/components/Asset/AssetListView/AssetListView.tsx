@@ -7,6 +7,7 @@ import {
   Chart01Icon,
   Cancel01Icon,
   TransactionHistoryIcon,
+  WeightScale01Icon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import httpService from "../../../services/httpService";
@@ -54,7 +55,7 @@ type Transaction = {
   id: number;
   date: Date;
   eurusd: number;
-  investment: number;
+  invested: number;
   quantity: number;
   price: number;
   type: string;
@@ -67,13 +68,12 @@ export default function AssetListView({ asset }: Props) {
   const [lineChartData, setLineChartData] = useState<LineChartValue>();
   const [popupStatus, setPopupStatus] = useState<boolean>(false);
   const [transactionData, setTransactionData] = useState<Transaction[]>();
-    const [symbol, setSymbol] = useState<string>("");
-  //const [currency, setCurrency] = useState("USD");
-  const { currency } = useStore();
+  const [symbol, setSymbol] = useState<string>("");
+  const { currency, currentInvestment } = useStore();
 
   const changeLineChartStatus = async (
     id?: number,
-    currentEarningByUSD?: number
+    currentEarningByUSD?: number,
   ) => {
     if (!lineChartStatus && currentEarningByUSD) {
       try {
@@ -103,9 +103,9 @@ export default function AssetListView({ asset }: Props) {
     setPopupStatus(false);
   };
 
-  const openPopup = async (id: number,symbol:string) => {
+  const openPopup = async (id: number, symbol: string) => {
     setPopupStatus(true);
-    setSymbol(symbol)
+    setSymbol(symbol);
     try {
       const response = await httpService.get(`assets/${id}/transactions`);
       if (response.status === 200) {
@@ -150,9 +150,9 @@ export default function AssetListView({ asset }: Props) {
                     <td className="text-light">
                       {new Date(transaction.date).toLocaleString()}
                     </td>
-                    <td className="text-success fw-bold">{transaction.type}</td>
+                    <td className="text-green fw-bold">{transaction.type}</td>
                     <td className="text-light">
-                      ${transaction.investment.toFixed(2)}
+                      ${transaction.invested.toFixed(2)}
                     </td>
                     <td className="text-light">
                       {transaction.quantity.toFixed(3)}
@@ -170,7 +170,7 @@ export default function AssetListView({ asset }: Props) {
                         Edit
                       </button>
                       <button
-                        className="btn transaction-buttons border text-danger border-danger ms-2"
+                        className="btn transaction-buttons border text-red border-danger ms-2"
                         onClick={() => handleDelete(transaction.id)}
                       >
                         Delete
@@ -190,89 +190,177 @@ export default function AssetListView({ asset }: Props) {
               <thead className="border-bottom">
                 <tr>
                   <th></th>
-                  <th>Price</th>
-                  <th>ROI</th>
-                  <th>Earning</th>
                   <th>IW</th>
                   <th>CW</th>
+                  {asset.length > 1 ? (
+                    <>
+                      <th>WD</th>
+                      <th>CWD</th>
+                    </>
+                  ) : (
+                    <></>
+                  )}
                   <th>TQ</th>
                   <th>AC</th>
-                  <th>OC</th>
-                  <th>CI</th>
+                  <th>I</th>
+                  <th>C</th>
                   <th></th>
                 </tr>
               </thead>
               <tbody>
-                {asset?.map((asset) => (
-                  <tr key={asset.id}>
-                    <td className="text-light pe-5">
-                      <div
-                        style={{ fontSize: ".9rem" }}
-                        className="row m-0 p-0"
-                      >
-                        <div className="m-0 p-0 px-3">
-                          <div className="d-flex justify-content-between">
-                            <div className="d-flex align-items-center">
-                              <img
-                                src={asset.imageUrl}
-                                className="asset-logo"
-                                alt="Asset logo"
+                {asset?.map((item) => (
+                  <tr key={item.id}>
+                    <td className="text-light">
+                      <div>
+                        <div className="d-flex justify-content-start align-items-center">
+                          <img
+                            src={item.imageUrl}
+                            className="asset-logo"
+                            alt="Asset logo"
+                          />
+                          <div className="asset-name ms-2 fw-bold">
+                            {item.symbol}
+                          </div>
+                        </div>
+
+                        <div
+                          style={{ fontSize: ".9rem" }}
+                          className="d-flex justify-content-start py-2"
+                        >
+                          <div className="asset-current-price border-end pe-2">
+                            <span>
+                              {currency === "USD"
+                                ? "$"
+                                : currency === "EUR"
+                                  ? "€"
+                                  : "₺"}
+                              <NumberFlow
+                                format={{
+                                  style: "decimal",
+                                  signDisplay: "never",
+                                }}
+                                animated={false}
+                                value={
+                                  currency === "USD"
+                                    ? item.currentPriceByUSD
+                                    : currency === "EUR"
+                                      ? item.currentPriceByEURO
+                                      : item.currentPriceByTRY
+                                }
                               />
-                              <div className="asset-name ms-2 fw-bold">
-                                {asset.symbol}
-                              </div>
-                            </div>
+                            </span>
+                          </div>
+
+                          <div
+                            className={
+                              "border-end px-2 text-green " +
+                              (currency === "USD"
+                                ? item.currentROIByUSD < 0 && " text-red"
+                                : currency === "EUR"
+                                  ? item.currentROIByEURO < 0 && " text-red"
+                                  : item.currentROIByTRY < 0 && " text-red")
+                            }
+                          >
+                            <span>
+                              <NumberFlow
+                                format={{
+                                  style: "decimal",
+                                  signDisplay: "never",
+                                }}
+                                animated={false}
+                                value={Math.abs(
+                                  currency === "USD"
+                                    ? item.currentROIByUSD
+                                    : currency === "EUR"
+                                      ? item.currentROIByEURO
+                                      : item.currentROIByTRY,
+                                )}
+                              />
+                              %
+                            </span>
+                          </div>
+
+                          <div
+                            className={
+                              "ps-2 text-green " +
+                              (currency === "USD"
+                                ? item.currentEarningByUSD < 0 && " text-red"
+                                : currency === "EUR"
+                                  ? item.currentEarningByEURO < 0 &&
+                                    " text-red"
+                                  : item.currentEarningByTRY < 0 &&
+                                    " text-red")
+                            }
+                          >
+                            <span>
+                              {currency === "USD"
+                                ? "$"
+                                : currency === "EUR"
+                                  ? "€"
+                                  : "₺"}
+                              <NumberFlow
+                                format={{
+                                  notation: "standard",
+
+                                  signDisplay: "never",
+                                  maximumFractionDigits: 2,
+                                }}
+                                animated={false}
+                                value={Math.abs(
+                                  currency === "USD"
+                                    ? item.currentEarningByUSD
+                                    : currency === "EUR"
+                                      ? item.currentEarningByEURO
+                                      : item.currentEarningByTRY,
+                                )}
+                              />
+                            </span>
                           </div>
                         </div>
                       </div>
                     </td>
-                    <td className="fw-bold text-light text-nowrap">
+
+                    <td className="text-light text-nowrap">
                       <span>
-                        {currency === "USD"
-                          ? "$"
-                          : currency === "EUR"
-                            ? "€"
-                            : "₺"}
                         <NumberFlow
                           format={{
-                            style: "decimal",
+                            notation: "standard",
                             signDisplay: "never",
                           }}
                           animated={false}
-                          value={
-                            currency === "USD"
-                              ? asset.currentPriceByUSD
-                              : currency === "EUR"
-                                ? asset.currentPriceByEURO
-                                : asset.currentPriceByTRY
-                          }
+                          value={item.initialWeight}
                         />
+                        %
                       </span>
                     </td>
                     <td className="text-light text-nowrap">
+                      <span>
+                        <NumberFlow
+                          format={{
+                            notation: "standard",
+                            signDisplay: "never",
+                          }}
+                          animated={false}
+                          value={item.currentWeight}
+                        />
+                        %
+                      </span>
+                    </td>
+                    {asset.length > 1 ? <><td className="text-light text-nowrap">
                       <span
                         className={
-                          "fw-bold text-success " +
-                          (currency === "USD"
-                            ? asset.currentROIByUSD < 0 && " text-danger"
-                            : currency === "EUR"
-                              ? asset.currentROIByEURO < 0 && " text-danger"
-                              : asset.currentROIByTRY < 0 && " text-danger")
+                          "fw-bold text-green " +
+                          (item.currentWeight - item.initialWeight < 0 &&
+                            " text-red")
                         }
                       >
                         <NumberFlow
                           format={{
-                            style: "decimal",
+                            notation: "standard",
                             signDisplay: "never",
                           }}
                           animated={false}
-                          value={Math.abs(
-                            currency === "USD"
-                              ? asset.currentROIByUSD
-                              : currency === "EUR"
-                                ? asset.currentROIByEURO
-                                : asset.currentROIByTRY
-                          )}
+                          value={item.currentWeight - item.initialWeight}
                         />
                         %
                       </span>
@@ -280,12 +368,9 @@ export default function AssetListView({ asset }: Props) {
                     <td className="text-light text-nowrap">
                       <span
                         className={
-                          "fw-bold text-success " +
-                          (currency === "USD"
-                            ? asset.currentROIByUSD < 0 && " text-danger"
-                            : currency === "EUR"
-                              ? asset.currentROIByEURO < 0 && " text-danger"
-                              : asset.currentROIByTRY < 0 && " text-danger")
+                          "fw-bold text-green " +
+                          (item.currentWeight - item.initialWeight < 0 &&
+                            " text-red")
                         }
                       >
                         {currency === "USD"
@@ -296,47 +381,29 @@ export default function AssetListView({ asset }: Props) {
                         <NumberFlow
                           format={{
                             notation: "standard",
-
                             signDisplay: "never",
                             maximumFractionDigits: 2,
                           }}
                           animated={false}
-                          value={Math.abs(
+                          value={
                             currency === "USD"
-                              ? asset.currentEarningByUSD
+                              ? (currentInvestment.byUSD *
+                                  (item.currentWeight - item.initialWeight)) /
+                                100
                               : currency === "EUR"
-                                ? asset.currentEarningByEURO
-                                : asset.currentEarningByTRY
-                          )}
+                                ? (currentInvestment.byEURO *
+                                    (item.currentWeight -
+                                      item.initialWeight)) /
+                                  100
+                                : (currentInvestment.byTRY *
+                                    (item.currentWeight -
+                                      item.initialWeight)) /
+                                  100
+                          }
                         />
                       </span>
-                    </td>
-                    <td className="text-light text-nowrap">
-                      <span>
-                        <NumberFlow
-                          format={{
-                            notation: "standard",
-                            signDisplay: "never",
-                          }}
-                          animated={false}
-                          value={asset.initialWeight}
-                        />
-                        %
-                      </span>
-                    </td>
-                    <td className="text-light text-nowrap">
-                      <span>
-                        <NumberFlow
-                          format={{
-                            notation: "standard",
-                            signDisplay: "never",
-                          }}
-                          animated={false}
-                          value={asset.currentWeight}
-                        />
-                        %
-                      </span>
-                    </td>
+                    </td></> : <></>}
+                    
                     <td className="text-light text-nowrap">
                       {" "}
                       <NumberFlow
@@ -344,12 +411,12 @@ export default function AssetListView({ asset }: Props) {
                           notation: "standard",
                           signDisplay: "never",
                           maximumFractionDigits:
-                            asset.symbol == "BTC" || asset.symbol == "PAXG"
+                            item.symbol == "BTC" || item.symbol == "PAXG"
                               ? 8
                               : 3,
                         }}
                         animated={false}
-                        value={asset.totalQuantity}
+                        value={item.totalQuantity}
                       />
                     </td>
                     <td className="text-light text-nowrap">
@@ -369,10 +436,10 @@ export default function AssetListView({ asset }: Props) {
                           animated={false}
                           value={
                             currency === "USD"
-                              ? asset.averageCostByUSD
+                              ? item.averageCostByUSD
                               : currency === "EUR"
-                                ? asset.averageCostByEURO
-                                : asset.averageCostByTRY
+                                ? item.averageCostByEURO
+                                : item.averageCostByTRY
                           }
                         />
                       </span>
@@ -393,10 +460,10 @@ export default function AssetListView({ asset }: Props) {
                           animated={false}
                           value={
                             currency === "USD"
-                              ? asset.totalRawInvestmentByUSD
+                              ? item.totalRawInvestmentByUSD
                               : currency === "EUR"
-                                ? asset.totalRawInvestmentByEURO
-                                : asset.totalRawInvestmentByTRY
+                                ? item.totalRawInvestmentByEURO
+                                : item.totalRawInvestmentByTRY
                           }
                         />
                       </span>
@@ -418,10 +485,10 @@ export default function AssetListView({ asset }: Props) {
                           animated={false}
                           value={
                             currency === "USD"
-                              ? asset.currentInvestmentByUSD
+                              ? item.currentInvestmentByUSD
                               : currency === "EUR"
-                                ? asset.currentInvestmentByEURO
-                                : asset.currentInvestmentByTRY
+                                ? item.currentInvestmentByEURO
+                                : item.currentInvestmentByTRY
                           }
                         />
                       </span>
@@ -435,7 +502,7 @@ export default function AssetListView({ asset }: Props) {
                             width={21}
                             height={21}
                             icon={TransactionHistoryIcon}
-                            onClick={() => openPopup(asset.id,asset.symbol)}
+                            onClick={() => openPopup(item.id, item.symbol)}
                           />
                         </div>
 
@@ -448,8 +515,23 @@ export default function AssetListView({ asset }: Props) {
                             icon={Chart01Icon}
                             onClick={() =>
                               changeLineChartStatus(
-                                asset.id,
-                                asset.currentEarningByUSD
+                                item.id,
+                                item.currentEarningByUSD,
+                              )
+                            }
+                          />
+                        </div>
+                        <div className="asset-chart-button d-flex justify-content-center align-items-center">
+                          <HugeiconsIcon
+                            role="button"
+                            color="white"
+                            width={21}
+                            height={21}
+                            icon={WeightScale01Icon}
+                            onClick={() =>
+                              changeLineChartStatus(
+                                item.id,
+                                item.currentEarningByUSD,
                               )
                             }
                           />
@@ -485,7 +567,15 @@ export default function AssetListView({ asset }: Props) {
               </div>
             </div>
           )}
-          <div className="text-center" style={{color:"#D1D5DB",fontSize:".7rem"}}>IW : Initial Weight --- CW : Current Weight --- TQ : Total Quantity --- AC : Average Cost --- OC : Original Capital --- CI : Current Investment</div>
+          <div
+            className="text-center"
+            style={{ color: "#D1D5DB", fontSize: ".6rem" }}
+          >
+            IW : Initial Weight --- CW : Current Weight --- WD : Weight
+            Difference --- CWD : Capital by Weight Difference --- TQ : Total
+            Quantity --- AC : Average Cost --- I : Invested --- C :
+            Current
+          </div>
         </div>
       ) : (
         <div className=" d-flex justify-content-center align-items-center">

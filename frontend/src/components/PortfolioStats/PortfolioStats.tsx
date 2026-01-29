@@ -11,12 +11,19 @@ import {
   ArrowUp04Icon,
   ArrowUp05Icon,
   ArrowUpDoubleIcon,
+  Delete03Icon,
+  Remove01Icon,
+  Remove02Icon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useStore } from "../../store";
 import FearGreedIndex from "../FearAndGreedIndex/FearGreedIndex";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import httpService from "../../services/httpService";
+import DeletePortfolioForm from "../Popup/DeletePortfolioForm/DeletePortfolioForm";
+import Popup from "../Popup/Popup";
+import type { SuccessMessageCardRef } from "../SuccessMessageCard/SuccessMessageCard";
+import SuccessMessageCard from "../SuccessMessageCard/SuccessMessageCard";
 type PortfolioStats = {
   id: number;
   name: string;
@@ -32,6 +39,9 @@ type PortfolioStats = {
   currentInvestmentByUSD: number;
   currentInvestmentByEURO: number;
   currentInvestmentByTRY: number;
+  annualizedAverageROIByUSD: number;
+  annualizedAverageROIByEURO: number;
+  annualizedAverageROIByTRY: number;
   portfolioPie: {
     label: string;
     value: number;
@@ -54,9 +64,11 @@ type FearAndGreedIndex = {
 };
 export default function PortfolioStats({ portfolioStats }: Props) {
   const { currency } = useStore();
+  const [popupType, setPopupType] = useState<null | string>(null);
   const [fearAndGreedIndexData, setFearAndGreedIndexData] =
     useState<FearAndGreedIndex>();
-
+  const [message, setMessage] = useState("");
+  const cardRef = useRef<SuccessMessageCardRef | null>(null);
   const fetchData = async () => {
     try {
       const response = await httpService.get(
@@ -77,16 +89,52 @@ export default function PortfolioStats({ portfolioStats }: Props) {
     fetchData();
     //fetchVixData();
   }, []);
+
+  const openPopup = (popupType: string) => {
+    setPopupType(popupType);
+  };
+
+  const closePopup = () => {
+    setPopupType(null);
+  };
+
+  const handleFormSuccess = (msg: string) => {
+    setMessage(msg);
+    cardRef.current?.openSuccessMessageBox();
+    setPopupType(null);
+  };
   return (
     <div className="portfolio-stats-wrapper py-3">
+      <SuccessMessageCard ref={cardRef} message={message}></SuccessMessageCard>
+      {popupType && (
+        <Popup onClose={closePopup}>
+          <DeletePortfolioForm
+            closePopup={closePopup}
+            onSuccess={handleFormSuccess}
+          ></DeletePortfolioForm>
+        </Popup>
+      )}
+
       {portfolioStats !== null &&
       portfolioStats.currentInvestmentByUSD !== undefined ? (
         <div className="position-relative d-flex justify-content-center align-items-center">
+          <div className="position-absolute top-0 w-100">
+            <div className="text-end pe-3">
+              <HugeiconsIcon
+                role="button"
+                color="white"
+                width={18}
+                height={18}
+                icon={Delete03Icon}
+                onClick={() => openPopup("delete portfolio")}
+              />
+            </div>
+          </div>
           <div className="mt-3">
             <CircularChart portfolioPie={portfolioStats.portfolioPie} />
           </div>
           <div
-            className="position-absolute top-0 text-center"
+            className="position-absolute top-0 text-center w-100"
             style={{ marginTop: "85px" }}
           >
             <div className="d-flex justify-content-center align-items-center">
@@ -100,7 +148,7 @@ export default function PortfolioStats({ portfolioStats }: Props) {
                   <span className="ripple pinkBg"></span>
                 </span>
               </div>
-              <div className="text-danger fw-bold">LIVE</div>
+              <div className="text-red fw-bold">LIVE</div>
             </div>
 
             <div className="portfolio-current-price">
@@ -126,17 +174,17 @@ export default function PortfolioStats({ portfolioStats }: Props) {
             </div>
 
             <div
-              className="row m-0 p-0 fw-bold py-2"
+              className="d-flex justify-content-center fw-bold mt-2 mb-4"
               style={{ fontSize: ".8rem" }}
             >
               <div
                 className={
-                  "col-6 m-0 p-0 border-end text-success text-end pe-2 py-1 " +
+                  "border-end text-green py-1 pe-2 " +
                   (currency === "USD"
-                    ? portfolioStats.currentROIByUSD < 0 && " text-danger"
+                    ? portfolioStats.currentROIByUSD < 0 && " text-red"
                     : currency === "EUR"
-                      ? portfolioStats.currentROIByEURO < 0 && " text-danger"
-                      : portfolioStats.currentROIByTRY < 0 && " text-danger")
+                      ? portfolioStats.currentROIByEURO < 0 && " text-red"
+                      : portfolioStats.currentROIByTRY < 0 && " text-red")
                 }
               >
                 <span>
@@ -144,6 +192,7 @@ export default function PortfolioStats({ portfolioStats }: Props) {
                     format={{
                       notation: "standard",
                       signDisplay: "never",
+                      maximumFractionDigits: 2,
                     }}
                     animated={false}
                     value={
@@ -159,14 +208,46 @@ export default function PortfolioStats({ portfolioStats }: Props) {
               </div>
               <div
                 className={
-                  "col-6 m-0 p-0 text-success text-start ps-2 py-1 " +
+                  "border-end text-green py-1 px-2 " +
                   (currency === "USD"
-                    ? portfolioStats.currentEarningByUSD < 0 && " text-danger"
+                    ? portfolioStats.annualizedAverageROIByUSD < 0 &&
+                      " text-red"
+                    : currency === "EUR"
+                      ? portfolioStats.annualizedAverageROIByEURO < 0 &&
+                        " text-red"
+                      : portfolioStats.annualizedAverageROIByTRY < 0 &&
+                        " text-red")
+                }
+              >
+                <span>
+                  <NumberFlow
+                    format={{
+                      notation: "standard",
+                      signDisplay: "never",
+                      maximumFractionDigits: 2,
+                    }}
+                    animated={false}
+                    value={
+                      currency === "USD"
+                        ? portfolioStats.annualizedAverageROIByUSD
+                        : currency === "EUR"
+                          ? portfolioStats.annualizedAverageROIByEURO
+                          : portfolioStats.annualizedAverageROIByTRY
+                    }
+                  />
+                  %
+                </span>
+              </div>
+              <div
+                className={
+                  "text-green py-1 ps-2 " +
+                  (currency === "USD"
+                    ? portfolioStats.currentEarningByUSD < 0 && " text-red"
                     : currency === "EUR"
                       ? portfolioStats.currentEarningByEURO < 0 &&
-                        " text-danger"
+                        " text-red"
                       : portfolioStats.currentEarningByTRY < 0 &&
-                        " text-danger")
+                        " text-red")
                 }
               >
                 <span>
@@ -191,7 +272,7 @@ export default function PortfolioStats({ portfolioStats }: Props) {
             </div>
 
             <div className="portfolio-raw-investment-header mt-3">
-              TOTAL ORIGINAL CAPITAL
+              TOTAL INVESTED
             </div>
             <div className="portfolio-raw-investment-value fw-bold">
               <span>
@@ -229,8 +310,8 @@ export default function PortfolioStats({ portfolioStats }: Props) {
               <div
                 className={
                   portfolioStats?.currentEarningByUSD > 0
-                    ? "text-success"
-                    : "text-danger"
+                    ? "text-green"
+                    : "text-red"
                 }
               >
                 <span>
@@ -252,8 +333,8 @@ export default function PortfolioStats({ portfolioStats }: Props) {
               <div
                 className={
                   portfolioStats?.currentEarningByEURO > 0
-                    ? "text-success"
-                    : "text-danger"
+                    ? "text-green"
+                    : "text-red"
                 }
               >
                 <span></span>
@@ -274,8 +355,8 @@ export default function PortfolioStats({ portfolioStats }: Props) {
               <div
                 className={
                   portfolioStats?.currentEarningByTRY > 0
-                    ? "text-success"
-                    : "text-danger"
+                    ? "text-green"
+                    : "text-red"
                 }
               >
                 <span>

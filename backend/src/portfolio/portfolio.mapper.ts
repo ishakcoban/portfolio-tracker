@@ -18,9 +18,9 @@ export class PortfolioMapper {
     return {
       id: portfolio.id,
       name: portfolio.name,
-      totalRawInvestmentByUSD: portfolio.totalRawInvestmentByUSD,
-      totalRawInvestmentByEURO: portfolio.totalRawInvestmentByEURO,
-      totalRawInvestmentByTRY: portfolio.totalRawInvestmentByTRY,
+      totalRawInvestmentByUSD: portfolio.totalInvestedByUSD,
+      totalRawInvestmentByEURO: portfolio.totalInvestedByEURO,
+      totalRawInvestmentByTRY: portfolio.totalInvestedByTRY,
       assets: this.assetMapper.toDtoList(portfolio.assets),
     };
   }

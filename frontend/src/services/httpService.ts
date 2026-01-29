@@ -42,9 +42,9 @@ const httpService = {
     return response.data;
   },
 
-  delete: async <T>(url: string, config?: AxiosRequestConfig) => {
-    const response: AxiosResponse<T> = await api.delete(url, config);
-    return response.data;
+  delete: async (url: string, config?: AxiosRequestConfig) => {
+    const response: AxiosResponse = await api.delete(url, config);
+    return response;
   },
 };
 

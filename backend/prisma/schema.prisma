@@ -15,13 +15,14 @@ generator client {
 }
 
 model Portfolio {
-  id                       Int                    @id @default(autoincrement())
-  name                     String                 @unique
-  totalRawInvestmentByUSD  Float                  @default(0)
-  totalRawInvestmentByEURO Float                  @default(0)
-  totalRawInvestmentByTRY  Float                  @default(0)
-  assets                   Asset[]
-  dailyChanges             PortfolioDailyChange[]
+  id                  Int                     @id @default(autoincrement())
+  name                String                  @unique
+  totalInvestedByUSD  Float                   @default(0)
+  totalInvestedByEURO Float                   @default(0)
+  totalInvestedByTRY  Float                   @default(0)
+  assets              Asset[]
+  dailyChanges        PortfolioDailyChange[]
+  yearlyChanges       PortfolioYearlyChange[]
 }
 
 model PortfolioDailyChange {
@@ -31,8 +32,24 @@ model PortfolioDailyChange {
   low         Float
   close       Float
   time        String
-  portfolio   Portfolio @relation(fields: [portfolioId], references: [id])
+  portfolio   Portfolio @relation(fields: [portfolioId], references: [id], onDelete: Cascade)
   portfolioId Int
+}
+
+model PortfolioYearlyChange {
+  id               Int       @id @default(autoincrement())
+  investedByUSD    Float
+  investedByEURO   Float
+  investedByTRY    Float
+  finalValueByUSD  Float
+  finalValueByEURO Float
+  finalValueByTRY  Float
+  roiByUSD         Float
+  roiByEURO        Float
+  roiByTRY         Float
+  year             Int
+  portfolio        Portfolio @relation(fields: [portfolioId], references: [id], onDelete: Cascade)
+  portfolioId      Int
 }
 
 model Asset {
@@ -41,30 +58,30 @@ model Asset {
   type                     AssetType
   imageUrl                 String
   isActive                 AssetStatus   @default(ACTIVE)
-  totalRawInvestmentByUSD  Float         @default(0)
-  totalRawInvestmentByEURO Float         @default(0)
-  totalRawInvestmentByTRY  Float         @default(0)
+  totalInvestedByUSD  Float         @default(0)
+  totalInvestedByEURO Float         @default(0)
+  totalInvestedByTRY  Float         @default(0)
   totalQuantity            Float         @default(0)
   averageCostByUSD         Float         @default(0)
   averageCostByEURO        Float         @default(0)
   averageCostByTRY         Float         @default(0)
   initialWeight            Float
-  portfolio                Portfolio     @relation(fields: [portfolioId], references: [id])
+  portfolio                Portfolio     @relation(fields: [portfolioId], references: [id], onDelete: Cascade)
   portfolioId              Int
   transactions             Transaction[]
 }
 
 model Transaction {
-  id         Int             @id @default(autoincrement())
-  type       TransactionType
-  price      Float
-  quantity   Float
-  usdtry     Float
-  eurusd     Float
-  investment Float
-  date       DateTime
-  asset      Asset?          @relation(fields: [assetId], references: [id])
-  assetId    Int?
+  id       Int             @id @default(autoincrement())
+  type     TransactionType
+  price    Float
+  quantity Float
+  usdtry   Float
+  eurusd   Float
+  invested Float
+  date     DateTime
+  asset    Asset?          @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  assetId  Int?
 }
 
 enum AssetStatus {
