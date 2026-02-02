@@ -28,10 +28,6 @@ export class CreateAssetDto {
   @IsEnum(AssetType, { message: 'Type must be a valid AssetType' })
   type: AssetType;
 
-  @IsUrl({}, { message: 'Image URL must be a valid URL' })
-  @IsNotEmpty({ message: 'Image URL is required' })
-  imageUrl: string;
-
   @IsNumber({}, { message: 'Initial weight must be a number' })
   @NotEquals(0, { message: 'Initial weight cannot be zero' })
   @Min(0, { message: 'Initial weight must be at least 0' })

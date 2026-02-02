@@ -8,9 +8,15 @@ export class CurrentMarketPriceResponse {
   currentPriceByUSD: number;
   currentPriceByEURO: number;
   currentPriceByTRY: number;
+  previousDayPriceByUSD: number;
+  previousDayPriceByEURO: number;
+  previousDayPriceByTRY: number;
   currentROIByUSD: number;
   currentROIByEURO: number;
   currentROIByTRY: number;
+  dailyROIByUSD: number;
+  dailyROIByEURO: number;
+  dailyROIByTRY: number;
   currentEarningByUSD: number;
   currentEarningByEURO: number;
   currentEarningByTRY: number;
@@ -18,4 +24,5 @@ export class CurrentMarketPriceResponse {
   currentInvestmentByEURO: number;
   currentInvestmentByTRY: number;
   currentWeight: number;
+  marketStatus: boolean;
 }

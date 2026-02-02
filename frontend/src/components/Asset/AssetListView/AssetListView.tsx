@@ -8,6 +8,7 @@ import {
   Cancel01Icon,
   TransactionHistoryIcon,
   WeightScale01Icon,
+  ViewOffIcon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import httpService from "../../../services/httpService";
@@ -32,6 +33,9 @@ type Asset = {
   currentROIByUSD: number;
   currentROIByEURO: number;
   currentROIByTRY: number;
+  dailyROIByUSD: number;
+  dailyROIByEURO: number;
+  dailyROIByTRY: number;
   currentEarningByUSD: number;
   currentEarningByEURO: number;
   currentEarningByTRY: number;
@@ -39,6 +43,7 @@ type Asset = {
   currentInvestmentByUSD: number;
   currentInvestmentByEURO: number;
   currentInvestmentByTRY: number;
+  marketStatus: boolean;
 };
 
 type LineChartValue = {
@@ -213,13 +218,52 @@ export default function AssetListView({ asset }: Props) {
                     <td className="text-light">
                       <div>
                         <div className="d-flex justify-content-start align-items-center">
-                          <img
-                            src={item.imageUrl}
-                            className="asset-logo"
-                            alt="Asset logo"
-                          />
-                          <div className="asset-name ms-2 fw-bold">
+                          <div className="asset-name fw-bold">
                             {item.symbol}
+                          </div>
+                          <div className="asset-name ms-2 fw-bold">
+                            {item.marketStatus ? (
+                              <div
+                                className={
+                                  "text-green " +
+                                  (currency === "USD"
+                                    ? item.dailyROIByUSD < 0 && " text-red"
+                                    : currency === "EUR"
+                                      ? item.dailyROIByEURO < 0 && " text-red"
+                                      : item.dailyROIByTRY < 0 && " text-red")
+                                }
+                              >
+                                <span>
+                                  <NumberFlow
+                                    format={{
+                                      style: "decimal",
+                                      signDisplay: "always",
+                                      maximumFractionDigits: 2,
+                                    }}
+                                    animated={false}
+                                    value={
+                                      currency === "USD"
+                                        ? item.dailyROIByUSD
+                                        : currency === "EUR"
+                                          ? item.dailyROIByEURO
+                                          : item.dailyROIByTRY
+                                    }
+                                  />
+                                  %
+                                </span>
+                              </div>
+                            ) : (
+                              <div>
+                                <HugeiconsIcon
+                                  role="button"
+                                  color="white"
+                                  width={21}
+                                  height={21}
+                                  icon={ViewOffIcon}
+                          
+                                />
+                              </div>
+                            )}
                           </div>
                         </div>
 
@@ -286,10 +330,8 @@ export default function AssetListView({ asset }: Props) {
                               (currency === "USD"
                                 ? item.currentEarningByUSD < 0 && " text-red"
                                 : currency === "EUR"
-                                  ? item.currentEarningByEURO < 0 &&
-                                    " text-red"
-                                  : item.currentEarningByTRY < 0 &&
-                                    " text-red")
+                                  ? item.currentEarningByEURO < 0 && " text-red"
+                                  : item.currentEarningByTRY < 0 && " text-red")
                             }
                           >
                             <span>
@@ -346,64 +388,71 @@ export default function AssetListView({ asset }: Props) {
                         %
                       </span>
                     </td>
-                    {asset.length > 1 ? <><td className="text-light text-nowrap">
-                      <span
-                        className={
-                          "fw-bold text-green " +
-                          (item.currentWeight - item.initialWeight < 0 &&
-                            " text-red")
-                        }
-                      >
-                        <NumberFlow
-                          format={{
-                            notation: "standard",
-                            signDisplay: "never",
-                          }}
-                          animated={false}
-                          value={item.currentWeight - item.initialWeight}
-                        />
-                        %
-                      </span>
-                    </td>
-                    <td className="text-light text-nowrap">
-                      <span
-                        className={
-                          "fw-bold text-green " +
-                          (item.currentWeight - item.initialWeight < 0 &&
-                            " text-red")
-                        }
-                      >
-                        {currency === "USD"
-                          ? "$"
-                          : currency === "EUR"
-                            ? "€"
-                            : "₺"}
-                        <NumberFlow
-                          format={{
-                            notation: "standard",
-                            signDisplay: "never",
-                            maximumFractionDigits: 2,
-                          }}
-                          animated={false}
-                          value={
-                            currency === "USD"
-                              ? (currentInvestment.byUSD *
-                                  (item.currentWeight - item.initialWeight)) /
-                                100
+                    {asset.length > 1 ? (
+                      <>
+                        <td className="text-light text-nowrap">
+                          <span
+                            className={
+                              "fw-bold text-green " +
+                              (item.currentWeight - item.initialWeight < 0 &&
+                                " text-red")
+                            }
+                          >
+                            <NumberFlow
+                              format={{
+                                notation: "standard",
+                                signDisplay: "never",
+                              }}
+                              animated={false}
+                              value={item.currentWeight - item.initialWeight}
+                            />
+                            %
+                          </span>
+                        </td>
+                        <td className="text-light text-nowrap">
+                          <span
+                            className={
+                              "fw-bold text-green " +
+                              (item.currentWeight - item.initialWeight < 0 &&
+                                " text-red")
+                            }
+                          >
+                            {currency === "USD"
+                              ? "$"
                               : currency === "EUR"
-                                ? (currentInvestment.byEURO *
-                                    (item.currentWeight -
-                                      item.initialWeight)) /
-                                  100
-                                : (currentInvestment.byTRY *
-                                    (item.currentWeight -
-                                      item.initialWeight)) /
-                                  100
-                          }
-                        />
-                      </span>
-                    </td></> : <></>}
-                    
+                                ? "€"
+                                : "₺"}
+                            <NumberFlow
+                              format={{
+                                notation: "standard",
+                                signDisplay: "never",
+                                maximumFractionDigits: 2,
+                              }}
+                              animated={false}
+                              value={
+                                currency === "USD"
+                                  ? (currentInvestment.byUSD *
+                                      (item.currentWeight -
+                                        item.initialWeight)) /
+                                    100
+                                  : currency === "EUR"
+                                    ? (currentInvestment.byEURO *
+                                        (item.currentWeight -
+                                          item.initialWeight)) /
+                                      100
+                                    : (currentInvestment.byTRY *
+                                        (item.currentWeight -
+                                          item.initialWeight)) /
+                                      100
+                              }
+                            />
+                          </span>
+                        </td>
+                      </>
+                    ) : (
+                      <></>
+                    )}
+
                     <td className="text-light text-nowrap">
                       {" "}
                       <NumberFlow
@@ -573,8 +622,7 @@ export default function AssetListView({ asset }: Props) {
           >
             IW : Initial Weight --- CW : Current Weight --- WD : Weight
             Difference --- CWD : Capital by Weight Difference --- TQ : Total
-            Quantity --- AC : Average Cost --- I : Invested --- C :
-            Current
+            Quantity --- AC : Average Cost --- I : Invested --- C : Current
           </div>
         </div>
       ) : (

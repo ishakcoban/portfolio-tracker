@@ -49,6 +49,7 @@ export class AssetService {
   ) {
     try {
       const date = new Date(Date.now()).toISOString().split('T')[0];
+      const previousDate = Helper.minusOneDay(date);
 
       let totalRawInvestmentByUSD = 0;
       let totalRawInvestmentByEURO = 0;
@@ -64,41 +65,34 @@ export class AssetService {
 
       const result = await Promise.all(
         requestCurrentAssetPrice.map(async (asset) => {
-          let url = '';
+          const url = Helper.findURLForChartByAssetType(
+            date,
+            asset.type,
+            asset.symbol,
+          );
 
-          switch (asset.type) {
-            case AssetType.ETF || AssetType.INDEX:
-              url =
-                'https://query1.finance.yahoo.com/v8/finance/chart/' +
-                asset.symbol;
-              break;
-
-            case AssetType.INDEX:
-              url =
-                'https://query1.finance.yahoo.com/v8/finance/chart/' +
-                (asset.symbol === 'XU100'
-                  ? asset.symbol + '.IS'
-                  : asset.symbol);
-
-              break;
-
-            case AssetType.CRYPTO:
-              url =
-                'https://api.binance.com/api/v3/ticker/price?symbol=' +
-                asset.symbol +
-                'USDT';
-              break;
-          }
+          const url2 = Helper.findURLForChartByAssetType(
+            previousDate,
+            asset.type,
+            asset.symbol,
+          );
 
           const response = await firstValueFrom(this.httpService.get(url));
+          const response2 = await firstValueFrom(this.httpService.get(url2));
 
           const priceResponse: CurrentMarketPriceResponse = {
             currentPriceByUSD: 0,
             currentPriceByEURO: 0,
             currentPriceByTRY: 0,
+            previousDayPriceByUSD: 0,
+            previousDayPriceByEURO: 0,
+            previousDayPriceByTRY: 0,
             currentROIByUSD: 0,
             currentROIByEURO: 0,
             currentROIByTRY: 0,
+            dailyROIByUSD: 0,
+            dailyROIByEURO: 0,
+            dailyROIByTRY: 0,
             currentEarningByUSD: 0,
             currentEarningByEURO: 0,
             currentEarningByTRY: 0,
@@ -108,48 +102,90 @@ export class AssetService {
             currentWeight: 0,
             symbol: asset.symbol,
             type: asset.type,
+            marketStatus: true,
           };
 
+          let timestamps: any[] = [];
+          let candle2: any;
+          let data: any;
           switch (asset.type) {
             case AssetType.ETF:
-              priceResponse.currentPriceByUSD = Number(
-                Number(
-                  response.data.chart.result[0].meta.regularMarketPrice,
-                ).toFixed(2),
+              priceResponse.marketStatus = Helper.isMarketOpen(
+                response.data.chart.result[0].meta,
               );
+
+              priceResponse.previousDayPriceByUSD =
+                response.data.chart.result[0].meta.chartPreviousClose;
+
+              priceResponse.previousDayPriceByEURO =
+                response.data.chart.result[0].meta.chartPreviousClose *
+                (await Helper.getExchangeRatesByDate(
+                  this.httpService,
+                  'EUR',
+                  previousDate,
+                ));
+              priceResponse.previousDayPriceByTRY =
+                response.data.chart.result[0].meta.chartPreviousClose *
+                (await Helper.getExchangeRatesByDate(
+                  this.httpService,
+                  'TRY',
+                  previousDate,
+                ));
+              // today value
+              priceResponse.currentPriceByUSD =
+                response.data.chart.result[0].meta.regularMarketPrice;
+
               asset.currentAssetPriceByUSD = priceResponse.currentPriceByUSD;
-              priceResponse.currentPriceByEURO = Number(
-                Number(
-                  response.data.chart.result[0].meta.regularMarketPrice *
-                    (await Helper.getExchangeRatesByDate_secondver(
-                      this.httpService,
-                      'EUR',
-                      date,
-                    )),
-                ).toFixed(2),
-              );
+              priceResponse.currentPriceByEURO =
+                response.data.chart.result[0].meta.regularMarketPrice *
+                (await Helper.getExchangeRatesByDate(
+                  this.httpService,
+                  'EUR',
+                  date,
+                ));
               asset.currentAssetPriceByEURO = priceResponse.currentPriceByEURO;
-              priceResponse.currentPriceByTRY = Number(
-                Number(
-                  response.data.chart.result[0].meta.regularMarketPrice *
-                    (await Helper.getExchangeRatesByDate_secondver(
-                      this.httpService,
-                      'TRY',
-                      date,
-                    )),
-                ).toFixed(2),
-              );
+              priceResponse.currentPriceByTRY =
+                response.data.chart.result[0].meta.regularMarketPrice *
+                (await Helper.getExchangeRatesByDate(
+                  this.httpService,
+                  'TRY',
+                  date,
+                ));
               asset.currentAssetPriceByTRY = priceResponse.currentPriceByTRY;
               break;
             case AssetType.CRYPTO:
-              priceResponse.currentPriceByUSD = Number(
-                Number(response.data.price).toFixed(2),
+              // previous date value
+              candle2 = response2.data[0];
+              priceResponse.previousDayPriceByUSD = parseFloat(candle2[4]);
+              priceResponse.previousDayPriceByEURO = Number(
+                Number(
+                  priceResponse.previousDayPriceByUSD *
+                    (await Helper.getExchangeRatesByDate(
+                      this.httpService,
+                      'EUR',
+                      previousDate,
+                    )),
+                ).toFixed(2),
               );
+              priceResponse.previousDayPriceByTRY = Number(
+                Number(
+                  priceResponse.previousDayPriceByUSD *
+                    (await Helper.getExchangeRatesByDate(
+                      this.httpService,
+                      'TRY',
+                      previousDate,
+                    )),
+                ).toFixed(2),
+              );
+              // today value
+              let candle = response.data[0];
               asset.currentAssetPriceByUSD = priceResponse.currentPriceByUSD;
+              priceResponse.currentPriceByUSD = parseFloat(candle[4]);
+
               priceResponse.currentPriceByEURO = Number(
                 Number(
-                  response.data.price *
-                    (await Helper.getExchangeRatesByDate_secondver(
+                  priceResponse.currentPriceByUSD *
+                    (await Helper.getExchangeRatesByDate(
                       this.httpService,
                       'EUR',
                       date,
@@ -160,8 +196,8 @@ export class AssetService {
 
               priceResponse.currentPriceByTRY = Number(
                 Number(
-                  response.data.price *
-                    (await Helper.getExchangeRatesByDate_secondver(
+                  priceResponse.currentPriceByUSD *
+                    (await Helper.getExchangeRatesByDate(
                       this.httpService,
                       'TRY',
                       date,
@@ -171,28 +207,77 @@ export class AssetService {
               asset.currentAssetPriceByTRY = priceResponse.currentPriceByTRY;
               break;
             case AssetType.INDEX:
-              priceResponse.currentPriceByUSD = Number(
-                Number(
-                  response.data.chart.result[0].meta.regularMarketPrice /
-                    (await Helper.getExchangeRatesByDate_secondver(
-                      this.httpService,
-                      'TRY',
-                      date,
-                    )),
-                ).toFixed(2),
-              );
+              if (asset.symbol == 'THYAO') {
+                priceResponse.marketStatus = false;
+                priceResponse.currentPriceByUSD = response.data.kapanis;
+                priceResponse.currentPriceByEURO = response.data.kapanis;
+                priceResponse.currentPriceByTRY = response.data.kapanis;
+                priceResponse.previousDayPriceByUSD = 200;
+                priceResponse.previousDayPriceByEURO = 200;
+                priceResponse.previousDayPriceByTRY = 200;
+              } else {
+                priceResponse.marketStatus = Helper.isMarketOpen(
+                  response.data.chart.result[0].meta,
+                );
+                // console.log(asset.symbol + ' open: ' + open1);
+                // previous date value
+                // data = response2.data.chart.result[0];
+                //
+                // timestamps = data.timestamp;
+                //
+                // if (timestamps == undefined) {
+                //   data = data.meta.chartPreviousClose;
+                // }
+                //
+                // candle2 = data.indicators.quote[0];
+
+                priceResponse.previousDayPriceByTRY =
+                  response.data.chart.result[0].meta.chartPreviousClose;
+
+                priceResponse.previousDayPriceByUSD = Number(
+                  Number(
+                    priceResponse.previousDayPriceByTRY /
+                      (await Helper.getExchangeRatesByDate(
+                        this.httpService,
+                        'TRY',
+                        previousDate,
+                      )),
+                  ).toFixed(2),
+                );
+                priceResponse.previousDayPriceByEURO = Number(
+                  Number(
+                    priceResponse.previousDayPriceByUSD *
+                      (await Helper.getExchangeRatesByDate(
+                        this.httpService,
+                        'EUR',
+                        previousDate,
+                      )),
+                  ).toFixed(2),
+                );
+                // today value
+                priceResponse.currentPriceByUSD = Number(
+                  Number(
+                    response.data.chart.result[0].meta.regularMarketPrice /
+                      (await Helper.getExchangeRatesByDate(
+                        this.httpService,
+                        'TRY',
+                        date,
+                      )),
+                  ).toFixed(2),
+                );
+              }
               asset.currentAssetPriceByUSD = priceResponse.currentPriceByUSD;
 
               priceResponse.currentPriceByEURO = Number(
                 Number(
                   (
                     (response.data.chart.result[0].meta.regularMarketPrice /
-                      (await Helper.getExchangeRatesByDate_secondver(
+                      (await Helper.getExchangeRatesByDate(
                         this.httpService,
                         'TRY',
                         date,
                       ))) *
-                    (await Helper.getExchangeRatesByDate_secondver(
+                    (await Helper.getExchangeRatesByDate(
                       this.httpService,
                       'EUR',
                       date,
@@ -207,6 +292,7 @@ export class AssetService {
                   response.data.chart.result[0].meta.regularMarketPrice,
                 ).toFixed(2),
               );
+
               asset.currentAssetPriceByTRY = priceResponse.currentPriceByTRY;
 
               break;
@@ -302,6 +388,43 @@ export class AssetService {
             (asset.currentAssetInvestmentByTRY * 100) /
               asset.totalRawInvestmentByTRY -
             100;
+
+          //   if (asset.symbol == 'QQQ') {
+          //     console.log(`************`);
+          //     console.log(
+          //       'priceResponse.dailyROIByUSD: ' +
+          //         ((priceResponse.previousDayPriceByUSD -
+          //           priceResponse.currentPriceByUSD) /
+          //           priceResponse.currentPriceByUSD) *
+          //           100,
+          //     );
+          //     console.log(
+          //       'priceResponse.currentPriceByUSD: ' +
+          //         priceResponse.currentPriceByUSD,
+          //     );
+          //     console.log(
+          //       'priceResponse.previousDayPriceByUSD: ' +
+          //         priceResponse.previousDayPriceByUSD,
+          //     );
+          //     console.log(`************`);
+          //   }
+
+          priceResponse.dailyROIByUSD =
+            ((priceResponse.currentPriceByUSD -
+              priceResponse.previousDayPriceByUSD) /
+              priceResponse.previousDayPriceByUSD) *
+            100;
+
+          priceResponse.dailyROIByEURO =
+            ((priceResponse.currentPriceByEURO -
+              priceResponse.previousDayPriceByEURO) /
+              priceResponse.previousDayPriceByEURO) *
+            100;
+          priceResponse.dailyROIByTRY =
+            ((priceResponse.currentPriceByTRY -
+              priceResponse.previousDayPriceByTRY) /
+              priceResponse.previousDayPriceByTRY) *
+            100;
           currentEarningByUSD += priceResponse.currentEarningByUSD;
           currentEarningByEURO += priceResponse.currentEarningByEURO;
           currentEarningByTRY += priceResponse.currentEarningByTRY;
@@ -313,30 +436,19 @@ export class AssetService {
       const updatedPortfolioPie = await this.createPortfolioPie(result);
       const yearsCount = await this.prisma.portfolioYearlyChange.count();
       return {
-        currentROIByUSD: Number(
-          (
-            (currentInvestmentByUSD * 100) / totalRawInvestmentByUSD -
-            100
-          ).toFixed(2),
-        ),
-        currentROIByEURO: Number(
-          (
-            (currentInvestmentByEURO * 100) / totalRawInvestmentByEURO -
-            100
-          ).toFixed(2),
-        ),
-        currentROIByTRY: Number(
-          (
-            (currentInvestmentByTRY * 100) / totalRawInvestmentByTRY -
-            100
-          ).toFixed(2),
-        ),
-        currentEarningByUSD: Number(currentEarningByUSD.toFixed(2)),
-        currentEarningByEURO: Number(currentEarningByEURO.toFixed(2)),
-        currentEarningByTRY: Number(currentEarningByTRY.toFixed(2)),
-        currentInvestmentByUSD: Number(currentInvestmentByUSD.toFixed(2)),
-        currentInvestmentByEURO: Number(currentInvestmentByEURO.toFixed(2)),
-        currentInvestmentByTRY: Number(currentInvestmentByTRY.toFixed(2)),
+        currentROIByUSD:
+          (currentInvestmentByUSD * 100) / totalRawInvestmentByUSD - 100,
+
+        currentROIByEURO:
+          (currentInvestmentByEURO * 100) / totalRawInvestmentByEURO - 100,
+        currentROIByTRY:
+          (currentInvestmentByTRY * 100) / totalRawInvestmentByTRY - 100,
+        currentEarningByUSD: currentEarningByUSD,
+        currentEarningByEURO: currentEarningByEURO,
+        currentEarningByTRY: currentEarningByTRY,
+        currentInvestmentByUSD: currentInvestmentByUSD,
+        currentInvestmentByEURO: currentInvestmentByEURO,
+        currentInvestmentByTRY: currentInvestmentByTRY,
         annualizedAverageROIByUSD:
           (Math.pow(
             currentInvestmentByUSD / totalRawInvestmentByUSD,

@@ -55,7 +55,7 @@ const TradingviewChart: React.FC<TradingviewChartProps> = ({ data }) => {
       const response = await httpService.get(
         `/portfolio-daily-changes/portfolio/${pID}`
       );
-      console.log(response)
+      //console.log(response)
       if (response.status === 200) {
         const lastCandle = response.data[response.data.length - 1];
         const isGreen = lastCandle.close >= lastCandle.open;

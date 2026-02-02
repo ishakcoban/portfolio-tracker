@@ -9,6 +9,9 @@ import {
 import { Transform } from 'class-transformer';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
+
+type ISODate = `${number}-${number}-${number}`; // yyyy-mm-dd
+
 export class Helper {
   static findURLForChartByAssetType(
     date: string,
@@ -30,9 +33,7 @@ export class Helper {
     switch (type) {
       case AssetType.ETF:
         url = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?period1=${startDate}&period2=${endDate}&interval=1d`;
-
         break;
-
       case AssetType.INDEX:
         url = `https://query1.finance.yahoo.com/v8/finance/chart/${symbol === 'XU100' ? 'XU100.IS' : symbol}?period1=${startDate}&period2=${endDate}&interval=1d`;
         break;
@@ -78,7 +79,7 @@ export class Helper {
     }
   }
 
-    static async getExchangeRatesByDate_secondver(
+  static async getExchangeRatesByDate_secondver(
     httpService: HttpService,
     currency: string,
     date: string,
@@ -109,4 +110,50 @@ export class Helper {
     const lastDay = this.getLastDayOfYear(year);
     return lastDay.toISOString().split('T')[0]; // Returns YYYY-MM-DD
   }
+
+  static toUTCDate(date: ISODate): Date {
+    return new Date(`${date}T00:00:00Z`);
+  }
+
+  static addOneDay(date: string): ISODate {
+    const d = this.toUTCDate(date as ISODate);
+    d.setUTCDate(d.getUTCDate() + 1);
+    return d.toISOString().split('T')[0] as ISODate;
+  }
+
+  static minusOneDay(date: string): ISODate {
+    const d = this.toUTCDate(date as ISODate);
+    d.setUTCDate(d.getUTCDate() - 1);
+    return d.toISOString().split('T')[0] as ISODate;
+  }
+
+  static isMarketOpen(meta: any): boolean {
+    const now = Math.floor(Date.now() / 1000);
+
+    const regular = meta?.currentTradingPeriod?.regular;
+    if (!regular) return false;
+
+    return now >= regular.start && now <= regular.end;
+  }
 }
+
+export type MarketState =
+  | 'PRE'
+  | 'REGULAR'
+  | 'POST'
+  | 'CLOSED'
+  | 'HALTED'
+  | string;
+
+export interface TradingPeriod {
+  start: number; // unix seconds
+  end: number; // unix seconds
+  timezone?: string;
+  gmtoffset?: number;
+}
+
+export interface YahooMeta {
+  marketState?: MarketState;
+}
+
+export type TradingPeriods = TradingPeriod[][] | undefined;

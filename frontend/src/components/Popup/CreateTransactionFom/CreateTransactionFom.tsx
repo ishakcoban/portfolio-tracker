@@ -40,9 +40,6 @@ export const CreateTransactionForm: React.FC<Props> = ({
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   /**/
-  const [symbolText, setSymbolText] = useState<string>("");
-  const [typeText, setTypeText] = useState<string>("");
-  const [imageUrlText, setImageUrlText] = useState<string>("");
   const [investmentAmount, setInvestmentAmount] = useState<number>(0);
   const [saleAmount, setSaleAmount] = useState<number>(0);
   const [price, setPrice] = useState<number>(0);
@@ -260,13 +257,13 @@ export const CreateTransactionForm: React.FC<Props> = ({
         <div className="rounded-lg p-6 mb-6">
           <div className="d-flex justify-content-center gap-4 pb-5">
             <button
-              className={`col-3 btn border-primary text-light ${mode == "single" && "btn-primary"}`}
+              className={`col-3 btn border-light text-light ${mode == "single" && "btn-light text-dark"}`}
               onClick={() => modeHandler("single")}
             >
               single
             </button>
             <button
-              className={`col-3 btn border-primary text-light ${mode == "multiple" && "btn-primary"}`}
+              className={`col-3 btn border-light text-light ${mode == "multiple" && "btn-light text-dark"}`}
               onClick={() => modeHandler("multiple")}
             >
               multiple

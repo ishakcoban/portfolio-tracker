@@ -56,8 +56,6 @@ model Asset {
   id                       Int           @id @default(autoincrement())
   symbol                   String        @unique
   type                     AssetType
-  imageUrl                 String
-  isActive                 AssetStatus   @default(ACTIVE)
   totalInvestedByUSD  Float         @default(0)
   totalInvestedByEURO Float         @default(0)
   totalInvestedByTRY  Float         @default(0)
