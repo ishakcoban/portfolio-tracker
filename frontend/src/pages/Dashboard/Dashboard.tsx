@@ -31,6 +31,9 @@ type Asset = {
   currentROIByUSD: number;
   currentROIByEURO: number;
   currentROIByTRY: number;
+  dailyROIByUSD: number;
+  dailyROIByEURO: number;
+  dailyROIByTRY: number;
   currentEarningByUSD: number;
   currentEarningByEURO: number;
   currentEarningByTRY: number;
@@ -38,6 +41,7 @@ type Asset = {
   currentInvestmentByUSD: number;
   currentInvestmentByEURO: number;
   currentInvestmentByTRY: number;
+  marketStatus: boolean;
 };
 
 type PortfolioStats = {
@@ -105,7 +109,7 @@ export default function Dashboard() {
 
   function omit<T extends object, K extends keyof T>(
     obj: T,
-    keys: K[]
+    keys: K[],
   ): Omit<T, K> {
     const result = { ...obj };
     keys.forEach((key) => delete result[key]);
@@ -135,15 +139,16 @@ export default function Dashboard() {
             totalRawInvestmentByUSD,
             totalRawInvestmentByEURO,
             totalRawInvestmentByTRY,
-          })
+          }),
         );
 
         const response = await httpService.post(
           `/assets/current-market-price`,
-          filteredAssetData
+          filteredAssetData,
         );
 
         if (response.status === 201) {
+          console.log(response.data);
           const target = omit(response.data, ["assets"]);
           const updatedPortfolioStatsData = (portfolioStatsDataRef.current = {
             ...portfolioStatsDataRef.current,
@@ -179,6 +184,14 @@ export default function Dashboard() {
               response.data.assets[index]?.currentROIByTRY ??
               asset.currentROIByTRY,
             /**/
+            dailyROIByUSD:
+              response.data.assets[index]?.dailyROIByUSD ?? asset.dailyROIByUSD,
+            dailyROIByEURO:
+              response.data.assets[index]?.dailyROIByEURO ??
+              asset.dailyROIByEURO,
+            dailyROIByTRY:
+              response.data.assets[index]?.dailyROIByTRY ?? asset.dailyROIByTRY,
+            /**/
             currentEarningByUSD:
               response.data.assets[index]?.currentEarningByUSD ??
               asset.currentEarningByUSD,
@@ -200,6 +213,9 @@ export default function Dashboard() {
               asset.currentInvestmentByTRY,
             currentWeight:
               response.data.assets[index]?.currentWeight ?? asset.currentWeight,
+            /**/
+            marketStatus:
+              response.data.assets[index]?.marketStatus ?? asset.marketStatus,
           }));
 
           setAssetData(updatedAssetData);
@@ -229,7 +245,7 @@ export default function Dashboard() {
         const navbarHeight = navbar.getBoundingClientRect().height;
         document.documentElement.style.setProperty(
           "--navbar-height",
-          `${navbarHeight}px`
+          `${navbarHeight}px`,
         );
       }
     };
@@ -244,9 +260,9 @@ export default function Dashboard() {
       <div className="col-9 m-0 p-0 dashboard-left-section">
         {assetData && (
           <div className="row m-0 p-0 d-flex">
-              <div className="col-6 m-0 p-0 ps-3 pt-3">
+             <div className="col-6 m-0 p-0 ps-3 pt-3">
               <TradingviewChart />
-            </div>  
+            </div> 
             <div className="col-6 m-0 p-0 px-3 pt-3 d-flex">
               <AssetBarChart assets={assetData} />
             </div>

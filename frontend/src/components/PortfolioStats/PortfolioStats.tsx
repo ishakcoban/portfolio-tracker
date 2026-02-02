@@ -72,7 +72,7 @@ export default function PortfolioStats({ portfolioStats }: Props) {
   const fetchData = async () => {
     try {
       const response = await httpService.get(
-        "/portfolios/fear-and-greed-index"
+        "/portfolios/fear-and-greed-index",
       );
 
       if (response.status === 200) {
@@ -130,12 +130,12 @@ export default function PortfolioStats({ portfolioStats }: Props) {
               />
             </div>
           </div>
-          <div className="mt-3">
+          <div className="mt-3" style={{zIndex:1}}>
             <CircularChart portfolioPie={portfolioStats.portfolioPie} />
           </div>
           <div
             className="position-absolute top-0 text-center w-100"
-            style={{ marginTop: "85px" }}
+            style={{ marginTop: "85px",zIndex:0 }}
           >
             <div className="d-flex justify-content-center align-items-center">
               <div
@@ -158,7 +158,7 @@ export default function PortfolioStats({ portfolioStats }: Props) {
                 <NumberFlow
                   format={{
                     notation: "standard",
-
+                    maximumFractionDigits: 2,
                     signDisplay: "never",
                   }}
                   spinTiming={{ duration: 1500, easing: "ease" }}
@@ -191,7 +191,7 @@ export default function PortfolioStats({ portfolioStats }: Props) {
                   <NumberFlow
                     format={{
                       notation: "standard",
-                      signDisplay: "never",
+                      signDisplay: "always",
                       maximumFractionDigits: 2,
                     }}
                     animated={false}
@@ -223,7 +223,7 @@ export default function PortfolioStats({ portfolioStats }: Props) {
                   <NumberFlow
                     format={{
                       notation: "standard",
-                      signDisplay: "never",
+                      signDisplay: "always",
                       maximumFractionDigits: 2,
                     }}
                     animated={false}
@@ -244,10 +244,8 @@ export default function PortfolioStats({ portfolioStats }: Props) {
                   (currency === "USD"
                     ? portfolioStats.currentEarningByUSD < 0 && " text-red"
                     : currency === "EUR"
-                      ? portfolioStats.currentEarningByEURO < 0 &&
-                        " text-red"
-                      : portfolioStats.currentEarningByTRY < 0 &&
-                        " text-red")
+                      ? portfolioStats.currentEarningByEURO < 0 && " text-red"
+                      : portfolioStats.currentEarningByTRY < 0 && " text-red")
                 }
               >
                 <span>
@@ -255,8 +253,8 @@ export default function PortfolioStats({ portfolioStats }: Props) {
                   <NumberFlow
                     format={{
                       notation: "standard",
-
-                      signDisplay: "never",
+                      maximumFractionDigits: 2,
+                      signDisplay: "always",
                     }}
                     animated={false}
                     value={
@@ -318,8 +316,8 @@ export default function PortfolioStats({ portfolioStats }: Props) {
                   <NumberFlow
                     format={{
                       notation: "standard",
-
-                      signDisplay: "never",
+                      maximumFractionDigits: 2,
+                      signDisplay: "always",
                     }}
                     animated={false}
                     value={portfolioStats?.currentROIByUSD}
@@ -341,8 +339,8 @@ export default function PortfolioStats({ portfolioStats }: Props) {
                 <NumberFlow
                   format={{
                     notation: "standard",
-
-                    signDisplay: "never",
+                    maximumFractionDigits: 2,
+                    signDisplay: "always",
                   }}
                   animated={false}
                   value={portfolioStats?.currentROIByEURO}
@@ -363,8 +361,8 @@ export default function PortfolioStats({ portfolioStats }: Props) {
                   <NumberFlow
                     format={{
                       notation: "standard",
-
-                      signDisplay: "never",
+                      maximumFractionDigits: 2,
+                      signDisplay: "always",
                     }}
                     animated={false}
                     value={portfolioStats?.currentROIByTRY}

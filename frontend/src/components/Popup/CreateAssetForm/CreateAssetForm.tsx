@@ -11,7 +11,6 @@ type Props = {
 export default function CreateAssetForm({ closePopup, onSuccess }: Props) {
   const [symbolText, setSymbolText] = useState<string>("");
   const [typeText, setTypeText] = useState<string>("");
-  const [imageUrlText, setImageUrlText] = useState<string>("");
   const [initialWeightText, setInitialWeightText] = useState<number>(0);
   const [portfolios, setPortfolios] = useState([]);
   const [selectedItem, setSelectedItem] = useState("");
@@ -43,7 +42,6 @@ export default function CreateAssetForm({ closePopup, onSuccess }: Props) {
     const data = {
       symbol: symbolText,
       type: typeText,
-      imageUrl: imageUrlText,
       initialWeight: +initialWeightText,
       portfolioId: +selectedItem,
     };
@@ -56,7 +54,6 @@ export default function CreateAssetForm({ closePopup, onSuccess }: Props) {
         if (response.status === 201) {
           setSymbolText("");
           setTypeText("");
-          setImageUrlText("");
           setInitialWeightText(0);
           setStatusCode(response.status);
           onSuccess("Asset created!");
@@ -123,18 +120,6 @@ export default function CreateAssetForm({ closePopup, onSuccess }: Props) {
               name="asset"
               onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
                 setTypeText(event.target.value.trimStart().toUpperCase())
-              }
-            ></input>
-          </CustomInput>
-
-          <CustomInput header="Image Url">
-            <input
-              type="url"
-              className="input-style"
-              value={imageUrlText}
-              name="asset"
-              onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
-                setImageUrlText(event.target.value.trimStart())
               }
             ></input>
           </CustomInput>

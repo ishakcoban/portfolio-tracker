@@ -18,7 +18,7 @@ import {
 import { Helper } from 'src/utils/helpers';
 import { firstValueFrom } from 'rxjs';
 import { HttpService } from '@nestjs/axios';
-type ISODate = `${number}-${number}-${number}`; // yyyy-mm-dd
+type ISODate = `${number}-${number}-${number}`;
 @Injectable()
 export class TransactionService {
   constructor(
@@ -58,7 +58,6 @@ export class TransactionService {
   }
 
   async createByBulk(createTransactionRequest: CreateTransactionRequest[]) {
-    console.log(createTransactionRequest)
     for (const element of createTransactionRequest) {
       await this.create(element);
     }
@@ -493,14 +492,12 @@ export class TransactionService {
           finalValue.byEURO = assetEndValueByEURO;
           finalValue.byTRY = assetEndValueByTRY;
         } else {
+
           let data = response.data.chart.result[0];
-
           timestamps = data.timestamp;
-
           if (timestamps == undefined) {
             data = data.meta.chartPreviousClose;
           }
-
           let candle = data.indicators.quote[0];
 
           let assetPriceAtLastDayOfYearByUSD = candle.close[0];
@@ -582,7 +579,7 @@ export class TransactionService {
   async updatePortfolioYearlyRoiValues(
     portfolioYearlyChanges: PortfolioYearlyChange[],
   ) {
-    //console.log(portfolioYearlyChanges)
+    //  console.log(portfolioYearlyChanges)
     for (const [index, element] of portfolioYearlyChanges.entries()) {
       if (index == portfolioYearlyChanges.length - 1) {
         break;
@@ -610,7 +607,7 @@ export class TransactionService {
           (previousYearFinalValueByTRY + element.investedByTRY)) /
           (previousYearFinalValueByTRY + element.investedByTRY)) *
         100;
-      //console.log(element);
+      // console.log(element);
     }
 
     await Promise.all(
@@ -741,8 +738,6 @@ export class TransactionService {
       data: transaction,
     });
   }
-
-  updateWholePortfolio() {}
 
   remove(id: number) {
     return `This action removes a #${id} transaction`;

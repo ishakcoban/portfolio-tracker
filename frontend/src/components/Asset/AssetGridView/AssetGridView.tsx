@@ -7,6 +7,7 @@ import {
   Chart01Icon,
   Cancel01Icon,
   TransactionHistoryIcon,
+  ViewOffIcon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import httpService from "../../../services/httpService";
@@ -31,6 +32,9 @@ type Asset = {
   currentROIByUSD: number;
   currentROIByEURO: number;
   currentROIByTRY: number;
+  dailyROIByUSD: number;
+  dailyROIByEURO: number;
+  dailyROIByTRY: number;
   currentEarningByUSD: number;
   currentEarningByEURO: number;
   currentEarningByTRY: number;
@@ -38,6 +42,7 @@ type Asset = {
   currentInvestmentByUSD: number;
   currentInvestmentByEURO: number;
   currentInvestmentByTRY: number;
+  marketStatus: boolean;
 };
 
 type LineChartValue = {
@@ -69,12 +74,12 @@ export default function AssetGridView({ asset }: Props) {
   const [transactionData, setTransactionData] = useState<Transaction[]>();
   //const [currency, setCurrency] = useState("USD");
   const { currency } = useStore();
-
+  console.log(asset);
   const changeLineChartStatus = async () => {
     if (!lineChartStatus) {
       try {
         const response = await httpService.get(
-          `/assets/line-chart/${asset?.id}`
+          `/assets/line-chart/${asset?.id}`,
         );
         if (response.status === 200) {
           if (asset) {
@@ -105,7 +110,7 @@ export default function AssetGridView({ asset }: Props) {
     setPopupStatus(true);
     try {
       const response = await httpService.get(
-        `assets/${asset?.id}/transactions`
+        `assets/${asset?.id}/transactions`,
       );
       if (response.status === 200) {
         if (asset) {
@@ -149,11 +154,18 @@ export default function AssetGridView({ asset }: Props) {
                     <td className="text-light">
                       {new Date(transaction.date).toLocaleString()}
                     </td>
-                    <td className={"text-green fw-bold " + (transaction.type == "SELL" && "text-red")}>{transaction.type}</td>
+                    <td
+                      className={
+                        "text-green fw-bold " +
+                        (transaction.type == "SELL" && "text-red")
+                      }
+                    >
+                      {transaction.type}
+                    </td>
                     <td className="text-light">
                       ${transaction.invested.toFixed(2)}
                     </td>
-                     <td className="text-light">
+                    <td className="text-light">
                       {transaction.quantity.toFixed(3)}
                     </td>
                     <td className="text-light">
@@ -191,12 +203,50 @@ export default function AssetGridView({ asset }: Props) {
             <div className="col-12 m-0 p-0 px-3 d-flex flex-column justify-content-center">
               <div className="d-flex justify-content-between">
                 <div className="d-flex align-items-center">
-                  <img
-                    src={asset.imageUrl}
-                    className="asset-logo"
-                    alt="Asset logo"
-                  />
                   <div className="asset-name ms-2 fw-bold">{asset.symbol}</div>
+                  <div className="asset-name ms-2 fw-bold">
+                    {asset.marketStatus ? (
+                      <div
+                        className={
+                          "text-green " +
+                          (currency === "USD"
+                            ? asset.dailyROIByUSD < 0 && " text-red"
+                            : currency === "EUR"
+                              ? asset.dailyROIByEURO < 0 && " text-red"
+                              : asset.dailyROIByTRY < 0 && " text-red")
+                        }
+                      >
+                        <span>
+                          <NumberFlow
+                            format={{
+                              style: "decimal",
+                              signDisplay: "always",
+                              maximumFractionDigits: 2,
+                            }}
+                            animated={false}
+                            value={
+                              currency === "USD"
+                                ? asset.dailyROIByUSD
+                                : currency === "EUR"
+                                  ? asset.dailyROIByEURO
+                                  : asset.dailyROIByTRY
+                            }
+                          />
+                          %
+                        </span>
+                      </div>
+                    ) : (
+                      <div>
+                        <HugeiconsIcon
+                          role="button"
+                          color="white"
+                          width={21}
+                          height={21}
+                          icon={ViewOffIcon}
+                        />
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 <div className="d-flex justify-content-center align-items-center left-section-buttons">
@@ -258,16 +308,17 @@ export default function AssetGridView({ asset }: Props) {
                     <NumberFlow
                       format={{
                         style: "decimal",
-                        signDisplay: "never",
+                        signDisplay: "always",
+                        maximumFractionDigits: 2,
                       }}
                       animated={false}
-                      value={Math.abs(
+                      value={
                         currency === "USD"
                           ? asset.currentROIByUSD
                           : currency === "EUR"
                             ? asset.currentROIByEURO
                             : asset.currentROIByTRY
-                      )}
+                      }
                     />
                     %
                   </span>
@@ -289,17 +340,17 @@ export default function AssetGridView({ asset }: Props) {
                       format={{
                         notation: "standard",
 
-                        signDisplay: "never",
+                        signDisplay: "always",
                         maximumFractionDigits: 2,
                       }}
                       animated={false}
-                      value={Math.abs(
+                      value={
                         currency === "USD"
                           ? asset.currentEarningByUSD
                           : currency === "EUR"
                             ? asset.currentEarningByEURO
                             : asset.currentEarningByTRY
-                      )}
+                      }
                     />
                   </span>
                 </div>

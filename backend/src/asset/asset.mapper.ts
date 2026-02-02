@@ -17,7 +17,6 @@ export class AssetMapper {
       averageCostByEURO: asset.averageCostByEURO,
       averageCostByTRY: asset.averageCostByTRY,
       type: asset.type,
-      imageUrl: asset.imageUrl,
       initialWeight: asset.initialWeight,
     };
   }

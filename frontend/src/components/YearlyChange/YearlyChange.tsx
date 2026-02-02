@@ -67,20 +67,20 @@ export default function YearlyChange() {
                       format={{
                         notation: "standard",
 
-                        signDisplay: "never",
+                        signDisplay: "always",
                         maximumFractionDigits: 2,
                       }}
                       animated={false}
-                      value={Math.abs(
+                      value={
                         index == yearData.length - 1
                           ? ((currentInvestment.byUSD -
                               (yearData[index - 1].finalValueByUSD +
                                 data.investedByUSD)) /
                               (yearData[index - 1].finalValueByUSD +
                                 data.investedByUSD)) *
-                              100
-                          : data.roiByUSD,
-                      )}
+                            100
+                          : data.roiByUSD
+                      }
                     />
                   </span>
                   %
@@ -98,21 +98,20 @@ export default function YearlyChange() {
                     <NumberFlow
                       format={{
                         notation: "standard",
-
-                        signDisplay: "never",
+                        signDisplay: "always",
                         maximumFractionDigits: 2,
                       }}
                       animated={false}
-                      value={Math.abs(
+                      value={
                         index == yearData.length - 1
                           ? ((currentInvestment.byEURO -
                               (yearData[index - 1].finalValueByEURO +
                                 data.investedByEURO)) /
                               (yearData[index - 1].finalValueByEURO +
                                 data.investedByEURO)) *
-                              100
-                          : data.roiByEURO,
-                      )}
+                            100
+                          : data.roiByEURO
+                      }
                     />
                   </span>
                   %
@@ -131,20 +130,20 @@ export default function YearlyChange() {
                       format={{
                         notation: "standard",
 
-                        signDisplay: "never",
+                        signDisplay: "always",
                         maximumFractionDigits: 2,
                       }}
                       animated={false}
-                      value={Math.abs(
+                      value={
                         index == yearData.length - 1
                           ? ((currentInvestment.byTRY -
                               (yearData[index - 1].finalValueByTRY +
                                 data.investedByTRY)) /
                               (yearData[index - 1].finalValueByTRY +
                                 data.investedByTRY)) *
-                              100
-                          : data.roiByTRY,
-                      )}
+                            100
+                          : data.roiByTRY
+                      }
                     />
                   </span>
                   %
