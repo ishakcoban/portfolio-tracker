@@ -11,6 +11,7 @@ import {
   ArrowUp04Icon,
   ArrowUp05Icon,
   ArrowUpDoubleIcon,
+  Calculator01Icon,
   Delete03Icon,
   Remove01Icon,
   Remove02Icon,
@@ -24,6 +25,7 @@ import DeletePortfolioForm from "../Popup/DeletePortfolioForm/DeletePortfolioFor
 import Popup from "../Popup/Popup";
 import type { SuccessMessageCardRef } from "../SuccessMessageCard/SuccessMessageCard";
 import SuccessMessageCard from "../SuccessMessageCard/SuccessMessageCard";
+import CalculateInvestmentAmountByWeightForm from "../Popup/CalculateInvestmentAmountByWeightForm/CalculateInvestmentAmountByWeightForm";
 type PortfolioStats = {
   id: number;
   name: string;
@@ -108,10 +110,15 @@ export default function PortfolioStats({ portfolioStats }: Props) {
       <SuccessMessageCard ref={cardRef} message={message}></SuccessMessageCard>
       {popupType && (
         <Popup onClose={closePopup}>
-          <DeletePortfolioForm
-            closePopup={closePopup}
-            onSuccess={handleFormSuccess}
-          ></DeletePortfolioForm>
+          {popupType == "CalculateInvestmentAmountByWeightForm" && (
+            <CalculateInvestmentAmountByWeightForm/>
+          )}
+          {popupType == "delete portfolio" && (
+            <DeletePortfolioForm
+              closePopup={closePopup}
+              onSuccess={handleFormSuccess}
+            />
+          )}
         </Popup>
       )}
 
@@ -120,6 +127,17 @@ export default function PortfolioStats({ portfolioStats }: Props) {
         <div className="position-relative d-flex justify-content-center align-items-center">
           <div className="position-absolute top-0 w-100">
             <div className="text-end pe-3">
+              <HugeiconsIcon
+                className="me-2"
+                role="button"
+                color="white"
+                width={18}
+                height={18}
+                icon={Calculator01Icon}
+                onClick={() =>
+                  openPopup("CalculateInvestmentAmountByWeightForm")
+                }
+              />
               <HugeiconsIcon
                 role="button"
                 color="white"
@@ -174,125 +192,112 @@ export default function PortfolioStats({ portfolioStats }: Props) {
             </div>
 
             <div className="d-flex justify-content-center align-items-start mt-2 gap-3">
-          
-              
-                  <div className="d-flex flex-column align-items-center">
-                    <div className="asset-header">ROI</div>
-                    <div
-                      style={{ fontSize: ".7rem" }}
-                      className={
-                        "asset-value text-green fw-bold " +
-                        (currency === "USD"
-                          ? portfolioStats.currentROIByUSD < 0 && " text-red"
+              <div className="d-flex flex-column align-items-center">
+                <div className="asset-header">ROI</div>
+                <div
+                  style={{ fontSize: ".7rem" }}
+                  className={
+                    "asset-value text-green fw-bold " +
+                    (currency === "USD"
+                      ? portfolioStats.currentROIByUSD < 0 && " text-red"
+                      : currency === "EUR"
+                        ? portfolioStats.annualizedAverageROIByEURO < 0 &&
+                          " text-red"
+                        : portfolioStats.annualizedAverageROIByTRY < 0 &&
+                          " text-red")
+                  }
+                >
+                  <span>
+                    <NumberFlow
+                      format={{
+                        style: "decimal",
+                        signDisplay: "always",
+                        maximumFractionDigits: 2,
+                      }}
+                      animated={false}
+                      value={
+                        currency === "USD"
+                          ? portfolioStats.currentROIByUSD
                           : currency === "EUR"
-                            ? portfolioStats.annualizedAverageROIByEURO < 0 &&
-                              " text-red"
-                            : portfolioStats.annualizedAverageROIByTRY < 0 &&
-                              " text-red")
+                            ? portfolioStats.currentROIByEURO
+                            : portfolioStats.currentROIByTRY
                       }
-                    >
-                      <span>
-                        <NumberFlow
-                          format={{
-                            style: "decimal",
-                            signDisplay: "always",
-                            maximumFractionDigits: 2,
-                          }}
-                          animated={false}
-                          value={
-                            currency === "USD"
-                              ? portfolioStats.currentROIByUSD
-                              : currency === "EUR"
-                                ? portfolioStats.currentROIByEURO
-                                : portfolioStats.currentROIByTRY
-                          }
-                        />
-                        %
-                      </span>
-                    </div>
-                  </div>
-                  <div className="d-flex flex-column align-items-center">
-                    <div className="asset-header">CAGR</div>
-                    <div
-                      style={{ fontSize: ".7rem" }}
-                      className={
-                        "asset-value text-green fw-bold " +
-                        (currency === "USD"
-                          ? portfolioStats.annualizedAverageROIByUSD < 0 &&
-                            " text-red"
+                    />
+                    %
+                  </span>
+                </div>
+              </div>
+              <div className="d-flex flex-column align-items-center">
+                <div className="asset-header">CAGR</div>
+                <div
+                  style={{ fontSize: ".7rem" }}
+                  className={
+                    "asset-value text-green fw-bold " +
+                    (currency === "USD"
+                      ? portfolioStats.annualizedAverageROIByUSD < 0 &&
+                        " text-red"
+                      : currency === "EUR"
+                        ? portfolioStats.annualizedAverageROIByEURO < 0 &&
+                          " text-red"
+                        : portfolioStats.annualizedAverageROIByTRY < 0 &&
+                          " text-red")
+                  }
+                >
+                  <span>
+                    <NumberFlow
+                      format={{
+                        style: "decimal",
+                        signDisplay: "always",
+                        maximumFractionDigits: 2,
+                      }}
+                      animated={false}
+                      value={
+                        currency === "USD"
+                          ? portfolioStats.annualizedAverageROIByUSD
                           : currency === "EUR"
-                            ? portfolioStats.annualizedAverageROIByEURO < 0 &&
-                              " text-red"
-                            : portfolioStats.annualizedAverageROIByTRY < 0 &&
-                              " text-red")
+                            ? portfolioStats.annualizedAverageROIByEURO
+                            : portfolioStats.annualizedAverageROIByTRY
                       }
-                    >
-                      <span>
-                        <NumberFlow
-                          format={{
-                            style: "decimal",
-                            signDisplay: "always",
-                            maximumFractionDigits: 2,
-                          }}
-                          animated={false}
-                          value={
-                            currency === "USD"
-                              ? portfolioStats.annualizedAverageROIByUSD
-                              : currency === "EUR"
-                                ? portfolioStats.annualizedAverageROIByEURO
-                                : portfolioStats.annualizedAverageROIByTRY
-                          }
-                        />
-                        %
-                      </span>
-                    </div>
-                  </div>
-                  <div className="d-flex flex-column align-items-center">
-                    <div className="asset-header">Profit</div>
-                    <div
-                      style={{ fontSize: ".7rem" }}
-                      className={
-                        "asset-value text-green fw-bold " +
-                        (currency === "USD"
-                          ? portfolioStats.currentEarningByUSD < 0 &&
-                            " text-red"
-                          : currency === "EUR"
-                            ? portfolioStats.currentEarningByEURO < 0 &&
-                              " text-red"
-                            : portfolioStats.currentEarningByTRY < 0 &&
-                              " text-red")
-                      }
-                    >
-                      <span>
-                        {currency === "USD"
-                          ? "$"
-                          : currency === "EUR"
-                            ? "€"
-                            : "₺"}
-                        <NumberFlow
-                          format={{
-                            notation: "standard",
+                    />
+                    %
+                  </span>
+                </div>
+              </div>
+              <div className="d-flex flex-column align-items-center">
+                <div className="asset-header">Profit</div>
+                <div
+                  style={{ fontSize: ".7rem" }}
+                  className={
+                    "asset-value text-green fw-bold " +
+                    (currency === "USD"
+                      ? portfolioStats.currentEarningByUSD < 0 && " text-red"
+                      : currency === "EUR"
+                        ? portfolioStats.currentEarningByEURO < 0 && " text-red"
+                        : portfolioStats.currentEarningByTRY < 0 && " text-red")
+                  }
+                >
+                  <span>
+                    {currency === "USD" ? "$" : currency === "EUR" ? "€" : "₺"}
+                    <NumberFlow
+                      format={{
+                        notation: "standard",
 
-                            signDisplay: "always",
-                            maximumFractionDigits: 2,
-                          }}
-                          animated={false}
-                          value={
-                            currency === "USD"
-                              ? portfolioStats.currentEarningByUSD
-                              : currency === "EUR"
-                                ? portfolioStats.currentEarningByEURO
-                                : portfolioStats.currentEarningByTRY
-                          }
-                        />
-                      </span>
-                    </div>
-                  </div>
-            
-           
+                        signDisplay: "always",
+                        maximumFractionDigits: 2,
+                      }}
+                      animated={false}
+                      value={
+                        currency === "USD"
+                          ? portfolioStats.currentEarningByUSD
+                          : currency === "EUR"
+                            ? portfolioStats.currentEarningByEURO
+                            : portfolioStats.currentEarningByTRY
+                      }
+                    />
+                  </span>
+                </div>
+              </div>
             </div>
-         
-       
 
             <div className="portfolio-raw-investment-header mt-3">
               TOTAL INVESTED
