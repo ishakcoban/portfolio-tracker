@@ -45,7 +45,7 @@ const chartSetting = {
 type Asset = {
   id: number;
   symbol: string;
-  imageUrl: string;
+  longName: string;
   totalRawInvestmentByUSD: number;
   totalRawInvestmentByEURO: number;
   totalRawInvestmentByTRY: number;

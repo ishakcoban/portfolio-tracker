@@ -20,23 +20,22 @@ export default function CreatePortfolioForm({ closePopup, onSuccess }: Props) {
   const submitHandler = async () => {
     setMessage("");
     setIsLoading(true);
-    setTimeout(async () => {
-      try {
-        const response = await httpService.post("/portfolios", { name: text });
-        if (response.status === 201) {
-          setText("");
-          setStatusCode(response.status);
-          onSuccess("Portfolio created!");
-          closePopup();
-        }
-      } catch (error: any) {
-        if (error.status === 400) {
-          setMessage("Invalid input!");
-          setStatusCode(error.status);
-        }
-      }
+
+    try {
+      const response = await httpService.post("/portfolios", { name: text });
       setIsLoading(false);
-    }, 2500);
+      if (response.status === 201) {
+        setText("");
+        setStatusCode(response.status);
+        onSuccess("Portfolio created!");
+        closePopup();
+      }
+    } catch (error: any) {
+      if (error.status === 400) {
+        setMessage("Invalid input!");
+        setStatusCode(error.status);
+      }
+    }
   };
   return (
     <>

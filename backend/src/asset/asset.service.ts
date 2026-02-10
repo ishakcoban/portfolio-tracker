@@ -3,50 +3,124 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { UpdateAssetDto } from './dto/update-asset.dto';
 import { PrismaService } from '../prisma.service';
-import { CreateAssetDto } from './dto/create-asset.dto';
-import { CurrentAssetPriceRequest } from './request/current-asset-price-request';
+import { AssetValueRequest } from './request/asset-value-request';
 import { firstValueFrom } from 'rxjs';
 import { HttpService } from '@nestjs/axios';
 import { AssetType } from 'generated/prisma';
 import { CurrentMarketPriceResponse } from './response/current-market-price-response';
 import { Helper } from 'src/utils/helpers';
+import { CreateAssetRequest } from './request/create-asset-request';
+import { UpdateAssetRequest } from './request/update-asset-request';
 @Injectable()
 export class AssetService {
   constructor(
     private prisma: PrismaService,
     private readonly httpService: HttpService,
   ) {}
-  async create(createAssetDto: CreateAssetDto) {
+
+  async create(createAssetRequest: CreateAssetRequest) {
     const portfolio = await this.prisma.portfolio.findFirstOrThrow({
-      where: { id: createAssetDto.portfolioId },
-    });
-    const asset = await this.prisma.asset.findUnique({
-      where: { symbol: createAssetDto.symbol },
+      where: { id: createAssetRequest.portfolioId },
     });
 
     if (!portfolio) {
       throw new NotFoundException(`Portfolio is not found!`);
     }
-
-    if (asset) {
-      throw new BadRequestException(
-        `Portfolio with Symbol ${createAssetDto.symbol} is already taken!`,
-      );
-    }
-
+    createAssetRequest.symbol = createAssetRequest.symbol
+      .replace('USDT', '')
+      .replace('.IS', '');
     await this.prisma.asset.create({
-      data: createAssetDto,
+      data: createAssetRequest,
       include: {
         portfolio: true,
       },
     });
   }
 
-  async getCurrentMarketPrice(
-    requestCurrentAssetPrice: CurrentAssetPriceRequest[],
-  ) {
+  async searchByFinanceYahoo(query: string) {
+    try {
+      const res = await firstValueFrom(
+        this.httpService.get(
+          `https://query1.finance.yahoo.com/v1/finance/search?q=${query}`,
+        ),
+      );
+      if (res.status == 200) {
+        console.log(res.data.quotes);
+        return res.data.quotes;
+      }
+    } catch (error) {}
+  }
+
+  async searchByBinance(query: string) {
+    const q = query.toUpperCase();
+    // const symbols = await this.loadSymbols();
+    //const now = Date.now();
+
+    // refresh every 10 minutes
+    // if (this.symbolsCache.length && now - this.lastUpdate < 600_000) {
+    //   return this.symbolsCache;
+    // }
+    let symbolsCache: any[] = [];
+    //private lastUpdate = 0;
+
+    const res$ = this.httpService.get(
+      'https://api.binance.com/api/v3/exchangeInfo',
+    );
+    const { data } = await firstValueFrom(res$);
+
+    symbolsCache = data.symbols
+      .filter((s) => s.status === 'TRADING')
+      .map((s) => ({
+        symbol: s.symbol,
+      }));
+
+    //this.lastUpdate = now;
+    //console.log(this.symbolsCache);
+    return symbolsCache.filter((s) => s.symbol.includes(q)).slice(0, 20); // limit results
+  }
+
+  async searchAssets(query: { source: string; symbol: string }) {
+    switch (query.source) {
+      case 'Yahoo Finance':
+        return this.searchByFinanceYahoo(query.symbol);
+
+      case 'Binance':
+        return this.searchByBinance(query.symbol);
+    }
+  }
+
+  // async loadSymbols() {
+  //   const now = Date.now();
+
+  //   // refresh every 10 minutes
+  //   if (this.symbolsCache.length && now - this.lastUpdate < 600_000) {
+  //     return this.symbolsCache;
+  //   }
+
+  //   const res$ = this.httpService.get(
+  //     'https://api.binance.com/api/v3/exchangeInfo',
+  //   );
+  //   const { data } = await firstValueFrom(res$);
+
+  //   this.symbolsCache = data.symbols
+  //     .filter((s) => s.status === 'TRADING')
+  //     .map((s) => ({
+  //       symbol: s.symbol,
+  //     }));
+
+  //   this.lastUpdate = now;
+  //   return this.symbolsCache;
+  // }
+
+  // async searchSymbols(query: string) {
+  //   const q = query.toUpperCase();
+  //   const symbols = await this.loadSymbols();
+
+  //   return symbols.filter((s) => s.symbol.includes(q)).slice(0, 20); // limit results
+  // }
+
+  async getAssetValues(assetValueRequest: AssetValueRequest[], pID: number) {
     try {
       const date = new Date(Date.now()).toISOString().split('T')[0];
       const previousDate = Helper.minusOneDay(date);
@@ -62,9 +136,9 @@ export class AssetService {
       let currentEarningByUSD = 0;
       let currentEarningByEURO = 0;
       let currentEarningByTRY = 0;
-
+      // const re = await Promise.all(Helper.deneme(assetValueRequest));
       const result = await Promise.all(
-        requestCurrentAssetPrice.map(async (asset) => {
+        assetValueRequest.map(async (asset) => {
           const url = Helper.findURLForChartByAssetType(
             date,
             asset.type,
@@ -207,65 +281,68 @@ export class AssetService {
               asset.currentAssetPriceByTRY = priceResponse.currentPriceByTRY;
               break;
             case AssetType.INDEX:
-              if (asset.symbol == 'THYAO') {
-                priceResponse.marketStatus = false;
-                priceResponse.currentPriceByUSD = response.data.kapanis;
-                priceResponse.currentPriceByEURO = response.data.kapanis;
-                priceResponse.currentPriceByTRY = response.data.kapanis;
-                priceResponse.previousDayPriceByUSD = 200;
-                priceResponse.previousDayPriceByEURO = 200;
-                priceResponse.previousDayPriceByTRY = 200;
-              } else {
-                priceResponse.marketStatus = Helper.isMarketOpen(
-                  response.data.chart.result[0].meta,
-                );
-                // console.log(asset.symbol + ' open: ' + open1);
-                // previous date value
-                // data = response2.data.chart.result[0];
-                //
-                // timestamps = data.timestamp;
-                //
-                // if (timestamps == undefined) {
-                //   data = data.meta.chartPreviousClose;
-                // }
-                //
-                // candle2 = data.indicators.quote[0];
+              priceResponse.marketStatus = Helper.isMarketOpen(
+                response.data.chart.result[0].meta,
+              );
 
-                priceResponse.previousDayPriceByTRY =
-                  response.data.chart.result[0].meta.chartPreviousClose;
+              // previous date value
+              let data = response2.data.chart.result[0];
+              let updatedDate = previousDate;
+              timestamps = data.timestamp;
 
-                priceResponse.previousDayPriceByUSD = Number(
-                  Number(
-                    priceResponse.previousDayPriceByTRY /
-                      (await Helper.getExchangeRatesByDate(
-                        this.httpService,
-                        'TRY',
-                        previousDate,
-                      )),
-                  ).toFixed(2),
+              while (timestamps == undefined) {
+                updatedDate = Helper.minusOneDay(updatedDate);
+
+                const url = Helper.findURLForChartByAssetType(
+                  updatedDate,
+                  asset.type,
+                  asset.symbol,
                 );
-                priceResponse.previousDayPriceByEURO = Number(
-                  Number(
-                    priceResponse.previousDayPriceByUSD *
-                      (await Helper.getExchangeRatesByDate(
-                        this.httpService,
-                        'EUR',
-                        previousDate,
-                      )),
-                  ).toFixed(2),
+                const response = await firstValueFrom(
+                  this.httpService.get(url),
                 );
-                // today value
-                priceResponse.currentPriceByUSD = Number(
-                  Number(
-                    response.data.chart.result[0].meta.regularMarketPrice /
-                      (await Helper.getExchangeRatesByDate(
-                        this.httpService,
-                        'TRY',
-                        date,
-                      )),
-                  ).toFixed(2),
-                );
+
+                if (response.status === 200) {
+                  data = response.data.chart.result[0];
+                  timestamps = data.timestamp;
+                }
               }
+
+              priceResponse.previousDayPriceByTRY =
+                data.indicators.quote[0].close[0];
+
+              priceResponse.previousDayPriceByUSD = Number(
+                Number(
+                  priceResponse.previousDayPriceByTRY /
+                    (await Helper.getExchangeRatesByDate(
+                      this.httpService,
+                      'TRY',
+                      updatedDate,
+                    )),
+                ).toFixed(2),
+              );
+              priceResponse.previousDayPriceByEURO = Number(
+                Number(
+                  priceResponse.previousDayPriceByUSD *
+                    (await Helper.getExchangeRatesByDate(
+                      this.httpService,
+                      'EUR',
+                      updatedDate,
+                    )),
+                ).toFixed(2),
+              );
+              // today value
+              priceResponse.currentPriceByUSD = Number(
+                Number(
+                  response.data.chart.result[0].meta.regularMarketPrice /
+                    (await Helper.getExchangeRatesByDate(
+                      this.httpService,
+                      'TRY',
+                      date,
+                    )),
+                ).toFixed(2),
+              );
+
               asset.currentAssetPriceByUSD = priceResponse.currentPriceByUSD;
 
               priceResponse.currentPriceByEURO = Number(
@@ -389,26 +466,6 @@ export class AssetService {
               asset.totalRawInvestmentByTRY -
             100;
 
-          //   if (asset.symbol == 'QQQ') {
-          //     console.log(`************`);
-          //     console.log(
-          //       'priceResponse.dailyROIByUSD: ' +
-          //         ((priceResponse.previousDayPriceByUSD -
-          //           priceResponse.currentPriceByUSD) /
-          //           priceResponse.currentPriceByUSD) *
-          //           100,
-          //     );
-          //     console.log(
-          //       'priceResponse.currentPriceByUSD: ' +
-          //         priceResponse.currentPriceByUSD,
-          //     );
-          //     console.log(
-          //       'priceResponse.previousDayPriceByUSD: ' +
-          //         priceResponse.previousDayPriceByUSD,
-          //     );
-          //     console.log(`************`);
-          //   }
-
           priceResponse.dailyROIByUSD =
             ((priceResponse.currentPriceByUSD -
               priceResponse.previousDayPriceByUSD) /
@@ -434,7 +491,10 @@ export class AssetService {
 
       const updatedAssets = await this.calculateCurrentWeight(result);
       const updatedPortfolioPie = await this.createPortfolioPie(result);
-      const yearsCount = await this.prisma.portfolioYearlyChange.count();
+      const yearsCount = await this.prisma.portfolioYearlyChange.count({
+        where: { portfolioId: pID },
+      });
+
       return {
         currentROIByUSD:
           (currentInvestmentByUSD * 100) / totalRawInvestmentByUSD - 100,
@@ -628,7 +688,7 @@ export class AssetService {
     return asset;
   }
 
-  update(id: number, updateAssetDto: UpdateAssetDto) {
+  update(id: number, updateAssetRequest: UpdateAssetRequest) {
     return `This action updates a #${id} asset`;
   }
 

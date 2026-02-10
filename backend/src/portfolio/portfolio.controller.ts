@@ -10,7 +10,6 @@ import {
 import { PortfolioService } from './portfolio.service';
 import { CreatePortfolioDto } from './dto/create-portfolio.dto';
 import { UpdatePortfolioDto } from './dto/update-portfolio.dto';
-import { CurrentAssetPriceRequest } from 'src/asset/request/current-asset-price-request';
 
 @Controller('portfolios')
 export class PortfolioController {

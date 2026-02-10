@@ -16,7 +16,7 @@ type Asset = {
   id: number;
   symbol: string;
   type: string;
-  imageUrl: string;
+  longName: string;
   totalRawInvestmentByUSD: number;
   totalRawInvestmentByEURO: number;
   totalRawInvestmentByTRY: number;
@@ -143,12 +143,12 @@ export default function Dashboard() {
         );
 
         const response = await httpService.post(
-          `/assets/current-market-price`,
+          `/assets/${pID}/asset-values`,
           filteredAssetData,
         );
 
         if (response.status === 201) {
-          console.log(response.data);
+       
           const target = omit(response.data, ["assets"]);
           const updatedPortfolioStatsData = (portfolioStatsDataRef.current = {
             ...portfolioStatsDataRef.current,

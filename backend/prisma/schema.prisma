@@ -53,20 +53,22 @@ model PortfolioYearlyChange {
 }
 
 model Asset {
-  id                       Int           @id @default(autoincrement())
-  symbol                   String        @unique
-  type                     AssetType
+  id       Int       @id @default(autoincrement())
+  symbol   String
+  longName String
+  type     AssetType
+
   totalInvestedByUSD  Float         @default(0)
   totalInvestedByEURO Float         @default(0)
   totalInvestedByTRY  Float         @default(0)
-  totalQuantity            Float         @default(0)
-  averageCostByUSD         Float         @default(0)
-  averageCostByEURO        Float         @default(0)
-  averageCostByTRY         Float         @default(0)
-  initialWeight            Float
-  portfolio                Portfolio     @relation(fields: [portfolioId], references: [id], onDelete: Cascade)
-  portfolioId              Int
-  transactions             Transaction[]
+  totalQuantity       Float         @default(0)
+  averageCostByUSD    Float         @default(0)
+  averageCostByEURO   Float         @default(0)
+  averageCostByTRY    Float         @default(0)
+  initialWeight       Float
+  portfolio           Portfolio     @relation(fields: [portfolioId], references: [id], onDelete: Cascade)
+  portfolioId         Int
+  transactions        Transaction[]
 }
 
 model Transaction {

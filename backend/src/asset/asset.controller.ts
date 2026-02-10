@@ -8,10 +8,10 @@ import {
   Delete,
 } from '@nestjs/common';
 import { AssetService } from './asset.service';
-import { CreateAssetDto } from './dto/create-asset.dto';
-import { UpdateAssetDto } from './dto/update-asset.dto';
-import { CurrentAssetPriceRequest } from './request/current-asset-price-request';
 import { TransactionService } from 'src/transaction/transaction.service';
+import { AssetValueRequest } from './request/asset-value-request';
+import { CreateAssetRequest } from './request/create-asset-request';
+import { UpdateAssetRequest } from './request/update-asset-request';
 
 @Controller('assets')
 export class AssetController {
@@ -21,19 +21,25 @@ export class AssetController {
   ) {}
 
   @Post()
-  create(@Body() createAssetDto: CreateAssetDto) {
-    return this.assetService.create(createAssetDto);
+  create(@Body() createAssetRequest: CreateAssetRequest) {
+    return this.assetService.create(createAssetRequest);
   }
   @Get()
   findAll() {
     return this.assetService.findAll();
   }
 
-  @Post('/current-market-price')
-  getCurrentMarketPrice(
-    @Body() requestCurrentAssetPriceDto: CurrentAssetPriceRequest[],
+  @Post('/asset-query')
+  searchAssets(@Body() query: { source:string,symbol: string }) {
+    return this.assetService.searchAssets(query);
+  }
+
+  @Post('/:id/asset-values')
+  getassetValue(
+    @Param('id') id: string,
+    @Body() assetValueRequest: AssetValueRequest[],
   ) {
-    return this.assetService.getCurrentMarketPrice(requestCurrentAssetPriceDto);
+    return this.assetService.getAssetValues(assetValueRequest, +id);
   }
 
   @Get(':id')
@@ -52,8 +58,11 @@ export class AssetController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateAssetDto: UpdateAssetDto) {
-    return this.assetService.update(+id, updateAssetDto);
+  update(
+    @Param('id') id: string,
+    @Body() UpdateAssetRequest: UpdateAssetRequest,
+  ) {
+    return this.assetService.update(+id, UpdateAssetRequest);
   }
 
   @Delete(':id')

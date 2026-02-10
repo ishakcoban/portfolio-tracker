@@ -5,6 +5,8 @@ import httpService from "../../../services/httpService";
 import CustomInput from "../../CustomInput/CustomInput";
 import SuccessResponse from "../../SuccessResponse/SuccessResponse";
 import LoadingSpinner from "../../LoadingSpinner/LoadingSpinner";
+import Select from "react-select";
+import type { IdNotVerifiedFreeIcons } from "@hugeicons/core-free-icons";
 interface TransactionRow {
   date: string;
   type: "BUY" | "SELL";
@@ -31,6 +33,15 @@ type Portfolio = {
   assets: Asset[];
 };
 
+type Option = {
+  id?: number;
+  value: string;
+  label: string;
+  type?: string;
+  longName?: string;
+  assets?: Asset[];
+};
+
 export const CreateTransactionForm: React.FC<Props> = ({
   closePopup,
   onSuccess,
@@ -39,15 +50,11 @@ export const CreateTransactionForm: React.FC<Props> = ({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
-  /**/
   const [investmentAmount, setInvestmentAmount] = useState<number>(0);
   const [saleAmount, setSaleAmount] = useState<number>(0);
   const [price, setPrice] = useState<number>(0);
   const [date, setDate] = useState<string>("");
-  const [portfolios, setPortfolios] = useState<Portfolio[]>([]);
-  const [assets, setAssets] = useState<Asset[]>([]);
-  const [selectedPortfolio, setSelectedPortfolio] = useState("");
-  const [selectedAsset, setSelectedAsset] = useState("");
+  const [selectedAsset, setSelectedAsset] = useState<number | null>();
   const [USDTRY, setUSDTRY] = useState<number>(0);
   const [EURUSD, setEURUSD] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -55,6 +62,8 @@ export const CreateTransactionForm: React.FC<Props> = ({
   const [statusCode, setStatusCode] = useState<number>(0);
   const [transactionType, setTransactionType] = useState<string>("BUY");
   const [mode, setMode] = useState<string>("");
+  const [portfolios, setPortfolios] = useState<Option[]>([]);
+  const [assets, setAssets] = useState<Option[]>([]);
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -104,12 +113,17 @@ export const CreateTransactionForm: React.FC<Props> = ({
     try {
       const response = await httpService.get("/portfolios");
       if (response.status === 200) {
+        setPortfolios(
+          response.data.map(
+            (item: { id: number; name: string; assets: Asset[] }) => ({
+              value: item.id,
+              label: item.name,
+              assets: item.assets,
+            }),
+          ),
+        );
         console.log(response.data);
-        setPortfolios(response.data);
       }
-
-      // const data = await response.json();
-      // setAssets(data);
     } catch (err) {
       //setError(err instanceof Error ? err.message : 'Failed to fetch assets');
     } finally {
@@ -153,7 +167,7 @@ export const CreateTransactionForm: React.FC<Props> = ({
     switch (transactionType) {
       case "BUY":
         data = {
-          assetId: +selectedAsset,
+          assetId: +selectedAsset!,
           type: transactionType,
           invested: +investmentAmount,
           quantity: +(investmentAmount / price),
@@ -166,7 +180,7 @@ export const CreateTransactionForm: React.FC<Props> = ({
 
       case "SELL":
         data = {
-          assetId: +selectedAsset,
+          assetId: +selectedAsset!,
           type: transactionType,
           invested: saleAmount,
           usdtry: USDTRY,
@@ -178,7 +192,6 @@ export const CreateTransactionForm: React.FC<Props> = ({
         break;
     }
 
-    console.log(data);
     setMessage("");
     setIsLoading(true);
     setTimeout(async () => {
@@ -186,8 +199,8 @@ export const CreateTransactionForm: React.FC<Props> = ({
         const response = await httpService.post("/transactions", data);
 
         if (response.status === 201) {
-          setSelectedPortfolio("");
-          setSelectedAsset("");
+          //setSelectedPortfolio("");
+          //setSelectedAsset("");
           setPrice(0);
           setDate("");
           setStatusCode(response.status);
@@ -216,11 +229,16 @@ export const CreateTransactionForm: React.FC<Props> = ({
     setTransactionType(type);
   };
 
-  const portfolioHandler = async (
-    event: React.ChangeEvent<HTMLSelectElement>,
-  ) => {
+  const handlePortfolio = async (id: number) => {
+    const portfolio = portfolios.find((item: any) => +item.value === id);
+
+    const assets = portfolio?.assets || [];
+
     setAssets(
-      portfolios.find((p) => p.id === Number(event.target.value))?.assets || [],
+      assets?.map((item: { id: number; symbol: string }) => ({
+        value: item.id.toString(),
+        label: item.symbol,
+      })),
     );
   };
 
@@ -231,14 +249,13 @@ export const CreateTransactionForm: React.FC<Props> = ({
   };
 
   useEffect(() => {
-    if (mode == "single" || mode == "multiple") {
-      fetchPortfolios();
-    }
-  }, [mode]);
+    fetchPortfolios();
+  }, []);
 
-  const modeHandler = (mode: string) => {
-    setMode(mode);
-  };
+  useEffect(() => {
+    console.log(assets);
+  }, [assets]);
+
   return (
     <>
       <div className="max-w-6xl mx-auto">
@@ -247,27 +264,91 @@ export const CreateTransactionForm: React.FC<Props> = ({
           <h1 className="text-3xl font-bold text-gray-800 mb-2">
             Transaction Management
           </h1>
+        </div>
+
+        <div className="d-flex flex-column align-items-center mb-3 mt-3">
+          <div className="w-50">
+            <div className="d-flex flex-column gap-4">
+              <Select
+                placeholder="Select a portfolio to add asset"
+                styles={{
+                  control: (baseStyles) => ({
+                    ...baseStyles,
+                    borderColor: "#BBBBB5",
+                    borderRadius: "8px",
+                    backgroundColor: "transparent",
+                  }),
+                  singleValue: (baseStyles) => ({
+                    ...baseStyles,
+                    color: "#BBBBB5",
+                  }),
+                  input: (baseStyles) => ({
+                    ...baseStyles,
+                    color: "#BBBBB5",
+                  }),
+                  placeholder: (baseStyles) => ({
+                    ...baseStyles,
+                  }),
+                }}
+                onChange={(selectedOption: Option | null) =>
+                  handlePortfolio(+selectedOption!.value)
+                }
+                options={portfolios}
+              />
+
+              <Select
+                placeholder="Select an asset"
+                styles={{
+                  control: (baseStyles) => ({
+                    ...baseStyles,
+                    borderColor: "#BBBBB5",
+                    borderRadius: "8px",
+                    backgroundColor: "transparent",
+                  }),
+                  singleValue: (baseStyles) => ({
+                    ...baseStyles,
+                    color: "#BBBBB5",
+                  }),
+                  input: (baseStyles) => ({
+                    ...baseStyles,
+                    color: "#BBBBB5",
+                  }),
+                  placeholder: (baseStyles) => ({
+                    ...baseStyles,
+                  }),
+                }}
+                onChange={(selectedOption: Option | null) =>
+                  setSelectedAsset(+selectedOption!.value)
+                }
+                options={assets}
+              />
+            </div>
+          </div>
+        </div>
+        <div className="rounded-lg p-6 mb-6 d-flex flex-column align-items-center text-light">
           <p className="text-gray-600">
             Add transactions individually or upload multiple transactions at
             once
           </p>
         </div>
-
         {/* Mode Toggle */}
-        <div className="rounded-lg p-6 mb-6">
-          <div className="d-flex justify-content-center gap-4 pb-5">
-            <button
-              className={`col-3 btn border-light text-light ${mode == "single" && "btn-light text-dark"}`}
-              onClick={() => modeHandler("single")}
+
+        <div className="d-flex justify-content-center m-0 p-0 gap-3 pb-3">
+          <div className="col-3 m-0 p-0 d-flex align-items-center">
+            <div
+              className={`asset-broker w-100 mx-1 py-2 ps-3 ${mode == "single" && "border border-light border-2"}`}
+              onClick={() => setMode("single")}
             >
               single
-            </button>
-            <button
-              className={`col-3 btn border-light text-light ${mode == "multiple" && "btn-light text-dark"}`}
-              onClick={() => modeHandler("multiple")}
+            </div>
+          </div>
+          <div className="col-3 m-0 p-0 d-flex align-items-center">
+            <div
+              className={`asset-broker w-100 mx-1 py-2 ps-3 ${mode == "multiple" && "border border-light border-2"}`}
+              onClick={() => setMode("multiple")}
             >
               multiple
-            </button>
+            </div>
           </div>
         </div>
       </div>
@@ -278,64 +359,6 @@ export const CreateTransactionForm: React.FC<Props> = ({
             {transactionType === "BUY" || transactionType === "SELL" ? (
               <div className="w-50">
                 <div className="d-flex flex-column gap-4">
-                  <CustomInput header="Select a portfolio">
-                    {/* <input
-                   type="number"
-                   className="input-style"
-                   value={initialWeightText}
-                   name="asset"
-                   onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
-                     setInitialWeightText(+event.target.value)
-                   }
-                 ></input> */}
-
-                    <select
-                      style={{ fontSize: ".7rem" }}
-                      role="button"
-                      className="w-100"
-                      onChange={(event: React.ChangeEvent<HTMLSelectElement>) =>
-                        portfolioHandler(event)
-                      }
-                    >
-                      <option className="option" value=""></option>
-                      {portfolios !== undefined &&
-                        portfolios.map(
-                          (portfolio: { id: number; name: string }) => (
-                            <option key={portfolio.id} value={portfolio.id}>
-                              {portfolio.name}
-                            </option>
-                          ),
-                        )}
-                    </select>
-                  </CustomInput>
-                  <CustomInput header="Select a asset">
-                    {/* <input
-                   type="number"
-                   className="input-style"
-                   value={initialWeightText}
-                   name="asset"
-                   onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
-                     setInitialWeightText(+event.target.value)
-                   }
-                 ></input> */}
-
-                    <select
-                      style={{ fontSize: ".7rem" }}
-                      role="button"
-                      className="w-100"
-                      onChange={(event: React.ChangeEvent<HTMLSelectElement>) =>
-                        setSelectedAsset(event.target.value)
-                      }
-                    >
-                      <option className="option" value=""></option>
-                      {assets !== undefined &&
-                        assets.map((asset: { id: number; symbol: string }) => (
-                          <option key={asset.id} value={asset.id}>
-                            {asset.symbol}
-                          </option>
-                        ))}
-                    </select>
-                  </CustomInput>
                   <CustomInput header="Price">
                     <input
                       type="number"
@@ -484,61 +507,6 @@ export const CreateTransactionForm: React.FC<Props> = ({
       )}
       {mode == "multiple" && (
         <div className="bulk-upload-container">
-          <div className="d-flex flex-column align-items-center mb-3">
-            <div className="w-50">
-              <div className="d-flex flex-column gap-4">
-                <CustomInput header="Select a portfolio">
-                  <select
-                    style={{ fontSize: ".7rem" }}
-                    role="button"
-                    className="w-100"
-                    onChange={(event: React.ChangeEvent<HTMLSelectElement>) =>
-                      portfolioHandler(event)
-                    }
-                  >
-                    <option className="option" value=""></option>
-                    {portfolios !== undefined &&
-                      portfolios.map(
-                        (portfolio: { id: number; name: string }) => (
-                          <option key={portfolio.id} value={portfolio.id}>
-                            {portfolio.name}
-                          </option>
-                        ),
-                      )}
-                  </select>
-                </CustomInput>
-                <CustomInput header="Select a asset">
-                  {/* <input
-                   type="number"
-                   className="input-style"
-                   value={initialWeightText}
-                   name="asset"
-                   onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
-                     setInitialWeightText(+event.target.value)
-                   }
-                 ></input> */}
-
-                  <select
-                    style={{ fontSize: ".7rem" }}
-                    role="button"
-                    className="w-100"
-                    onChange={(event: React.ChangeEvent<HTMLSelectElement>) =>
-                      setSelectedAsset(event.target.value)
-                    }
-                  >
-                    <option className="option" value=""></option>
-                    {assets !== undefined &&
-                      assets.map((asset: { id: number; symbol: string }) => (
-                        <option key={asset.id} value={asset.id}>
-                          {asset.symbol}
-                        </option>
-                      ))}
-                  </select>
-                </CustomInput>
-              </div>
-            </div>
-          </div>
-
           <div className="upload-card">
             <div className="upload-section">
               <label className="file-upload-label">

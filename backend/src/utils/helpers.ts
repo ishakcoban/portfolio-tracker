@@ -1,4 +1,4 @@
-import { AssetType } from 'generated/prisma';
+import { Asset, AssetType } from 'generated/prisma';
 import {
   PipeTransform,
   Injectable,
@@ -9,6 +9,7 @@ import {
 import { Transform } from 'class-transformer';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom } from 'rxjs';
+import { AssetValueRequest } from 'src/asset/request/asset-value-request';
 
 type ISODate = `${number}-${number}-${number}`; // yyyy-mm-dd
 
@@ -44,6 +45,14 @@ export class Helper {
     }
 
     return url;
+  }
+
+  static async deneme(assetValueRequest:AssetValueRequest[]){
+
+    assetValueRequest.map((asset)=>{
+      
+    })
+
   }
 
   static async getCurrencyPrice(httpService: HttpService, currency: string) {
