@@ -148,6 +148,7 @@ export class TransactionService {
           createTransactionRequest,
           transactionYear,
         );
+        console.log(finalValue);
 
         if (portfolioYearlyChanges[yearIndex].year == currentYear) {
           await this.updatePortfolioYearlyRoiValues(portfolioYearlyChanges);
@@ -212,11 +213,13 @@ export class TransactionService {
           await this.updatePortfolioYearlyRoiValues(portfolioYearlyChanges);
           break;
         }
+       
         let finalValue = await this.calculateFinalTransactionValueByYear(
           asset,
           createTransactionRequest,
           targetYear,
         );
+      
         let targetYearExists = portfolioYearlyChanges.some(
           (v) => v.year === targetYear,
         );
@@ -492,14 +495,29 @@ export class TransactionService {
           finalValue.byEURO = assetEndValueByEURO;
           finalValue.byTRY = assetEndValueByTRY;
         } else {
-
           let data = response.data.chart.result[0];
           timestamps = data.timestamp;
-          if (timestamps == undefined) {
-            data = data.meta.chartPreviousClose;
-          }
-          let candle = data.indicators.quote[0];
+let updatedDate = lastDate;
+              while (timestamps == undefined) {
+                updatedDate = Helper.minusOneDay(updatedDate);
 
+                const url = Helper.findURLForChartByAssetType(
+                  updatedDate,
+                  asset.type,
+                  asset.symbol,
+                );
+                const response = await firstValueFrom(
+                  this.httpService.get(url),
+                );
+
+                if (response.status === 200) {
+                  data = response.data.chart.result[0];
+                  timestamps = data.timestamp;
+                }
+              }
+
+          let candle = data.indicators.quote[0];
+console.log(candle,lastDate)
           let assetPriceAtLastDayOfYearByUSD = candle.close[0];
           let assetPriceAtLastDayOfYearByEURO =
             candle.close[0] *
@@ -579,7 +597,6 @@ export class TransactionService {
   async updatePortfolioYearlyRoiValues(
     portfolioYearlyChanges: PortfolioYearlyChange[],
   ) {
-    //  console.log(portfolioYearlyChanges)
     for (const [index, element] of portfolioYearlyChanges.entries()) {
       if (index == portfolioYearlyChanges.length - 1) {
         break;
@@ -592,22 +609,21 @@ export class TransactionService {
       let previousYearFinalValueByTRY =
         index - 1 < 0 ? 0 : portfolioYearlyChanges[index - 1].finalValueByTRY;
 
-      element.roiByUSD =
+      portfolioYearlyChanges[index].roiByUSD =
         ((element.finalValueByUSD -
           (previousYearFinalValueByUSD + element.investedByUSD)) /
           (previousYearFinalValueByUSD + element.investedByUSD)) *
         100;
-      element.roiByEURO =
+      portfolioYearlyChanges[index].roiByEURO =
         ((element.finalValueByEURO -
           (previousYearFinalValueByEURO + element.investedByEURO)) /
           (previousYearFinalValueByEURO + element.investedByEURO)) *
         100;
-      element.roiByTRY =
+      portfolioYearlyChanges[index].roiByTRY =
         ((element.finalValueByTRY -
           (previousYearFinalValueByTRY + element.investedByTRY)) /
           (previousYearFinalValueByTRY + element.investedByTRY)) *
         100;
-      // console.log(element);
     }
 
     await Promise.all(

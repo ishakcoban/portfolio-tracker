@@ -17,7 +17,7 @@ interface TradingviewChartProps {
 }
 type LineChart = {
   // index: number;
-  //roi: number;
+  roi: number;
   time: Time;
   open: number;
   high: number;
@@ -292,6 +292,9 @@ const TradingviewChart: React.FC<TradingviewChartProps> = ({ data }) => {
             </span>
             <span >
               C: <strong style={{color:ohlcData.color}}>{ohlcData.close}</strong>
+            </span>
+              <span >
+               <strong style={{color:ohlcData.color}}>({Number(ohlcData.roi) > 0 ? "+" : "-"}{ohlcData.roi}%)</strong>
             </span>
          
           </div>

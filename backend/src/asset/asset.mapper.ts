@@ -8,6 +8,7 @@ export class AssetMapper {
     return {
       id: asset.id,
       symbol: asset.symbol,
+      longName:asset.longName,
       portfolioId: asset.portfolioId,
       totalRawInvestmentByUSD: asset.totalInvestedByUSD,
       totalRawInvestmentByEURO: asset.totalInvestedByEURO,

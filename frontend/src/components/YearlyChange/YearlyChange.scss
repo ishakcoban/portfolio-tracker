@@ -1,13 +1,19 @@
-.year-section{
-    background-color: $light-grey;
-    border-radius: 12px;
+.year-section {
+  background-color: $light-grey;
+  border-radius: 12px;
 }
 
-.year-text-header{
-    color: $orange;
-    font-size: .9rem;
-
+.year-section-wrapper {
+  overflow-x: visible;
+  overflow-y: hidden;
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
 }
-.year-text-roi{
-    font-size: .8rem;
+
+.year-text-header {
+  color: $orange;
+  font-size: 0.9rem;
+}
+.year-text-roi {
+  font-size: 0.8rem;
 }

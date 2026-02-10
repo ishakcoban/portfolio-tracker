@@ -18,7 +18,7 @@ import { useStore } from "../../../store";
 type Asset = {
   id: number;
   symbol: string;
-  imageUrl: string;
+  longName: string;
   totalRawInvestmentByUSD: number;
   totalRawInvestmentByEURO: number;
   totalRawInvestmentByTRY: number;
@@ -195,6 +195,10 @@ export default function AssetListView({ asset }: Props) {
               <thead className="border-bottom">
                 <tr>
                   <th></th>
+                  <th>DR</th>
+                  <th>CP</th>
+                  <th>ROI</th>
+                  <th>PF</th>
                   <th>IW</th>
                   <th>CW</th>
                   {asset.length > 1 ? (
@@ -208,7 +212,7 @@ export default function AssetListView({ asset }: Props) {
                   <th>TQ</th>
                   <th>AC</th>
                   <th>I</th>
-                  <th>C</th>
+                  <th>CV</th>
                   <th></th>
                 </tr>
               </thead>
@@ -221,147 +225,130 @@ export default function AssetListView({ asset }: Props) {
                           <div className="asset-name fw-bold">
                             {item.symbol}
                           </div>
-                          <div className="asset-name ms-2 fw-bold">
-                            {item.marketStatus ? (
-                              <div
-                                className={
-                                  "text-green " +
-                                  (currency === "USD"
-                                    ? item.dailyROIByUSD < 0 && " text-red"
-                                    : currency === "EUR"
-                                      ? item.dailyROIByEURO < 0 && " text-red"
-                                      : item.dailyROIByTRY < 0 && " text-red")
-                                }
-                              >
-                                <span>
-                                  <NumberFlow
-                                    format={{
-                                      style: "decimal",
-                                      signDisplay: "always",
-                                      maximumFractionDigits: 2,
-                                    }}
-                                    animated={false}
-                                    value={
-                                      currency === "USD"
-                                        ? item.dailyROIByUSD
-                                        : currency === "EUR"
-                                          ? item.dailyROIByEURO
-                                          : item.dailyROIByTRY
-                                    }
-                                  />
-                                  %
-                                </span>
-                              </div>
-                            ) : (
-                              <div>
-                                <HugeiconsIcon
-                                  role="button"
-                                  color="white"
-                                  width={21}
-                                  height={21}
-                                  icon={ViewOffIcon}
-                          
-                                />
-                              </div>
-                            )}
-                          </div>
-                        </div>
-
-                        <div
-                          style={{ fontSize: ".9rem" }}
-                          className="d-flex justify-content-start py-2"
-                        >
-                          <div className="asset-current-price border-end pe-2">
-                            <span>
-                              {currency === "USD"
-                                ? "$"
-                                : currency === "EUR"
-                                  ? "€"
-                                  : "₺"}
-                              <NumberFlow
-                                format={{
-                                  style: "decimal",
-                                  signDisplay: "never",
-                                }}
-                                animated={false}
-                                value={
-                                  currency === "USD"
-                                    ? item.currentPriceByUSD
-                                    : currency === "EUR"
-                                      ? item.currentPriceByEURO
-                                      : item.currentPriceByTRY
-                                }
-                              />
-                            </span>
-                          </div>
-
-                          <div
-                            className={
-                              "border-end px-2 text-green " +
-                              (currency === "USD"
-                                ? item.currentROIByUSD < 0 && " text-red"
-                                : currency === "EUR"
-                                  ? item.currentROIByEURO < 0 && " text-red"
-                                  : item.currentROIByTRY < 0 && " text-red")
-                            }
-                          >
-                            <span>
-                              <NumberFlow
-                                format={{
-                                  style: "decimal",
-                                  signDisplay: "never",
-                                }}
-                                animated={false}
-                                value={Math.abs(
-                                  currency === "USD"
-                                    ? item.currentROIByUSD
-                                    : currency === "EUR"
-                                      ? item.currentROIByEURO
-                                      : item.currentROIByTRY,
-                                )}
-                              />
-                              %
-                            </span>
-                          </div>
-
-                          <div
-                            className={
-                              "ps-2 text-green " +
-                              (currency === "USD"
-                                ? item.currentEarningByUSD < 0 && " text-red"
-                                : currency === "EUR"
-                                  ? item.currentEarningByEURO < 0 && " text-red"
-                                  : item.currentEarningByTRY < 0 && " text-red")
-                            }
-                          >
-                            <span>
-                              {currency === "USD"
-                                ? "$"
-                                : currency === "EUR"
-                                  ? "€"
-                                  : "₺"}
-                              <NumberFlow
-                                format={{
-                                  notation: "standard",
-
-                                  signDisplay: "never",
-                                  maximumFractionDigits: 2,
-                                }}
-                                animated={false}
-                                value={Math.abs(
-                                  currency === "USD"
-                                    ? item.currentEarningByUSD
-                                    : currency === "EUR"
-                                      ? item.currentEarningByEURO
-                                      : item.currentEarningByTRY,
-                                )}
-                              />
-                            </span>
-                          </div>
                         </div>
                       </div>
                     </td>
+                    <td>
+                      <div
+                        className={
+                          "text-green fw-bold " +
+                          (currency === "USD"
+                            ? item.dailyROIByUSD < 0 && " text-red"
+                            : currency === "EUR"
+                              ? item.dailyROIByEURO < 0 && " text-red"
+                              : item.dailyROIByTRY < 0 && " text-red")
+                        }
+                      >
+                        <span>
+                          <NumberFlow
+                            format={{
+                              style: "decimal",
+                              signDisplay: "always",
+                              maximumFractionDigits: 2,
+                            }}
+                            animated={false}
+                            value={
+                              currency === "USD"
+                                ? item.dailyROIByUSD
+                                : currency === "EUR"
+                                  ? item.dailyROIByEURO
+                                  : item.dailyROIByTRY
+                            }
+                          />
+                          %
+                        </span>
+                      </div>
+                    </td>
+                    <td className="text-light">
+                      <span>
+                        {currency === "USD"
+                          ? "$"
+                          : currency === "EUR"
+                            ? "€"
+                            : "₺"}
+                        <NumberFlow
+                          format={{
+                            style: "decimal",
+                            signDisplay: "never",
+                          }}
+                          animated={false}
+                          value={
+                            currency === "USD"
+                              ? item.currentPriceByUSD
+                              : currency === "EUR"
+                                ? item.currentPriceByEURO
+                                : item.currentPriceByTRY
+                          }
+                        />
+                      </span>
+                    </td>
+                    <td className="text-light text-nowrap fw-bold">
+                      {" "}
+                      <div
+                        className={
+                          "text-green " +
+                          (currency === "USD"
+                            ? item.currentROIByUSD < 0 && " text-red"
+                            : currency === "EUR"
+                              ? item.currentROIByEURO < 0 && " text-red"
+                              : item.currentROIByTRY < 0 && " text-red")
+                        }
+                      >
+                        <span>
+                          <NumberFlow
+                            format={{
+                              style: "decimal",
+                              signDisplay: "never",
+                            }}
+                            animated={false}
+                            value={Math.abs(
+                              currency === "USD"
+                                ? item.currentROIByUSD
+                                : currency === "EUR"
+                                  ? item.currentROIByEURO
+                                  : item.currentROIByTRY,
+                            )}
+                          />
+                          %
+                        </span>
+                      </div>
+                    </td>
+                    <td className="text-light fw-bold">
+                      <div
+                        className={
+                          "text-green text-nowrap" +
+                          (currency === "USD"
+                            ? item.currentEarningByUSD < 0 && " text-red"
+                            : currency === "EUR"
+                              ? item.currentEarningByEURO < 0 && " text-red"
+                              : item.currentEarningByTRY < 0 && " text-red")
+                        }
+                      >
+                        <span>
+                          {currency === "USD"
+                            ? "$"
+                            : currency === "EUR"
+                              ? "€"
+                              : "₺"}
+                          <NumberFlow
+                            format={{
+                              notation: "standard",
 
+                              signDisplay: "never",
+                              maximumFractionDigits: 2,
+                            }}
+                            animated={false}
+                            value={Math.abs(
+                              currency === "USD"
+                                ? item.currentEarningByUSD
+                                : currency === "EUR"
+                                  ? item.currentEarningByEURO
+                                  : item.currentEarningByTRY,
+                            )}
+                          />
+                        </span>
+                      </div>
+                    </td>
                     <td className="text-light text-nowrap">
                       <span>
                         <NumberFlow
@@ -617,12 +604,14 @@ export default function AssetListView({ asset }: Props) {
             </div>
           )}
           <div
-            className="text-center"
-            style={{ color: "#D1D5DB", fontSize: ".6rem" }}
+            className="text-center text-nowrap"
+            style={{ color: "#D1D5DB", fontSize: ".6rem",overflowX:"auto" }}
           >
-            IW : Initial Weight --- CW : Current Weight --- WD : Weight
-            Difference --- CWD : Capital by Weight Difference --- TQ : Total
-            Quantity --- AC : Average Cost --- I : Invested --- C : Current
+            DR : Daily ROI --- CP : Current Price --- ROI : Return Of Investment
+            --- PF : Profit --- IW : Initial Weight --- CW : Current
+            Weight --- WD : Weight Difference --- CWD : Capital by Weight
+            Difference --- TQ : Total Quantity --- AC : Average Cost --- I :
+            Invested --- CV : Current Value
           </div>
         </div>
       ) : (

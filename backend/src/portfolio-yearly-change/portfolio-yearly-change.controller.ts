@@ -2,6 +2,7 @@ import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/commo
 import { PortfolioYearlyChangeService } from './portfolio-yearly-change.service';
 import { CreatePortfolioYearlyChangeDto } from './dto/create-portfolio-yearly-change.dto';
 import { UpdatePortfolioYearlyChangeDto } from './dto/update-portfolio-yearly-change.dto';
+import { CurrentInvestmentRequest } from './request/current-investment-request';
 
 @Controller('portfolio-yearly-change')
 export class PortfolioYearlyChangeController {
@@ -17,9 +18,9 @@ export class PortfolioYearlyChangeController {
     return this.portfolioYearlyChangeService.findAll();
   }
 
-  @Get(':id')
-  getYearlyChanges(@Param('id') pID: string) {
-    return this.portfolioYearlyChangeService.getYearlyChanges(+pID);
+  @Post(':id')
+  getYearlyChanges(@Param('id') pID: string,@Body() currentInvestment: CurrentInvestmentRequest) {
+    return this.portfolioYearlyChangeService.getYearlyChanges(+pID,currentInvestment);
   }
 
   @Patch(':id')

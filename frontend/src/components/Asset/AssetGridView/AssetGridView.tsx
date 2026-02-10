@@ -17,7 +17,7 @@ import { useStore } from "../../../store";
 type Asset = {
   id: number;
   symbol: string;
-  imageUrl: string;
+  longName: string;
   totalRawInvestmentByUSD: number;
   totalRawInvestmentByEURO: number;
   totalRawInvestmentByTRY: number;
@@ -74,7 +74,7 @@ export default function AssetGridView({ asset }: Props) {
   const [transactionData, setTransactionData] = useState<Transaction[]>();
   //const [currency, setCurrency] = useState("USD");
   const { currency } = useStore();
-  console.log(asset);
+
   const changeLineChartStatus = async () => {
     if (!lineChartStatus) {
       try {
@@ -201,164 +201,200 @@ export default function AssetGridView({ asset }: Props) {
             className="row m-0 p-0 border-bottom"
           >
             <div className="col-12 m-0 p-0 px-3 d-flex flex-column justify-content-center">
-              <div className="d-flex justify-content-between">
-                <div className="d-flex align-items-center">
-                  <div className="asset-name ms-2 fw-bold">{asset.symbol}</div>
-                  <div className="asset-name ms-2 fw-bold">
-                    {asset.marketStatus ? (
-                      <div
-                        className={
-                          "text-green " +
-                          (currency === "USD"
-                            ? asset.dailyROIByUSD < 0 && " text-red"
-                            : currency === "EUR"
-                              ? asset.dailyROIByEURO < 0 && " text-red"
-                              : asset.dailyROIByTRY < 0 && " text-red")
-                        }
-                      >
-                        <span>
-                          <NumberFlow
-                            format={{
-                              style: "decimal",
-                              signDisplay: "always",
-                              maximumFractionDigits: 2,
-                            }}
-                            animated={false}
-                            value={
-                              currency === "USD"
-                                ? asset.dailyROIByUSD
-                                : currency === "EUR"
-                                  ? asset.dailyROIByEURO
-                                  : asset.dailyROIByTRY
-                            }
-                          />
-                          %
-                        </span>
-                      </div>
-                    ) : (
-                      <div>
-                        <HugeiconsIcon
-                          role="button"
-                          color="white"
-                          width={21}
-                          height={21}
-                          icon={ViewOffIcon}
-                        />
-                      </div>
-                    )}
-                  </div>
-                </div>
+              <div className="asset-name d-flex justify-content-between align-items-end">
+                <div className="fw-bold">{asset.symbol}</div>
+                <div>
+                  <div className="d-flex justify-content-center align-items-center left-section-buttons">
+                    <div className="d-flex justify-content-center align-items-center asset-chart-button">
+                      <HugeiconsIcon
+                        role="button"
+                        color="white"
+                        width={18}
+                        height={18}
+                        icon={TransactionHistoryIcon}
+                        onClick={openPopup}
+                      />
+                    </div>
 
-                <div className="d-flex justify-content-center align-items-center left-section-buttons">
-                  <div className="d-flex justify-content-center align-items-center asset-chart-button">
-                    <HugeiconsIcon
-                      role="button"
-                      color="white"
-                      width={21}
-                      height={21}
-                      icon={TransactionHistoryIcon}
-                      onClick={openPopup}
-                    />
-                  </div>
-
-                  <div className="d-flex justify-content-center align-items-center asset-chart-button">
-                    <HugeiconsIcon
-                      role="button"
-                      color="white"
-                      width={21}
-                      height={21}
-                      icon={Chart01Icon}
-                      onClick={changeLineChartStatus}
-                    />
+                    <div className="d-flex justify-content-center align-items-center asset-chart-button">
+                      <HugeiconsIcon
+                        role="button"
+                        color="white"
+                        width={21}
+                        height={21}
+                        icon={Chart01Icon}
+                        onClick={changeLineChartStatus}
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
-              <div className="d-flex justify-content-end py-2">
-                <div className="asset-current-price border-end pe-2">
-                  <span>
-                    {currency === "USD" ? "$" : currency === "EUR" ? "€" : "₺"}
-                    <NumberFlow
-                      format={{
-                        style: "decimal",
-                        signDisplay: "never",
-                      }}
-                      animated={false}
-                      value={
-                        currency === "USD"
-                          ? asset.currentPriceByUSD
-                          : currency === "EUR"
-                            ? asset.currentPriceByEURO
-                            : asset.currentPriceByTRY
-                      }
-                    />
-                  </span>
-                </div>
 
+              <div className="d-flex justify-content-between align-items-center pb-2">
                 <div
-                  className={
-                    "border-end px-2 text-green " +
-                    (currency === "USD"
-                      ? asset.currentROIByUSD < 0 && " text-red"
-                      : currency === "EUR"
-                        ? asset.currentROIByEURO < 0 && " text-red"
-                        : asset.currentROIByTRY < 0 && " text-red")
-                  }
+                  style={{
+                    fontSize: "12px",
+                    opacity: ".5",
+                  }}
+                  className="text-light"
                 >
-                  <span>
-                    <NumberFlow
-                      format={{
-                        style: "decimal",
-                        signDisplay: "always",
-                        maximumFractionDigits: 2,
-                      }}
-                      animated={false}
-                      value={
-                        currency === "USD"
-                          ? asset.currentROIByUSD
-                          : currency === "EUR"
-                            ? asset.currentROIByEURO
-                            : asset.currentROIByTRY
-                      }
-                    />
-                    %
-                  </span>
+                  {asset.longName.length > 30
+                    ? asset.longName.substring(0, 30) + "..."
+                    : asset.longName}
                 </div>
-
-                <div
-                  className={
-                    "ps-2 text-green " +
-                    (currency === "USD"
-                      ? asset.currentEarningByUSD < 0 && " text-red"
-                      : currency === "EUR"
-                        ? asset.currentEarningByEURO < 0 && " text-red"
-                        : asset.currentEarningByTRY < 0 && " text-red")
-                  }
-                >
-                  <span>
-                    {currency === "USD" ? "$" : currency === "EUR" ? "€" : "₺"}
-                    <NumberFlow
-                      format={{
-                        notation: "standard",
-
-                        signDisplay: "always",
-                        maximumFractionDigits: 2,
-                      }}
-                      animated={false}
-                      value={
-                        currency === "USD"
-                          ? asset.currentEarningByUSD
-                          : currency === "EUR"
-                            ? asset.currentEarningByEURO
-                            : asset.currentEarningByTRY
-                      }
-                    />
-                  </span>
+                <div className="d-flex align-items-center justify-content-center gap-1 fw-bold">
+                  <div
+                    className={
+                      asset.marketStatus
+                        ? `text-green${
+                            (currency === "USD" && asset.dailyROIByUSD < 0) ||
+                            (currency === "EUR" && asset.dailyROIByEURO < 0) ||
+                            (currency === "TRY" && asset.dailyROIByTRY < 0)
+                              ? " text-red"
+                              : ""
+                          }`
+                        : "text-light"
+                    }
+                  >
+                    <span>
+                      <NumberFlow
+                        format={{
+                          style: "decimal",
+                          signDisplay: "always",
+                          maximumFractionDigits: 2,
+                        }}
+                        animated={false}
+                        value={
+                          currency === "USD"
+                            ? asset.dailyROIByUSD
+                            : currency === "EUR"
+                              ? asset.dailyROIByEURO
+                              : asset.dailyROIByTRY
+                        }
+                      />
+                      %
+                    </span>
+                  </div>
+                  {asset.marketStatus ? (
+                    <div className="d-flex justify-content-center align-items-center">
+                      <div
+                        className="position-relative d-flex justify-content-center align-items-center"
+                        style={{ width: "21px", height: "21px" }}
+                      >
+                        <span className="intro-banner-vdo-play-btn pinkBg d-flex justify-content-center align-items-center">
+                          <span className="ripple pinkBg"></span>
+                          <span className="ripple pinkBg"></span>
+                          <span className="ripple pinkBg"></span>
+                        </span>
+                      </div>
+                    </div>
+                  ) : (
+                    <div>
+                      <HugeiconsIcon
+                        role="button"
+                        color="white"
+                        width={21}
+                        height={21}
+                        icon={ViewOffIcon}
+                      />
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
           </div>
 
           <div className="row m-0 p-0 ps-4 pt-3">
+            <div className="col-4 m-0 p-0">
+              <div className="asset-header">Current Price</div>
+              <div className="asset-value">
+                <span>
+                  {currency === "USD" ? "$" : currency === "EUR" ? "€" : "₺"}
+                  <NumberFlow
+                    format={{
+                      style: "decimal",
+                      signDisplay: "never",
+                    }}
+                    animated={false}
+                    value={
+                      currency === "USD"
+                        ? asset.currentPriceByUSD
+                        : currency === "EUR"
+                          ? asset.currentPriceByEURO
+                          : asset.currentPriceByTRY
+                    }
+                  />
+                </span>
+              </div>
+            </div>
+            <div className="col-4 m-0 p-0">
+              <div className="asset-header">ROI</div>
+              <div
+                className={
+                  "asset-value text-green " +
+                  (currency === "USD"
+                    ? asset.currentROIByUSD < 0 && " text-red"
+                    : currency === "EUR"
+                      ? asset.currentROIByEURO < 0 && " text-red"
+                      : asset.currentROIByTRY < 0 && " text-red")
+                }
+              >
+                <span>
+                  <NumberFlow
+                    format={{
+                      style: "decimal",
+                      signDisplay: "always",
+                      maximumFractionDigits: 2,
+                    }}
+                    animated={false}
+                    value={
+                      currency === "USD"
+                        ? asset.currentROIByUSD
+                        : currency === "EUR"
+                          ? asset.currentROIByEURO
+                          : asset.currentROIByTRY
+                    }
+                  />
+                  %
+                </span>
+              </div>
+            </div>
+            <div className="col-4 m-0 p-0">
+              <div className="asset-header">Profit</div>
+              <div
+                className={
+                  "asset-value text-green " +
+                  (currency === "USD"
+                    ? asset.currentEarningByUSD < 0 && " text-red"
+                    : currency === "EUR"
+                      ? asset.currentEarningByEURO < 0 && " text-red"
+                      : asset.currentEarningByTRY < 0 && " text-red")
+                }
+              >
+                <span>
+                  {currency === "USD" ? "$" : currency === "EUR" ? "€" : "₺"}
+                  <NumberFlow
+                    format={{
+                      notation: "standard",
+
+                      signDisplay: "always",
+                      maximumFractionDigits: 2,
+                    }}
+                    animated={false}
+                    value={
+                      currency === "USD"
+                        ? asset.currentEarningByUSD
+                        : currency === "EUR"
+                          ? asset.currentEarningByEURO
+                          : asset.currentEarningByTRY
+                    }
+                  />
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div className="row m-0 p-0 ps-4 pt-2">
             <div className="col-4 m-0 p-0">
               <div className="asset-header">Initial Weight</div>
               <div className="asset-value d-flex">
@@ -415,7 +451,7 @@ export default function AssetGridView({ asset }: Props) {
             </div>
           </div>
 
-          <div className="row m-0 p-0 ps-4 pt-3">
+          <div className="row m-0 p-0 ps-4 pt-2">
             <div className="col-4 m-0 p-0">
               <div className="asset-header">Current Weight</div>
               <div className="asset-value">
@@ -433,7 +469,7 @@ export default function AssetGridView({ asset }: Props) {
               </div>
             </div>
             <div className="col-4 m-0 p-0">
-              <div className="asset-header">Current</div>
+              <div className="asset-header">Current Value</div>
               <div className="asset-value">
                 <span>
                   {currency === "USD" ? "$" : currency === "EUR" ? "€" : "₺"}

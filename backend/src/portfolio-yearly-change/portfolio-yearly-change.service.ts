@@ -17,11 +17,55 @@ export class PortfolioYearlyChangeService {
     return 'This action adds a new portfolioYearlyChange';
   }
 
-  async getYearlyChanges(pID: number) {
-    return await this.prisma.portfolioYearlyChange.findMany({
+  async getYearlyChanges(
+    pID: number,
+    currentInvestment: { byUSD: number; byEURO: number; byTRY: number },
+  ) {
+    const yearlyChanges = await this.prisma.portfolioYearlyChange.findMany({
       where: { portfolioId: pID },
       orderBy: { year: 'asc' },
     });
+
+    if (yearlyChanges.length > 0) {
+      if (yearlyChanges.length == 1) {
+        yearlyChanges[0].roiByUSD =
+          ((currentInvestment.byUSD - yearlyChanges[0].investedByUSD) /
+            yearlyChanges[0].investedByUSD) *
+          100;
+        yearlyChanges[0].roiByEURO =
+          ((currentInvestment.byEURO - yearlyChanges[0].investedByEURO) /
+            yearlyChanges[0].investedByEURO) *
+          100;
+        yearlyChanges[0].roiByTRY =
+          ((currentInvestment.byTRY - yearlyChanges[0].investedByTRY) /
+            yearlyChanges[0].investedByTRY) *
+          100;
+
+        return yearlyChanges;
+      }
+      yearlyChanges[yearlyChanges.length - 1].roiByUSD =
+        ((currentInvestment.byUSD -
+          (yearlyChanges[yearlyChanges.length - 1].investedByUSD +
+            yearlyChanges[yearlyChanges.length - 2].finalValueByUSD)) /
+          (yearlyChanges[yearlyChanges.length - 1].investedByUSD +
+            yearlyChanges[yearlyChanges.length - 2].finalValueByUSD)) *
+        100;
+      yearlyChanges[yearlyChanges.length - 1].roiByEURO =
+        ((currentInvestment.byEURO -
+          (yearlyChanges[yearlyChanges.length - 1].investedByEURO +
+            yearlyChanges[yearlyChanges.length - 2].finalValueByEURO)) /
+          (yearlyChanges[yearlyChanges.length - 1].investedByEURO +
+            yearlyChanges[yearlyChanges.length - 2].finalValueByEURO)) *
+        100;
+      yearlyChanges[yearlyChanges.length - 1].roiByTRY =
+        ((currentInvestment.byTRY -
+          (yearlyChanges[yearlyChanges.length - 1].investedByTRY +
+            yearlyChanges[yearlyChanges.length - 2].finalValueByTRY)) /
+          (yearlyChanges[yearlyChanges.length - 1].investedByTRY +
+            yearlyChanges[yearlyChanges.length - 2].finalValueByTRY)) *
+        100;
+    }
+    return yearlyChanges;
   }
 
   async calculateInvestedByYear(pID: number, year: number) {
@@ -142,14 +186,14 @@ export class PortfolioYearlyChangeService {
             let assetPriceAtLastDayOfYearByUSD = parseFloat(candle[4]);
             let assetPriceAtLastDayOfYearByEURO =
               parseFloat(candle[4]) *
-              (await Helper.getExchangeRatesByDate(
+              (await Helper.getExchangeRatesByDate_secondver(
                 this.httpService,
                 'EUR',
                 this.minusOneDay(date),
               ));
             let assetPriceAtLastDayOfYearByTRY =
               parseFloat(candle[4]) *
-              (await Helper.getExchangeRatesByDate(
+              (await Helper.getExchangeRatesByDate_secondver(
                 this.httpService,
                 'TRY',
                 this.minusOneDay(date),
@@ -176,69 +220,62 @@ export class PortfolioYearlyChangeService {
             currentInvestment.byEURO += assetEndValueByEURO;
             currentInvestment.byTRY += assetEndValueByTRY;
           } else {
-            let assetPriceAtLastDayOfYearByTRY = 0;
-            let assetPriceAtLastDayOfYearByEURO = 0;
-            let assetPriceAtLastDayOfYearByUSD = 0;
-            if (asset.type == AssetType.INDEX) {
-              assetPriceAtLastDayOfYearByTRY = response.data.kapanis;
-              assetPriceAtLastDayOfYearByUSD = assetPriceAtLastDayOfYearByTRY;
+            let data = response.data.chart.result[0];
 
-              assetPriceAtLastDayOfYearByEURO = assetPriceAtLastDayOfYearByTRY;
+            timestamps = data.timestamp;
+
+            if (timestamps == undefined) {
+              data = data.meta.chartPreviousClose;
             }
-            //  let data = response.data.chart.result[0];
 
-            //  timestamps = data.timestamp;
+            let candle = data.indicators.quote[0];
 
-            //  if (timestamps == undefined) {
-            //    data = data.meta.chartPreviousClose;
-            //  }
+            let assetPriceAtLastDayOfYearByUSD = candle.close[0];
+            let assetPriceAtLastDayOfYearByEURO =
+              candle.close[0] *
+              (await Helper.getExchangeRatesByDate_secondver(
+                this.httpService,
+                'EUR',
+                this.minusOneDay(date),
+              ));
+            let assetPriceAtLastDayOfYearByTRY =
+              candle.close[0] *
+              (await Helper.getExchangeRatesByDate_secondver(
+                this.httpService,
+                'TRY',
+                this.minusOneDay(date),
+              ));
+            if (asset.type == AssetType.INDEX) {
+              assetPriceAtLastDayOfYearByTRY = assetPriceAtLastDayOfYearByUSD;
+              assetPriceAtLastDayOfYearByUSD /=
+                await Helper.getExchangeRatesByDate_secondver(
+                  this.httpService,
+                  'TRY',
+                  this.minusOneDay(date),
+                );
 
-            //  let candle = data.indicators.quote[0];
-
-            //  let assetPriceAtLastDayOfYearByUSD = candle.close[0];
-            //  let assetPriceAtLastDayOfYearByEURO =
-            //    candle.close[0] *
-            //    (await Helper.getExchangeRatesByDate(
-            //      this.httpService,
-            //      'EUR',
-            //      this.minusOneDay(date),
-            //    ));
-            //  let assetPriceAtLastDayOfYearByTRY =
-            //    candle.close[0] *
-            //    (await Helper.getExchangeRatesByDate(
-            //      this.httpService,
-            //      'TRY',
-            //      this.minusOneDay(date),
-            //    ));
-
-            //  if (asset.type == AssetType.INDEX) {
-            //    assetPriceAtLastDayOfYearByTRY = assetPriceAtLastDayOfYearByUSD;
-            //    assetPriceAtLastDayOfYearByUSD /=
-            //      await Helper.getExchangeRatesByDate(
-            //        this.httpService,
-            //        'TRY',
-            //        this.minusOneDay(date),
-            //      );
-
-            //    assetPriceAtLastDayOfYearByEURO =
-            //      assetPriceAtLastDayOfYearByUSD *
-            //      (await Helper.getExchangeRatesByDate(
-            //        this.httpService,
-            //        'EUR',
-            //        this.minusOneDay(date),
-            //      ));
-            //  }
+              assetPriceAtLastDayOfYearByEURO =
+                assetPriceAtLastDayOfYearByUSD *
+                (await Helper.getExchangeRatesByDate_secondver(
+                  this.httpService,
+                  'EUR',
+                  this.minusOneDay(date),
+                ));
+            }
 
             let roiByUSD =
               (assetPriceAtLastDayOfYearByUSD * 100) / asset.averageCostByUSD -
               100;
-            let roiByEURO =
-              (assetPriceAtLastDayOfYearByEURO * 100) /
-                asset.averageCostByEURO -
-              100;
-            let roiByTRY =
-              (assetPriceAtLastDayOfYearByTRY * 100) / asset.averageCostByTRY -
-              100;
+             let roiByEURO =
+               (assetPriceAtLastDayOfYearByEURO * 100) /
+                 asset.averageCostByEURO -
+               100;
+             let roiByTRY =
+               (assetPriceAtLastDayOfYearByTRY * 100) / asset.averageCostByTRY -
+               100;
+            
+
+          
             let assetEndValueByUSD =
               (asset.totalInvestedByUSD * (100 + roiByUSD)) / 100;
             let assetEndValueByEURO =

@@ -130,12 +130,12 @@ export default function PortfolioStats({ portfolioStats }: Props) {
               />
             </div>
           </div>
-          <div className="mt-3" style={{zIndex:1}}>
+          <div className="mt-3" style={{ zIndex: 1 }}>
             <CircularChart portfolioPie={portfolioStats.portfolioPie} />
           </div>
           <div
             className="position-absolute top-0 text-center w-100"
-            style={{ marginTop: "85px",zIndex:0 }}
+            style={{ marginTop: "85px", zIndex: 0 }}
           >
             <div className="d-flex justify-content-center align-items-center">
               <div
@@ -173,101 +173,126 @@ export default function PortfolioStats({ portfolioStats }: Props) {
               </span>
             </div>
 
-            <div
-              className="d-flex justify-content-center fw-bold mt-2 mb-4"
-              style={{ fontSize: ".8rem" }}
-            >
-              <div
-                className={
-                  "border-end text-green py-1 pe-2 " +
-                  (currency === "USD"
-                    ? portfolioStats.currentROIByUSD < 0 && " text-red"
-                    : currency === "EUR"
-                      ? portfolioStats.currentROIByEURO < 0 && " text-red"
-                      : portfolioStats.currentROIByTRY < 0 && " text-red")
-                }
-              >
-                <span>
-                  <NumberFlow
-                    format={{
-                      notation: "standard",
-                      signDisplay: "always",
-                      maximumFractionDigits: 2,
-                    }}
-                    animated={false}
-                    value={
-                      currency === "USD"
-                        ? portfolioStats.currentROIByUSD
-                        : currency === "EUR"
-                          ? portfolioStats.currentROIByEURO
-                          : portfolioStats.currentROIByTRY
-                    }
-                  />
-                  %
-                </span>
-              </div>
-              <div
-                className={
-                  "border-end text-green py-1 px-2 " +
-                  (currency === "USD"
-                    ? portfolioStats.annualizedAverageROIByUSD < 0 &&
-                      " text-red"
-                    : currency === "EUR"
-                      ? portfolioStats.annualizedAverageROIByEURO < 0 &&
-                        " text-red"
-                      : portfolioStats.annualizedAverageROIByTRY < 0 &&
-                        " text-red")
-                }
-              >
-                <span>
-                  <NumberFlow
-                    format={{
-                      notation: "standard",
-                      signDisplay: "always",
-                      maximumFractionDigits: 2,
-                    }}
-                    animated={false}
-                    value={
-                      currency === "USD"
-                        ? portfolioStats.annualizedAverageROIByUSD
-                        : currency === "EUR"
-                          ? portfolioStats.annualizedAverageROIByEURO
-                          : portfolioStats.annualizedAverageROIByTRY
-                    }
-                  />
-                  %
-                </span>
-              </div>
-              <div
-                className={
-                  "text-green py-1 ps-2 " +
-                  (currency === "USD"
-                    ? portfolioStats.currentEarningByUSD < 0 && " text-red"
-                    : currency === "EUR"
-                      ? portfolioStats.currentEarningByEURO < 0 && " text-red"
-                      : portfolioStats.currentEarningByTRY < 0 && " text-red")
-                }
-              >
-                <span>
-                  {currency === "USD" ? "$" : currency === "EUR" ? "€" : "₺"}
-                  <NumberFlow
-                    format={{
-                      notation: "standard",
-                      maximumFractionDigits: 2,
-                      signDisplay: "always",
-                    }}
-                    animated={false}
-                    value={
-                      currency === "USD"
-                        ? portfolioStats.currentEarningByUSD
-                        : currency === "EUR"
-                          ? portfolioStats.currentEarningByEURO
-                          : portfolioStats.currentEarningByTRY
-                    }
-                  />
-                </span>
-              </div>
+            <div className="d-flex justify-content-center align-items-start mt-2 gap-3">
+          
+              
+                  <div className="d-flex flex-column align-items-center">
+                    <div className="asset-header">ROI</div>
+                    <div
+                      style={{ fontSize: ".7rem" }}
+                      className={
+                        "asset-value text-green fw-bold " +
+                        (currency === "USD"
+                          ? portfolioStats.currentROIByUSD < 0 && " text-red"
+                          : currency === "EUR"
+                            ? portfolioStats.annualizedAverageROIByEURO < 0 &&
+                              " text-red"
+                            : portfolioStats.annualizedAverageROIByTRY < 0 &&
+                              " text-red")
+                      }
+                    >
+                      <span>
+                        <NumberFlow
+                          format={{
+                            style: "decimal",
+                            signDisplay: "always",
+                            maximumFractionDigits: 2,
+                          }}
+                          animated={false}
+                          value={
+                            currency === "USD"
+                              ? portfolioStats.currentROIByUSD
+                              : currency === "EUR"
+                                ? portfolioStats.currentROIByEURO
+                                : portfolioStats.currentROIByTRY
+                          }
+                        />
+                        %
+                      </span>
+                    </div>
+                  </div>
+                  <div className="d-flex flex-column align-items-center">
+                    <div className="asset-header">CAGR</div>
+                    <div
+                      style={{ fontSize: ".7rem" }}
+                      className={
+                        "asset-value text-green fw-bold " +
+                        (currency === "USD"
+                          ? portfolioStats.annualizedAverageROIByUSD < 0 &&
+                            " text-red"
+                          : currency === "EUR"
+                            ? portfolioStats.annualizedAverageROIByEURO < 0 &&
+                              " text-red"
+                            : portfolioStats.annualizedAverageROIByTRY < 0 &&
+                              " text-red")
+                      }
+                    >
+                      <span>
+                        <NumberFlow
+                          format={{
+                            style: "decimal",
+                            signDisplay: "always",
+                            maximumFractionDigits: 2,
+                          }}
+                          animated={false}
+                          value={
+                            currency === "USD"
+                              ? portfolioStats.annualizedAverageROIByUSD
+                              : currency === "EUR"
+                                ? portfolioStats.annualizedAverageROIByEURO
+                                : portfolioStats.annualizedAverageROIByTRY
+                          }
+                        />
+                        %
+                      </span>
+                    </div>
+                  </div>
+                  <div className="d-flex flex-column align-items-center">
+                    <div className="asset-header">Profit</div>
+                    <div
+                      style={{ fontSize: ".7rem" }}
+                      className={
+                        "asset-value text-green fw-bold " +
+                        (currency === "USD"
+                          ? portfolioStats.currentEarningByUSD < 0 &&
+                            " text-red"
+                          : currency === "EUR"
+                            ? portfolioStats.currentEarningByEURO < 0 &&
+                              " text-red"
+                            : portfolioStats.currentEarningByTRY < 0 &&
+                              " text-red")
+                      }
+                    >
+                      <span>
+                        {currency === "USD"
+                          ? "$"
+                          : currency === "EUR"
+                            ? "€"
+                            : "₺"}
+                        <NumberFlow
+                          format={{
+                            notation: "standard",
+
+                            signDisplay: "always",
+                            maximumFractionDigits: 2,
+                          }}
+                          animated={false}
+                          value={
+                            currency === "USD"
+                              ? portfolioStats.currentEarningByUSD
+                              : currency === "EUR"
+                                ? portfolioStats.currentEarningByEURO
+                                : portfolioStats.currentEarningByTRY
+                          }
+                        />
+                      </span>
+                    </div>
+                  </div>
+            
+           
             </div>
+         
+       
 
             <div className="portfolio-raw-investment-header mt-3">
               TOTAL INVESTED
@@ -301,8 +326,8 @@ export default function PortfolioStats({ portfolioStats }: Props) {
         </div>
       )}
       {portfolioStats ? (
-        <div className="currency-pairs-wrapper mx-4 border-top border-bottom mt-2">
-          <div className="row m-0 p-0 py-1">
+        <div className="currency-pairs-wrapper mx-4 border-top mt-2">
+          <div className="row m-0 p-0 py-2">
             <div className="col-4 m-0 p-0 ps-5 d-flex flex-column align-items-center">
               USD
               <div
@@ -379,7 +404,7 @@ export default function PortfolioStats({ portfolioStats }: Props) {
         </div>
       )}
 
-      {fearAndGreedIndexData && fearAndGreedIndexData?.crypto != undefined && (
+      {/*fearAndGreedIndexData && fearAndGreedIndexData?.crypto != undefined && (
         <div className="row m-0 p-0 mt-3">
           <div className="col-6 m-0 p-0 d-flex justify-content-end align-items-center pe-3 ps-5">
             <FearGreedIndex data={fearAndGreedIndexData.vix} />
@@ -388,7 +413,7 @@ export default function PortfolioStats({ portfolioStats }: Props) {
             <FearGreedIndex data={fearAndGreedIndexData.crypto} />
           </div>
         </div>
-      )}
+      )*/}
     </div>
   );
 }

@@ -24,8 +24,12 @@ export default function YearlyChange() {
 
   const fetchData = async () => {
     try {
-      const response = await httpService.get(`/portfolio-yearly-change/${pID}`);
-      if (response.status === 200) {
+      const response = await httpService.post(
+        `/portfolio-yearly-change/${pID}`,
+        currentInvestment,
+      );
+
+      if (response.status === 201) {
         setYearData(response.data);
       }
     } catch (error: any) {
@@ -37,7 +41,7 @@ export default function YearlyChange() {
 
   useEffect(() => {
     fetchData();
-  }, [pID]);
+  }, [pID, currentInvestment]);
 
   return (
     <div className="row m-0 px-3 mb-3 pt-3">
@@ -49,107 +53,71 @@ export default function YearlyChange() {
             <div className="year-text-roi">€</div>
             <div className="year-text-roi">₺</div>
           </div>
-          {yearData &&
-            yearData.map((data, index) => (
-              <div key={data.id} className="col-1 m-0 p-0 text-start">
-                <div className="year-text-header fw-bold">{data.year}</div>
-                <div
-                  className={
-                    "year-text-roi text-green pt-2 " +
-                    ((yearData.length == 1
-                      ? (currentInvestment.byUSD * 100) / data.investedByUSD -
-                        100
-                      : data.roiByUSD) < 0 && " text-red")
-                  }
-                >
-                  <span>
-                    <NumberFlow
-                      format={{
-                        notation: "standard",
-
-                        signDisplay: "always",
-                        maximumFractionDigits: 2,
-                      }}
-                      animated={false}
-                      value={
-                        index == yearData.length - 1
-                          ? ((currentInvestment.byUSD -
-                              (yearData[index - 1].finalValueByUSD +
-                                data.investedByUSD)) /
-                              (yearData[index - 1].finalValueByUSD +
-                                data.investedByUSD)) *
-                            100
-                          : data.roiByUSD
-                      }
-                    />
-                  </span>
-                  %
+          <div className="col-11 m-0 p-0 d-flex year-section-wrapper">
+            {yearData &&
+              yearData.map((data) => (
+                <div key={data.id} className="col-1 m-0 p-0 text-start">
+                  <div className="year-text-header fw-bold">{data.year}</div>
+                  <div
+                    className={
+                      "year-text-roi text-green pt-2 " +
+                      (data.roiByUSD < 0 && " text-red")
+                    }
+                  >
+                    <span>
+                      <NumberFlow
+                        format={{
+                          notation: "standard",
+                          signDisplay: "always",
+                          maximumFractionDigits: 2,
+                        }}
+                        animated={false}
+                        value={data.roiByUSD}
+                      />
+                    </span>
+                    %
+                  </div>
+                  <div
+                    className={
+                      "year-text-roi text-green " +
+                      (data.roiByEURO < 0 && " text-red")
+                    }
+                  >
+                    <span>
+                      <NumberFlow
+                        format={{
+                          notation: "standard",
+                          signDisplay: "always",
+                          maximumFractionDigits: 2,
+                        }}
+                        animated={false}
+                        value={data.roiByEURO}
+                      />
+                    </span>
+                    %
+                  </div>
+                  <div
+                    className={
+                      "year-text-roi text-green " +
+                      (data.roiByTRY < 0 && " text-red")
+                    }
+                  >
+                    <span>
+                      <NumberFlow
+                        format={{
+                          notation: "standard",
+                          signDisplay: "always",
+                          maximumFractionDigits: 2,
+                        }}
+                        animated={false}
+                        value={data.roiByTRY}
+                      />
+                    </span>
+                    %
+                  </div>
                 </div>
-                <div
-                  className={
-                    "year-text-roi text-green " +
-                    ((yearData.length == 1
-                      ? (currentInvestment.byEURO * 100) / data.investedByEURO -
-                        100
-                      : data.roiByEURO) < 0 && " text-red")
-                  }
-                >
-                  <span>
-                    <NumberFlow
-                      format={{
-                        notation: "standard",
-                        signDisplay: "always",
-                        maximumFractionDigits: 2,
-                      }}
-                      animated={false}
-                      value={
-                        index == yearData.length - 1
-                          ? ((currentInvestment.byEURO -
-                              (yearData[index - 1].finalValueByEURO +
-                                data.investedByEURO)) /
-                              (yearData[index - 1].finalValueByEURO +
-                                data.investedByEURO)) *
-                            100
-                          : data.roiByEURO
-                      }
-                    />
-                  </span>
-                  %
-                </div>
-                <div
-                  className={
-                    "year-text-roi text-green " +
-                    ((yearData.length == 1
-                      ? (currentInvestment.byTRY * 100) / data.investedByTRY -
-                        100
-                      : data.roiByTRY) < 0 && " text-red")
-                  }
-                >
-                  <span>
-                    <NumberFlow
-                      format={{
-                        notation: "standard",
-
-                        signDisplay: "always",
-                        maximumFractionDigits: 2,
-                      }}
-                      animated={false}
-                      value={
-                        index == yearData.length - 1
-                          ? ((currentInvestment.byTRY -
-                              (yearData[index - 1].finalValueByTRY +
-                                data.investedByTRY)) /
-                              (yearData[index - 1].finalValueByTRY +
-                                data.investedByTRY)) *
-                            100
-                          : data.roiByTRY
-                      }
-                    />
-                  </span>
-                  %
-                </div>
-              </div>
-            ))}
+              ))}
+          </div>
         </div>
       </div>
     </div>

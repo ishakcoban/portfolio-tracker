@@ -13,7 +13,7 @@ import {
 } from 'class-validator';
 import { AssetType } from 'generated/prisma/client';
 
-export class CurrentAssetPriceRequest {
+export class AssetValueRequest {
   @IsNumber()
   id: number;
 

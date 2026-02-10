@@ -38,12 +38,24 @@ export class PortfolioDailyChangeService {
       id,
       portfolioDailyChanges[portfolioDailyChanges.length - 1],
     );
+
     let dailyInfo = await this.prisma.portfolioDailyChange.findMany({
       where: { portfolioId: id },
+      distinct: ['time'],
+      orderBy: { time: 'asc' },
     });
     dailyInfo.push(this.todayIndexValue);
+    const dailyInfoWithRoi = dailyInfo.map((item, index) => ({
+      ...item,
+      roi:
+        index === 0
+          ? 0
+          : ((item.close - dailyInfo[index - 1].close) /
+              dailyInfo[index - 1].close) *
+            100,
+    }));
 
-    return dailyInfo;
+    return dailyInfoWithRoi;
   }
 
   async saveLostDateToDatabase(id: number, lastRecord: PortfolioDailyChange) {
