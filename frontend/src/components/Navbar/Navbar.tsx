@@ -14,7 +14,8 @@ import DropdownButton from "../Buttons/DropdownButton";
 import httpService from "../../services/httpService";
 import { useStore } from "../../store";
 import NumberFlow from "@number-flow/react";
-
+import { useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 interface Portfolio {
   id: number;
   name: string;
@@ -45,6 +46,7 @@ const operationItems: Operation[] = [
   { id: 3, name: "Transaction" },
 ];
 export default function Navbar() {
+  const navigate = useNavigate();
   const [popupType, setPopupType] = useState<null | string>(null);
   const cardRef = useRef<SuccessMessageCardRef | null>(null);
   const [portfolioItems, setPortfolioItems] = useState<Portfolio[]>([]);
@@ -58,6 +60,7 @@ export default function Navbar() {
 
       if (response.status == 200) {
         setPortfolioItems(response.data);
+        return response.data;
       }
     } catch (error) {}
   };
@@ -73,6 +76,7 @@ export default function Navbar() {
   };
 
   const handlePortfolio = (id: number) => {
+    navigate(`/portfolio/${id}`);
     setPortfolioId(id);
   };
 
@@ -114,6 +118,11 @@ export default function Navbar() {
     fetchPortfolioData();
     fetchCurrency();
   }, []);
+
+  useQuery({
+    queryKey: ["portfolio"],
+    queryFn: fetchPortfolioData, // Just pass the function
+  });
 
   return (
     <>

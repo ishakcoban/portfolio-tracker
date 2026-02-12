@@ -557,21 +557,7 @@ export default function AssetListView({ asset }: Props) {
                             }
                           />
                         </div>
-                        <div className="asset-chart-button d-flex justify-content-center align-items-center">
-                          <HugeiconsIcon
-                            role="button"
-                            color="white"
-                            width={21}
-                            height={21}
-                            icon={WeightScale01Icon}
-                            onClick={() =>
-                              changeLineChartStatus(
-                                item.id,
-                                item.currentEarningByUSD,
-                              )
-                            }
-                          />
-                        </div>
+                  
                       </div>
                     </td>
                   </tr>

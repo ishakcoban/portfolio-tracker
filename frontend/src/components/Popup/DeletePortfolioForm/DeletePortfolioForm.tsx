@@ -4,35 +4,36 @@ import SuccessResponse from "../../SuccessResponse/SuccessResponse";
 import LoadingSpinner from "../../LoadingSpinner/LoadingSpinner";
 import { useStore } from "../../../store";
 import httpService from "../../../services/httpService";
-
+import { useNavigate, useParams } from "react-router-dom";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 type Props = {
   closePopup: () => void;
   onSuccess: (msg: string) => void;
 };
 export default function DeletePortfolioForm({ closePopup, onSuccess }: Props) {
+  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [message, setMessage] = useState<string>("");
-
+  const queryClient = useQueryClient();
   const [statusCode, setStatusCode] = useState<number>(0);
-  const { pID } = useStore();
+  const { id } = useParams<{ id: string }>();
 
   const submitHandler = async () => {
     setMessage("");
     setIsLoading(true);
     setTimeout(async () => {
       try {
-        const response = await httpService.delete(`/portfolios/${pID}`);
+        const response = await httpService.delete(`/portfolios/${id}`);
         if (response.status === 200) {
-        
           setStatusCode(response.status);
           onSuccess("Portfolio deleted!");
+          queryClient.invalidateQueries({ queryKey: ["portfolio"] });
           closePopup();
+          navigate("/");
         }
       } catch (error: any) {
         if (error.status === 400) {
-          console.log(error);
           setMessage("Invalid input!");
-          //setMessage(error);
           setStatusCode(error.status);
         }
       }

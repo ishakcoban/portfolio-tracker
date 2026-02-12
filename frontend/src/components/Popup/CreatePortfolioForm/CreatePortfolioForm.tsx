@@ -3,16 +3,19 @@ import CustomInput from "../../CustomInput/CustomInput";
 import httpService from "../../../services/httpService";
 import SuccessResponse from "../../SuccessResponse/SuccessResponse";
 import LoadingSpinner from "../../LoadingSpinner/LoadingSpinner";
+import { useNavigate } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 type Props = {
   closePopup: () => void;
   onSuccess: (msg: string) => void;
 };
 export default function CreatePortfolioForm({ closePopup, onSuccess }: Props) {
+  const navigate = useNavigate();
   const [text, setText] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [message, setMessage] = useState<string>("");
   const [statusCode, setStatusCode] = useState<number>(0);
-
+  const queryClient = useQueryClient();
   const inputHandler = (event: React.ChangeEvent<HTMLInputElement>) => {
     setText(event.target.value.trimStart());
   };
@@ -29,11 +32,13 @@ export default function CreatePortfolioForm({ closePopup, onSuccess }: Props) {
         setStatusCode(response.status);
         onSuccess("Portfolio created!");
         closePopup();
+        queryClient.invalidateQueries({ queryKey: ["portfolio"] });
+        navigate(`/portfolio/${response.data.id}`);
       }
     } catch (error: any) {
       if (error.status === 400) {
-        setMessage("Invalid input!");
-        setStatusCode(error.status);
+          setMessage("Invalid input!");
+          setStatusCode(error.status);
       }
     }
   };

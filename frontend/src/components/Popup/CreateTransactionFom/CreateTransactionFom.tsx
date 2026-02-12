@@ -7,6 +7,7 @@ import SuccessResponse from "../../SuccessResponse/SuccessResponse";
 import LoadingSpinner from "../../LoadingSpinner/LoadingSpinner";
 import Select from "react-select";
 import type { IdNotVerifiedFreeIcons } from "@hugeicons/core-free-icons";
+import { useNavigate } from "react-router-dom";
 interface TransactionRow {
   date: string;
   type: "BUY" | "SELL";
@@ -46,6 +47,7 @@ export const CreateTransactionForm: React.FC<Props> = ({
   closePopup,
   onSuccess,
 }) => {
+  const navigate = useNavigate();
   const [transactions, setTransactions] = useState<TransactionRow[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -63,6 +65,7 @@ export const CreateTransactionForm: React.FC<Props> = ({
   const [transactionType, setTransactionType] = useState<string>("BUY");
   const [mode, setMode] = useState<string>("");
   const [portfolios, setPortfolios] = useState<Option[]>([]);
+  const [selectedPortfolioId, setSelectedPortfolioId] = useState<number>();
   const [assets, setAssets] = useState<Option[]>([]);
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -199,20 +202,21 @@ export const CreateTransactionForm: React.FC<Props> = ({
         const response = await httpService.post("/transactions", data);
 
         if (response.status === 201) {
-          //setSelectedPortfolio("");
-          //setSelectedAsset("");
           setPrice(0);
           setDate("");
-          setStatusCode(response.status);
-          onSuccess("transaction created!");
 
           if (transactionType == "BUY") {
             setInvestmentAmount(0);
           } else {
             setSaleAmount(0);
           }
+          setStatusCode(response.status);
+          onSuccess("Transaction created!");
+          closePopup();
 
-          //  closePopup();
+          navigate(`/portfolio/${selectedPortfolioId}`, {
+            state: { refresh: true, timestamp: Date.now() },
+          });
         }
       } catch (error: any) {
         if (error.status === 400) {
@@ -230,6 +234,7 @@ export const CreateTransactionForm: React.FC<Props> = ({
   };
 
   const handlePortfolio = async (id: number) => {
+    setSelectedPortfolioId(+id);
     const portfolio = portfolios.find((item: any) => +item.value === id);
 
     const assets = portfolio?.assets || [];

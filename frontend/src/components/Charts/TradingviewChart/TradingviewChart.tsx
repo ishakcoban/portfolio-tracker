@@ -12,6 +12,7 @@ import httpService from "../../../services/httpService";
 import LoadingSpinner from "../../LoadingSpinner/LoadingSpinner";
 import { useStore } from "../../../store";
 import NumberFlow from "@number-flow/react";
+import { useParams } from "react-router-dom";
 interface TradingviewChartProps {
   data?: CandlestickData<Time>[];
 }
@@ -44,23 +45,23 @@ const TradingviewChart: React.FC<TradingviewChartProps> = ({ data }) => {
   const hasFetched = useRef(false);
   const chartPID = useRef(-1);
   const isChartInitialized = useRef(false);
-  const { pID } = useStore();
+  const { id } = useParams<{ id: string }>();
 
   useEffect(() => {
     hasFetched.current = false;
-  }, [pID]);
+  }, [id]);
 
   const fetchData = useCallback(async () => {
     try {
       const response = await httpService.get(
-        `/portfolio-daily-changes/portfolio/${pID}`
+        `/portfolio-daily-changes/portfolio/${id}`
       );
       //console.log(response)
       if (response.status === 200) {
         const lastCandle = response.data[response.data.length - 1];
         const isGreen = lastCandle.close >= lastCandle.open;
         // Check if we need to update or add new data
-        if (sampleData.current.length > 0 && chartPID.current == pID) {
+        if (sampleData.current.length > 0 && chartPID.current == Number(id)) {
           sampleData.current[sampleData.current.length - 1] = lastCandle;
           const roi =
             ((sampleData.current[sampleData.current.length - 1].close -
@@ -82,7 +83,7 @@ const TradingviewChart: React.FC<TradingviewChartProps> = ({ data }) => {
           }
         } else {
           // Initial load
-          chartPID.current = pID;
+          chartPID.current = Number(id);
           sampleData.current = response.data;
         }
       }
@@ -91,10 +92,10 @@ const TradingviewChart: React.FC<TradingviewChartProps> = ({ data }) => {
         console.log(error.response.data);
       }
     }
-  }, [pID]);
+  }, [id]);
 
   useEffect(() => {
-    if (pID && !hasFetched.current) {
+    if (id && !hasFetched.current) {
       fetchData().then(() => {
         // Set initial OHLC data after fetching
         if (sampleData.current.length > 0) {
@@ -126,7 +127,7 @@ const TradingviewChart: React.FC<TradingviewChartProps> = ({ data }) => {
     return () => {
       clearInterval(intervalId);
     };
-  }, [pID]);
+  }, [id]);
 
   useEffect(() => {
     if (!chartContainerRef.current) return;
