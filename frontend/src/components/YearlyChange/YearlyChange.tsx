@@ -3,6 +3,7 @@ import { useStore } from "../../store";
 import "./YearlyChange.scss";
 import httpService from "../../services/httpService";
 import NumberFlow from "@number-flow/react";
+import { useParams } from "react-router-dom";
 type YearlyChange = {
   id: number;
   investedByUSD: number;
@@ -20,12 +21,12 @@ type YearlyChange = {
 
 export default function YearlyChange() {
   const [yearData, setYearData] = useState<YearlyChange[]>([]);
-  const { pID, currentInvestment } = useStore();
-
+  const { currentInvestment } = useStore();
+  const { id } = useParams<{ id: string }>();
   const fetchData = async () => {
     try {
       const response = await httpService.post(
-        `/portfolio-yearly-change/${pID}`,
+        `/portfolio-yearly-change/${id}`,
         currentInvestment,
       );
 
@@ -41,7 +42,7 @@ export default function YearlyChange() {
 
   useEffect(() => {
     fetchData();
-  }, [pID, currentInvestment]);
+  }, [id, currentInvestment]);
 
   return (
     <div className="row m-0 px-3 mb-3 pt-3">

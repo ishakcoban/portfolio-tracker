@@ -31,8 +31,11 @@ export class PortfolioService {
       );
     }
 
-    await this.prisma.portfolio.create({
+    return await this.prisma.portfolio.create({
       data: createPortfolioDto,
+      select: {
+        id: true
+      },
     });
   }
 

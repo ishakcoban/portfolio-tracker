@@ -1,0 +1,333 @@
+import { useLocation, useNavigate, useParams } from "react-router-dom";
+import "./PortfolioDetail.scss";
+import httpService from "../../services/httpService";
+import { useEffect, useRef, useState } from "react";
+import { useStore } from "../../store";
+import TradingviewChart from "../../components/Charts/TradingviewChart/TradingviewChart";
+import AssetBarChart from "../../components/Charts/BarChart/BarChart";
+import { GridViewIcon, ListViewIcon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
+import AssetGridView from "../../components/Asset/AssetGridView/AssetGridView";
+import AssetListView from "../../components/Asset/AssetListView/AssetListView";
+import YearlyChange from "../../components/YearlyChange/YearlyChange";
+import PortfolioStats from "../../components/PortfolioPie/PortfolioPie";
+import PortfolioPie from "../../components/PortfolioPie/PortfolioPie";
+import NotFound from "../NotFound/NotFound";
+
+type Asset = {
+  id: number;
+  symbol: string;
+  type: string;
+  longName: string;
+  totalRawInvestmentByUSD: number;
+  totalRawInvestmentByEURO: number;
+  totalRawInvestmentByTRY: number;
+  totalQuantity: number;
+  averageCostByUSD: number;
+  averageCostByEURO: number;
+  averageCostByTRY: number;
+  initialWeight: number;
+  currentPriceByUSD: number;
+  currentPriceByEURO: number;
+  currentPriceByTRY: number;
+  currentROIByUSD: number;
+  currentROIByEURO: number;
+  currentROIByTRY: number;
+  dailyROIByUSD: number;
+  dailyROIByEURO: number;
+  dailyROIByTRY: number;
+  currentEarningByUSD: number;
+  currentEarningByEURO: number;
+  currentEarningByTRY: number;
+  currentWeight: number;
+  currentInvestmentByUSD: number;
+  currentInvestmentByEURO: number;
+  currentInvestmentByTRY: number;
+  marketStatus: boolean;
+};
+
+type PortfolioStats = {
+  id: number;
+  name: string;
+  totalRawInvestmentByUSD: number;
+  totalRawInvestmentByEURO: number;
+  totalRawInvestmentByTRY: number;
+  currentROIByUSD: number;
+  currentROIByEURO: number;
+  currentROIByTRY: number;
+  currentEarningByUSD: number;
+  currentEarningByEURO: number;
+  currentEarningByTRY: number;
+  currentInvestmentByUSD: number;
+  currentInvestmentByEURO: number;
+  currentInvestmentByTRY: number;
+  annualizedAverageROIByUSD: number;
+  annualizedAverageROIByEURO: number;
+  annualizedAverageROIByTRY: number;
+  portfolioPie: {
+    label: string;
+    value: number;
+  }[];
+};
+
+type YearlyChange = {
+  currentROIByUSD: number;
+  currentROIByEURO: number;
+  currentROIByTRY: number;
+};
+export default function PortfolioDetail() {
+  const { id } = useParams<{ id: string }>();
+  const [assetData, setAssetData] = useState<Asset[] | null>(null);
+  const [selectedViewOption, setSelectedViewOption] = useState(true);
+  const [portfolioPieData, setPortfolioPieData] =
+    useState<PortfolioStats | null>(null);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const assetDataRef = useRef<Asset[] | null>(null);
+  const portfolioPieDataRef = useRef<PortfolioStats | null>(null);
+  const { setCurrentInvestment } = useStore();
+    const navigate = useNavigate();
+  const location = useLocation();
+  const [refreshKey, setRefreshKey] = useState(0);
+  const changeSelectedViewOptionStatus = (status: boolean) => {
+    if (status != selectedViewOption) {
+      setSelectedViewOption(status);
+    }
+  };
+
+  const fetchStaticData = async () => {
+    try {
+      const response = await httpService.get(`/portfolios/${id}`);
+      if (response.status === 200) {
+        const { assets, ...portfolioStats } = response.data;
+
+        setPortfolioPieData(portfolioStats);
+        setAssetData(assets);
+        assetDataRef.current = assets;
+        portfolioPieDataRef.current = portfolioStats;
+      }
+
+      // if (response.status === 400) {
+      //   return navigate("/404");
+      // }
+    } catch (error: any) {
+      if (error.status === 400) {
+        console.log(error.response.data);
+        navigate("/404");
+      }
+    }
+  };
+
+  function omit<T extends object, K extends keyof T>(
+    obj: T,
+    keys: K[],
+  ): Omit<T, K> {
+    const result = { ...obj };
+    keys.forEach((key) => delete result[key]);
+    return result as Omit<T, K>;
+  }
+  const fetchAssetLiveData = async () => {
+    if (assetDataRef.current && portfolioPieDataRef.current) {
+      try {
+        const filteredAssetData = assetDataRef.current.map(
+          ({
+            id,
+            symbol,
+            type,
+            averageCostByUSD,
+            averageCostByEURO,
+            averageCostByTRY,
+            totalRawInvestmentByUSD,
+            totalRawInvestmentByEURO,
+            totalRawInvestmentByTRY,
+          }) => ({
+            id,
+            symbol,
+            type,
+            averageCostByUSD,
+            averageCostByEURO,
+            averageCostByTRY,
+            totalRawInvestmentByUSD,
+            totalRawInvestmentByEURO,
+            totalRawInvestmentByTRY,
+          }),
+        );
+
+        const response = await httpService.post(
+          `/assets/${id}/asset-values`,
+          filteredAssetData,
+        );
+
+        if (response.status === 201) {
+          const target = omit(response.data, ["assets"]);
+          const updatedPortfolioPieData = (portfolioPieDataRef.current = {
+            ...portfolioPieDataRef.current,
+            ...target,
+          });
+
+          setPortfolioPieData(updatedPortfolioPieData);
+
+          setCurrentInvestment({
+            byUSD: updatedPortfolioPieData.currentInvestmentByUSD,
+            byEURO: updatedPortfolioPieData.currentInvestmentByEURO,
+            byTRY: updatedPortfolioPieData.currentInvestmentByTRY,
+          });
+          const updatedAssetData = assetDataRef.current.map((asset, index) => ({
+            ...asset,
+            currentPriceByUSD:
+              response.data.assets[index]?.currentPriceByUSD ??
+              asset.currentPriceByUSD,
+            currentPriceByEURO:
+              response.data.assets[index]?.currentPriceByEURO ??
+              asset.currentPriceByEURO,
+            currentPriceByTRY:
+              response.data.assets[index]?.currentPriceByTRY ??
+              asset.currentPriceByTRY,
+            /**/
+            currentROIByUSD:
+              response.data.assets[index]?.currentROIByUSD ??
+              asset.currentROIByUSD,
+            currentROIByEURO:
+              response.data.assets[index]?.currentROIByEURO ??
+              asset.currentROIByEURO,
+            currentROIByTRY:
+              response.data.assets[index]?.currentROIByTRY ??
+              asset.currentROIByTRY,
+            /**/
+            dailyROIByUSD:
+              response.data.assets[index]?.dailyROIByUSD ?? asset.dailyROIByUSD,
+            dailyROIByEURO:
+              response.data.assets[index]?.dailyROIByEURO ??
+              asset.dailyROIByEURO,
+            dailyROIByTRY:
+              response.data.assets[index]?.dailyROIByTRY ?? asset.dailyROIByTRY,
+            /**/
+            currentEarningByUSD:
+              response.data.assets[index]?.currentEarningByUSD ??
+              asset.currentEarningByUSD,
+            currentEarningByEURO:
+              response.data.assets[index]?.currentEarningByEURO ??
+              asset.currentEarningByEURO,
+            currentEarningByTRY:
+              response.data.assets[index]?.currentEarningByTRY ??
+              asset.currentEarningByTRY,
+            /**/
+            currentInvestmentByUSD:
+              response.data.assets[index]?.currentInvestmentByUSD ??
+              asset.currentInvestmentByUSD,
+            currentInvestmentByEURO:
+              response.data.assets[index]?.currentInvestmentByEURO ??
+              asset.currentInvestmentByEURO,
+            currentInvestmentByTRY:
+              response.data.assets[index]?.currentInvestmentByTRY ??
+              asset.currentInvestmentByTRY,
+            currentWeight:
+              response.data.assets[index]?.currentWeight ?? asset.currentWeight,
+            /**/
+            marketStatus:
+              response.data.assets[index]?.marketStatus ?? asset.marketStatus,
+          }));
+
+          setAssetData(updatedAssetData);
+          assetDataRef.current = updatedAssetData;
+        }
+      } catch (error: any) {
+        if (error.status === 400) {
+          console.log(error.response.data);
+        }
+      }
+    }
+  };
+
+  useEffect(() => {
+    console.log(id);
+    Number(id) != -1 && fetchStaticData();
+
+    intervalRef.current = setInterval(() => {
+      fetchAssetLiveData();
+    }, 2000);
+
+    return () => clearInterval(intervalRef.current!);
+  }, [id, refreshKey, location.key]);
+  useEffect(() => {
+    const updateHeight = () => {
+      const navbar = document.querySelector(".navbar-wrapper"); // Use your actual navbar class/id
+      if (navbar) {
+        const navbarHeight = navbar.getBoundingClientRect().height;
+        document.documentElement.style.setProperty(
+          "--navbar-height",
+          `${navbarHeight}px`,
+        );
+      }
+    };
+
+    updateHeight();
+    window.addEventListener("resize", updateHeight);
+
+    return () => window.removeEventListener("resize", updateHeight);
+  }, []);
+  return (
+    <div className="row m-0 p-0 pt-3">
+      {assetData && assetData.length != 0 && (
+        <div className="col-9 m-0 p-0 dashboard-left-section">
+          <div className="row m-0 p-0 d-flex">
+            <div className="col-6 m-0 p-0 ps-3 pt-3">
+              <TradingviewChart />
+            </div>
+            <div className="col-6 m-0 p-0 px-3 pt-3 d-flex">
+              <AssetBarChart assets={assetData} />
+            </div>
+          </div>
+
+          <div className="d-flex justify-content-center align-items-center px-3 gap-2 mt-3">
+            <div
+              className={`d-flex justify-content-end align-items-center rounded p-1 ${selectedViewOption ? "asset-selected-view-option" : ""}`}
+            >
+              <HugeiconsIcon
+                role="button"
+                color="white"
+                width={25}
+                height={25}
+                icon={GridViewIcon}
+                onClick={() => changeSelectedViewOptionStatus(true)}
+              />
+            </div>
+            <div
+              className={`d-flex justify-content-end align-items-center rounded p-1 ${!selectedViewOption ? "asset-selected-view-option" : ""}`}
+            >
+              <HugeiconsIcon
+                role="button"
+                color="white"
+                width={25}
+                height={25}
+                icon={ListViewIcon}
+                onClick={() => changeSelectedViewOptionStatus(false)}
+              />
+            </div>
+          </div>
+
+          <div className="row m-0 ps-3">
+            {selectedViewOption ? (
+              assetData?.map((asset: Asset) => (
+                <div key={asset.id} className="col-4 m-0 p-0 pt-3 pe-3">
+                  <AssetGridView asset={asset} />
+                </div>
+              ))
+            ) : (
+              <div className="p-0 m-0 pe-3 mt-3">
+                <AssetListView asset={assetData} />
+              </div>
+            )}
+          </div>
+
+          {portfolioPieData && <YearlyChange />}
+        </div>
+      )}
+
+      <div className="col-3 m-0 py-3 ps-0 pe-3">
+        {portfolioPieData && portfolioPieData.currentInvestmentByTRY != 0 && (
+          <PortfolioPie portfolioPie={portfolioPieData} />
+        )}
+      </div>
+    </div>
+  );
+}

@@ -30,7 +30,7 @@ export class AssetService {
     createAssetRequest.symbol = createAssetRequest.symbol
       .replace('USDT', '')
       .replace('.IS', '');
-    await this.prisma.asset.create({
+    return await this.prisma.asset.create({
       data: createAssetRequest,
       include: {
         portfolio: true,

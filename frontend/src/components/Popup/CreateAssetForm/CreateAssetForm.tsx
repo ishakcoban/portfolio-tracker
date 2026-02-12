@@ -5,6 +5,7 @@ import SuccessResponse from "../../SuccessResponse/SuccessResponse";
 import LoadingSpinner from "../../LoadingSpinner/LoadingSpinner";
 import "./CreateAssetForm.scss";
 import Select from "react-select";
+import { useNavigate } from "react-router-dom";
 
 type Option = {
   value: string;
@@ -18,6 +19,7 @@ type Props = {
 };
 
 export default function CreateAssetForm({ closePopup, onSuccess }: Props) {
+  const navigate = useNavigate();
   const [symbol, setSymbol] = useState<Option | null>();
   const [initialWeightText, setInitialWeightText] = useState<number>(0);
   const [portfolios, setPortfolios] = useState<Option[]>([]);
@@ -40,10 +42,7 @@ export default function CreateAssetForm({ closePopup, onSuccess }: Props) {
               label: item.name,
             })),
           );
-       
         }
-
-       
       } catch (err) {
         //setError(err instanceof Error ? err.message : 'Failed to fetch assets');
       } finally {
@@ -68,17 +67,19 @@ export default function CreateAssetForm({ closePopup, onSuccess }: Props) {
       try {
         const response = await httpService.post("/assets", data);
         if (response.status === 201) {
-          
+          console.log(response.data);
           setInitialWeightText(0);
           setStatusCode(response.status);
           onSuccess("Asset created!");
           closePopup();
+          navigate(`/portfolio/${response.data.portfolioId}`, {
+            state: { refresh: true, timestamp: Date.now() },
+          });
         }
       } catch (error: any) {
         if (error.status === 400) {
           console.log(error);
           setMessage("Invalid input!");
-          //setMessage(error);
           setStatusCode(error.status);
         }
       }
@@ -87,7 +88,6 @@ export default function CreateAssetForm({ closePopup, onSuccess }: Props) {
   };
 
   const inputHandler = (inputValue: string) => {
-
     const data = {
       source: dataSource,
       symbol: inputValue,

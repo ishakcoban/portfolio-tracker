@@ -1,32 +1,17 @@
-import "./PortfolioStats.scss";
+import "./PortfolioPie.scss";
 import CircularChart from "../Charts/PieChart/CircularChart";
 import NumberFlow from "@number-flow/react";
 import LoadingSpinner from "../LoadingSpinner/LoadingSpinner";
-import {
-  ArrowAllDirectionFreeIcons,
-  ArrowUp01FreeIcons,
-  ArrowUp01Icon,
-  ArrowUp02Icon,
-  ArrowUp03Icon,
-  ArrowUp04Icon,
-  ArrowUp05Icon,
-  ArrowUpDoubleIcon,
-  Calculator01Icon,
-  Delete03Icon,
-  Remove01Icon,
-  Remove02Icon,
-} from "@hugeicons/core-free-icons";
+import { Calculator01Icon, Delete03Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useStore } from "../../store";
-import FearGreedIndex from "../FearAndGreedIndex/FearGreedIndex";
-import { useEffect, useRef, useState } from "react";
-import httpService from "../../services/httpService";
+import { useRef, useState } from "react";
 import DeletePortfolioForm from "../Popup/DeletePortfolioForm/DeletePortfolioForm";
 import Popup from "../Popup/Popup";
 import type { SuccessMessageCardRef } from "../SuccessMessageCard/SuccessMessageCard";
 import SuccessMessageCard from "../SuccessMessageCard/SuccessMessageCard";
 import CalculateInvestmentAmountByWeightForm from "../Popup/CalculateInvestmentAmountByWeightForm/CalculateInvestmentAmountByWeightForm";
-type PortfolioStats = {
+type PortfolioPie = {
   id: number;
   name: string;
   totalRawInvestmentByUSD: number;
@@ -51,46 +36,14 @@ type PortfolioStats = {
 };
 
 type Props = {
-  portfolioStats: PortfolioStats | null;
+  portfolioPie: PortfolioPie | null;
 };
 
-type FearAndGreedIndex = {
-  vix: {
-    type: string;
-    value: number;
-  };
-  crypto: {
-    type: string;
-    value: number;
-  };
-};
-export default function PortfolioStats({ portfolioStats }: Props) {
+export default function PortfolioPie({ portfolioPie }: Props) {
   const { currency } = useStore();
   const [popupType, setPopupType] = useState<null | string>(null);
-  const [fearAndGreedIndexData, setFearAndGreedIndexData] =
-    useState<FearAndGreedIndex>();
   const [message, setMessage] = useState("");
   const cardRef = useRef<SuccessMessageCardRef | null>(null);
-  const fetchData = async () => {
-    try {
-      const response = await httpService.get(
-        "/portfolios/fear-and-greed-index",
-      );
-
-      if (response.status === 200) {
-        setFearAndGreedIndexData(response.data);
-      }
-    } catch (error: any) {
-      if (error.status === 400) {
-        console.log(error.response.data);
-      }
-    }
-  };
-
-  useEffect(() => {
-    fetchData();
-    //fetchVixData();
-  }, []);
 
   const openPopup = (popupType: string) => {
     setPopupType(popupType);
@@ -106,12 +59,12 @@ export default function PortfolioStats({ portfolioStats }: Props) {
     setPopupType(null);
   };
   return (
-    <div className="portfolio-stats-wrapper py-3">
+    <div className="portfolio-pie-wrapper py-3 px-2">
       <SuccessMessageCard ref={cardRef} message={message}></SuccessMessageCard>
       {popupType && (
         <Popup onClose={closePopup}>
           {popupType == "CalculateInvestmentAmountByWeightForm" && (
-            <CalculateInvestmentAmountByWeightForm/>
+            <CalculateInvestmentAmountByWeightForm />
           )}
           {popupType == "delete portfolio" && (
             <DeletePortfolioForm
@@ -122,8 +75,8 @@ export default function PortfolioStats({ portfolioStats }: Props) {
         </Popup>
       )}
 
-      {portfolioStats !== null &&
-      portfolioStats.currentInvestmentByUSD !== undefined ? (
+      {portfolioPie !== null &&
+      portfolioPie.currentInvestmentByUSD !== undefined ? (
         <div className="position-relative d-flex justify-content-center align-items-center">
           <div className="position-absolute top-0 w-100">
             <div className="text-end pe-3">
@@ -149,7 +102,7 @@ export default function PortfolioStats({ portfolioStats }: Props) {
             </div>
           </div>
           <div className="mt-3" style={{ zIndex: 1 }}>
-            <CircularChart portfolioPie={portfolioStats.portfolioPie} />
+            <CircularChart portfolioPie={portfolioPie.portfolioPie} />
           </div>
           <div
             className="position-absolute top-0 text-center w-100"
@@ -182,10 +135,10 @@ export default function PortfolioStats({ portfolioStats }: Props) {
                   spinTiming={{ duration: 1500, easing: "ease" }}
                   value={
                     currency === "USD"
-                      ? portfolioStats.currentInvestmentByUSD
+                      ? portfolioPie.currentInvestmentByUSD
                       : currency === "EUR"
-                        ? portfolioStats.currentInvestmentByEURO
-                        : portfolioStats.currentInvestmentByTRY
+                        ? portfolioPie.currentInvestmentByEURO
+                        : portfolioPie.currentInvestmentByTRY
                   }
                 />
               </span>
@@ -199,11 +152,11 @@ export default function PortfolioStats({ portfolioStats }: Props) {
                   className={
                     "asset-value text-green fw-bold " +
                     (currency === "USD"
-                      ? portfolioStats.currentROIByUSD < 0 && " text-red"
+                      ? portfolioPie.currentROIByUSD < 0 && " text-red"
                       : currency === "EUR"
-                        ? portfolioStats.annualizedAverageROIByEURO < 0 &&
+                        ? portfolioPie.annualizedAverageROIByEURO < 0 &&
                           " text-red"
-                        : portfolioStats.annualizedAverageROIByTRY < 0 &&
+                        : portfolioPie.annualizedAverageROIByTRY < 0 &&
                           " text-red")
                   }
                 >
@@ -217,10 +170,10 @@ export default function PortfolioStats({ portfolioStats }: Props) {
                       animated={false}
                       value={
                         currency === "USD"
-                          ? portfolioStats.currentROIByUSD
+                          ? portfolioPie.currentROIByUSD
                           : currency === "EUR"
-                            ? portfolioStats.currentROIByEURO
-                            : portfolioStats.currentROIByTRY
+                            ? portfolioPie.currentROIByEURO
+                            : portfolioPie.currentROIByTRY
                       }
                     />
                     %
@@ -234,12 +187,12 @@ export default function PortfolioStats({ portfolioStats }: Props) {
                   className={
                     "asset-value text-green fw-bold " +
                     (currency === "USD"
-                      ? portfolioStats.annualizedAverageROIByUSD < 0 &&
+                      ? portfolioPie.annualizedAverageROIByUSD < 0 &&
                         " text-red"
                       : currency === "EUR"
-                        ? portfolioStats.annualizedAverageROIByEURO < 0 &&
+                        ? portfolioPie.annualizedAverageROIByEURO < 0 &&
                           " text-red"
-                        : portfolioStats.annualizedAverageROIByTRY < 0 &&
+                        : portfolioPie.annualizedAverageROIByTRY < 0 &&
                           " text-red")
                   }
                 >
@@ -253,10 +206,10 @@ export default function PortfolioStats({ portfolioStats }: Props) {
                       animated={false}
                       value={
                         currency === "USD"
-                          ? portfolioStats.annualizedAverageROIByUSD
+                          ? portfolioPie.annualizedAverageROIByUSD
                           : currency === "EUR"
-                            ? portfolioStats.annualizedAverageROIByEURO
-                            : portfolioStats.annualizedAverageROIByTRY
+                            ? portfolioPie.annualizedAverageROIByEURO
+                            : portfolioPie.annualizedAverageROIByTRY
                       }
                     />
                     %
@@ -270,10 +223,10 @@ export default function PortfolioStats({ portfolioStats }: Props) {
                   className={
                     "asset-value text-green fw-bold " +
                     (currency === "USD"
-                      ? portfolioStats.currentEarningByUSD < 0 && " text-red"
+                      ? portfolioPie.currentEarningByUSD < 0 && " text-red"
                       : currency === "EUR"
-                        ? portfolioStats.currentEarningByEURO < 0 && " text-red"
-                        : portfolioStats.currentEarningByTRY < 0 && " text-red")
+                        ? portfolioPie.currentEarningByEURO < 0 && " text-red"
+                        : portfolioPie.currentEarningByTRY < 0 && " text-red")
                   }
                 >
                   <span>
@@ -288,10 +241,10 @@ export default function PortfolioStats({ portfolioStats }: Props) {
                       animated={false}
                       value={
                         currency === "USD"
-                          ? portfolioStats.currentEarningByUSD
+                          ? portfolioPie.currentEarningByUSD
                           : currency === "EUR"
-                            ? portfolioStats.currentEarningByEURO
-                            : portfolioStats.currentEarningByTRY
+                            ? portfolioPie.currentEarningByEURO
+                            : portfolioPie.currentEarningByTRY
                       }
                     />
                   </span>
@@ -315,10 +268,10 @@ export default function PortfolioStats({ portfolioStats }: Props) {
                   animated={false}
                   value={
                     currency === "USD"
-                      ? portfolioStats.totalRawInvestmentByUSD
+                      ? portfolioPie.totalRawInvestmentByUSD
                       : currency === "EUR"
-                        ? portfolioStats.totalRawInvestmentByEURO
-                        : portfolioStats.totalRawInvestmentByTRY
+                        ? portfolioPie.totalRawInvestmentByEURO
+                        : portfolioPie.totalRawInvestmentByTRY
                   }
                 />
               </span>
@@ -330,14 +283,14 @@ export default function PortfolioStats({ portfolioStats }: Props) {
           <LoadingSpinner />
         </div>
       )}
-      {portfolioStats ? (
+      {portfolioPie ? (
         <div className="currency-pairs-wrapper mx-4 border-top mt-2">
           <div className="row m-0 p-0 py-2">
             <div className="col-4 m-0 p-0 ps-5 d-flex flex-column align-items-center">
               USD
               <div
                 className={
-                  portfolioStats?.currentEarningByUSD > 0
+                  portfolioPie?.currentEarningByUSD > 0
                     ? "text-green"
                     : "text-red"
                 }
@@ -350,7 +303,7 @@ export default function PortfolioStats({ portfolioStats }: Props) {
                       signDisplay: "always",
                     }}
                     animated={false}
-                    value={portfolioStats?.currentROIByUSD}
+                    value={portfolioPie?.currentROIByUSD}
                   />
                   %
                 </span>
@@ -360,7 +313,7 @@ export default function PortfolioStats({ portfolioStats }: Props) {
               EURO
               <div
                 className={
-                  portfolioStats?.currentEarningByEURO > 0
+                  portfolioPie?.currentEarningByEURO > 0
                     ? "text-green"
                     : "text-red"
                 }
@@ -373,7 +326,7 @@ export default function PortfolioStats({ portfolioStats }: Props) {
                     signDisplay: "always",
                   }}
                   animated={false}
-                  value={portfolioStats?.currentROIByEURO}
+                  value={portfolioPie?.currentROIByEURO}
                 />
                 %
               </div>
@@ -382,7 +335,7 @@ export default function PortfolioStats({ portfolioStats }: Props) {
               TRY
               <div
                 className={
-                  portfolioStats?.currentEarningByTRY > 0
+                  portfolioPie?.currentEarningByTRY > 0
                     ? "text-green"
                     : "text-red"
                 }
@@ -395,7 +348,7 @@ export default function PortfolioStats({ portfolioStats }: Props) {
                       signDisplay: "always",
                     }}
                     animated={false}
-                    value={portfolioStats?.currentROIByTRY}
+                    value={portfolioPie?.currentROIByTRY}
                   />
                   %
                 </span>
@@ -408,17 +361,6 @@ export default function PortfolioStats({ portfolioStats }: Props) {
           <LoadingSpinner />
         </div>
       )}
-
-      {/*fearAndGreedIndexData && fearAndGreedIndexData?.crypto != undefined && (
-        <div className="row m-0 p-0 mt-3">
-          <div className="col-6 m-0 p-0 d-flex justify-content-end align-items-center pe-3 ps-5">
-            <FearGreedIndex data={fearAndGreedIndexData.vix} />
-          </div>
-          <div className="col-6 m-0 p-0 d-flex justify-content-start align-items-center ps-3 pe-5">
-            <FearGreedIndex data={fearAndGreedIndexData.crypto} />
-          </div>
-        </div>
-      )*/}
     </div>
   );
 }
