@@ -164,7 +164,7 @@ export default function PortfolioPie({ portfolioPie }: Props) {
                     <NumberFlow
                       format={{
                         style: "decimal",
-                        signDisplay: "always",
+                        signDisplay: "never",
                         maximumFractionDigits: 2,
                       }}
                       animated={false}
@@ -200,7 +200,7 @@ export default function PortfolioPie({ portfolioPie }: Props) {
                     <NumberFlow
                       format={{
                         style: "decimal",
-                        signDisplay: "always",
+                        signDisplay: "never",
                         maximumFractionDigits: 2,
                       }}
                       animated={false}
@@ -235,7 +235,7 @@ export default function PortfolioPie({ portfolioPie }: Props) {
                       format={{
                         notation: "standard",
 
-                        signDisplay: "always",
+                        signDisplay: "never",
                         maximumFractionDigits: 2,
                       }}
                       animated={false}
@@ -300,7 +300,7 @@ export default function PortfolioPie({ portfolioPie }: Props) {
                     format={{
                       notation: "standard",
                       maximumFractionDigits: 2,
-                      signDisplay: "always",
+                      signDisplay: "never",
                     }}
                     animated={false}
                     value={portfolioPie?.currentROIByUSD}
@@ -323,7 +323,7 @@ export default function PortfolioPie({ portfolioPie }: Props) {
                   format={{
                     notation: "standard",
                     maximumFractionDigits: 2,
-                    signDisplay: "always",
+                    signDisplay: "never",
                   }}
                   animated={false}
                   value={portfolioPie?.currentROIByEURO}
@@ -345,7 +345,7 @@ export default function PortfolioPie({ portfolioPie }: Props) {
                     format={{
                       notation: "standard",
                       maximumFractionDigits: 2,
-                      signDisplay: "always",
+                      signDisplay: "never",
                     }}
                     animated={false}
                     value={portfolioPie?.currentROIByTRY}

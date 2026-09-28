@@ -9,8 +9,6 @@ import {
 } from '@nestjs/common';
 import { TransactionService } from './transaction.service';
 import { CreateTransactionRequest } from './request/createTransactionRequest';
-import { UpdateTransactionDto } from './dto/update-transaction.dto';
-import { SellTransactionRequest } from './request/sellTransactionRequest';
 
 @Controller('transactions')
 export class TransactionController {
@@ -24,13 +22,6 @@ export class TransactionController {
   @Post('/bulk')
   createByBulk(@Body() createTransactionRequest: CreateTransactionRequest[]) {
     return this.transactionService.createByBulk(createTransactionRequest);
-  }
-
-  @Post('sale')
-  sellTransaction(@Body() sellTransactionRequest: SellTransactionRequest) {
-    return this.transactionService.sellTransactionByFIFO(
-      sellTransactionRequest,
-    );
   }
 
   @Get(':id')

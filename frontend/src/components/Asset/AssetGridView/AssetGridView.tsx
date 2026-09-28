@@ -235,12 +235,14 @@ export default function AssetGridView({ asset }: Props) {
                   style={{
                     fontSize: "12px",
                     opacity: ".5",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                    maxWidth: "calc(100% - 80px)", // Reserve space for the right side content
                   }}
                   className="text-light"
                 >
-                  {asset.longName.length > 30
-                    ? asset.longName.substring(0, 30) + "..."
-                    : asset.longName}
+                  {asset.longName}
                 </div>
                 <div className="d-flex align-items-center justify-content-center gap-1 fw-bold">
                   <div
@@ -260,7 +262,7 @@ export default function AssetGridView({ asset }: Props) {
                       <NumberFlow
                         format={{
                           style: "decimal",
-                          signDisplay: "always",
+                          signDisplay: "never",
                           maximumFractionDigits: 2,
                         }}
                         animated={false}
@@ -343,7 +345,7 @@ export default function AssetGridView({ asset }: Props) {
                   <NumberFlow
                     format={{
                       style: "decimal",
-                      signDisplay: "always",
+                      signDisplay: "never",
                       maximumFractionDigits: 2,
                     }}
                     animated={false}
@@ -377,7 +379,7 @@ export default function AssetGridView({ asset }: Props) {
                     format={{
                       notation: "standard",
 
-                      signDisplay: "always",
+                      signDisplay: "never",
                       maximumFractionDigits: 2,
                     }}
                     animated={false}

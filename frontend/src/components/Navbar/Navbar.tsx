@@ -6,15 +6,12 @@ import CreateAssetForm from "../Popup/CreateAssetForm/CreateAssetForm";
 import SuccessMessageCard, {
   type SuccessMessageCardRef,
 } from "../SuccessMessageCard/SuccessMessageCard";
-//import CreateTransactionFom from "../Popup/CreateTransactionFom/CreateTransactionFom";
-//import { CreateTransactionFom } from "../Popup/CreateTransactionFom/CreateTransactionFom";
-//import { CreateTransactionFom } from "../Popup/CreateTransactionFom/CreateTransactionFom";
 import { CreateTransactionForm } from "../Popup/CreateTransactionFom/CreateTransactionFom";
 import DropdownButton from "../Buttons/DropdownButton";
 import httpService from "../../services/httpService";
 import { useStore } from "../../store";
 import NumberFlow from "@number-flow/react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 interface Portfolio {
   id: number;
@@ -76,6 +73,12 @@ export default function Navbar() {
   };
 
   const handlePortfolio = (id: number) => {
+  const targetPath = `/portfolio/${id}`;
+  
+  // Don't navigate if already on this exact path
+  if (location.pathname === targetPath) {
+    return;
+  }
     navigate(`/portfolio/${id}`);
     setPortfolioId(id);
   };

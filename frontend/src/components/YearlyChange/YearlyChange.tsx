@@ -69,7 +69,7 @@ export default function YearlyChange() {
                       <NumberFlow
                         format={{
                           notation: "standard",
-                          signDisplay: "always",
+                          signDisplay: "never",
                           maximumFractionDigits: 2,
                         }}
                         animated={false}
@@ -88,7 +88,7 @@ export default function YearlyChange() {
                       <NumberFlow
                         format={{
                           notation: "standard",
-                          signDisplay: "always",
+                          signDisplay: "never",
                           maximumFractionDigits: 2,
                         }}
                         animated={false}
@@ -107,7 +107,7 @@ export default function YearlyChange() {
                       <NumberFlow
                         format={{
                           notation: "standard",
-                          signDisplay: "always",
+                          signDisplay: "never",
                           maximumFractionDigits: 2,
                         }}
                         animated={false}
