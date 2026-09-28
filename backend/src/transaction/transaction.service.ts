@@ -3,7 +3,6 @@ import { UpdateTransactionDto } from './dto/update-transaction.dto';
 import { PrismaService } from '../prisma.service';
 import { AssetService } from 'src/asset/asset.service';
 import { CreateTransactionRequest } from './request/createTransactionRequest';
-import { SellTransactionRequest } from './request/sellTransactionRequest';
 import { PortfolioService } from 'src/portfolio/portfolio.service';
 import { TransactionMapper } from './transaction.mapper';
 import { TransactionDto } from './dto/transaction-dto';
@@ -29,7 +28,9 @@ export class TransactionService {
 
   async create(createTransactionRequest: CreateTransactionRequest) {
     const asset = await this.prisma.asset.findUniqueOrThrow({
-      where: { id: createTransactionRequest.assetId },
+      where: {
+        id: createTransactionRequest.assetId,
+      },
     });
 
     const portfolioYearlyChanges =
@@ -49,6 +50,13 @@ export class TransactionService {
 
       case 'SELL':
         await this.applySellTransaction(
+          asset,
+          createTransactionRequest,
+          portfolioYearlyChanges,
+        );
+        break;
+      case 'TRANSFER':
+        await this.applyTransferTransaction(
           asset,
           createTransactionRequest,
           portfolioYearlyChanges,
@@ -113,9 +121,16 @@ export class TransactionService {
       }),
       this.prisma.transaction.create({
         data: {
-          ...createTransactionRequest,
+          assetId: createTransactionRequest.assetId,
+          invested: createTransactionRequest.invested,
+          price: createTransactionRequest.price,
+
           quantity:
             createTransactionRequest.invested / createTransactionRequest.price,
+          type: TransactionType.BUY,
+          eurusd: createTransactionRequest.eurusd,
+          usdtry: createTransactionRequest.usdtry,
+
           date: new Date(createTransactionRequest.date),
         },
       }),
@@ -148,7 +163,6 @@ export class TransactionService {
           createTransactionRequest,
           transactionYear,
         );
-        console.log(finalValue);
 
         if (portfolioYearlyChanges[yearIndex].year == currentYear) {
           await this.updatePortfolioYearlyRoiValues(portfolioYearlyChanges);
@@ -213,13 +227,13 @@ export class TransactionService {
           await this.updatePortfolioYearlyRoiValues(portfolioYearlyChanges);
           break;
         }
-       
+
         let finalValue = await this.calculateFinalTransactionValueByYear(
           asset,
           createTransactionRequest,
           targetYear,
         );
-      
+
         let targetYearExists = portfolioYearlyChanges.some(
           (v) => v.year === targetYear,
         );
@@ -286,7 +300,17 @@ export class TransactionService {
       ).toISOString();
 
       await tx.transaction.create({
-        data: createTransactionRequest,
+        data: {
+          assetId: createTransactionRequest.assetId,
+          invested: createTransactionRequest.invested,
+          price: createTransactionRequest.price,
+          date: createTransactionRequest.date,
+          quantity:
+            createTransactionRequest.invested / createTransactionRequest.price,
+          type: TransactionType.SELL,
+          eurusd: createTransactionRequest.eurusd,
+          usdtry: createTransactionRequest.usdtry,
+        },
       });
 
       const transactions = await tx.transaction.findMany({
@@ -307,12 +331,15 @@ export class TransactionService {
 
       // FIFO
       let i = 0;
-
+      let roi = 0;
+      let sellingAmountByUSD = 0;
       for (const transaction of sellTransactions) {
         quantityToSell = transaction.quantity;
 
         while (true) {
-          if (quantityToSell <= 0) break;
+          if (quantityToSell <= 0) {
+            break;
+          }
 
           const sellingQuantity = Math.min(
             buyTransactions[i].quantity,
@@ -322,6 +349,7 @@ export class TransactionService {
           buyTransactions[i].quantity -= sellingQuantity;
           buyTransactions[i].invested -=
             sellingQuantity * buyTransactions[i].price;
+          sellingAmountByUSD += sellingQuantity * buyTransactions[i].price;
 
           /*******************************************************************/
           let transactionBuyYear = new Date(
@@ -417,9 +445,47 @@ export class TransactionService {
           data: portfolio,
         });
       }
+
+      if (createTransactionRequest.type == TransactionType.TRANSFER) {
+        roi =
+          (createTransactionRequest.invested - sellingAmountByUSD) /
+          sellingAmountByUSD;
+        return { roi: roi, sellingAmountByUSD: sellingAmountByUSD };
+      }
     });
   }
 
+  async applyTransferTransaction(
+    asset: Asset,
+    createTransactionRequest: CreateTransactionRequest,
+    portfolioYearlyChanges: PortfolioYearlyChange[],
+  ) {
+    createTransactionRequest.usdtry = 1;
+    createTransactionRequest.eurusd = 1;
+console.log()
+    const dataForUnderweightedAsset = await this.applySellTransaction(
+      asset,
+      createTransactionRequest,
+      portfolioYearlyChanges,
+    );
+    console.log(createTransactionRequest);
+    createTransactionRequest.assetId =
+      createTransactionRequest.underweightedAsset!;
+    createTransactionRequest.price =
+      createTransactionRequest.underweightedAssetPrice! *
+      (1 - dataForUnderweightedAsset?.roi!);
+    createTransactionRequest.invested =
+      dataForUnderweightedAsset?.sellingAmountByUSD!;
+    createTransactionRequest.quantity =
+      createTransactionRequest.invested / createTransactionRequest.price;
+    console.log(createTransactionRequest);
+    return;
+    await this.applyBuyTransaction(
+      asset,
+      createTransactionRequest,
+      portfolioYearlyChanges,
+    );
+  }
   async calculateFinalTransactionValueByYear(
     asset: Asset,
     createTransactionRequest: CreateTransactionRequest,
@@ -497,27 +563,25 @@ export class TransactionService {
         } else {
           let data = response.data.chart.result[0];
           timestamps = data.timestamp;
-let updatedDate = lastDate;
-              while (timestamps == undefined) {
-                updatedDate = Helper.minusOneDay(updatedDate);
+          let updatedDate = lastDate;
+          while (timestamps == undefined) {
+            updatedDate = Helper.minusOneDay(updatedDate);
 
-                const url = Helper.findURLForChartByAssetType(
-                  updatedDate,
-                  asset.type,
-                  asset.symbol,
-                );
-                const response = await firstValueFrom(
-                  this.httpService.get(url),
-                );
+            const url = Helper.findURLForChartByAssetType(
+              updatedDate,
+              asset.type,
+              asset.symbol,
+            );
+            const response = await firstValueFrom(this.httpService.get(url));
 
-                if (response.status === 200) {
-                  data = response.data.chart.result[0];
-                  timestamps = data.timestamp;
-                }
-              }
+            if (response.status === 200) {
+              data = response.data.chart.result[0];
+              timestamps = data.timestamp;
+            }
+          }
 
           let candle = data.indicators.quote[0];
-console.log(candle,lastDate)
+
           let assetPriceAtLastDayOfYearByUSD = candle.close[0];
           let assetPriceAtLastDayOfYearByEURO =
             candle.close[0] *
@@ -661,74 +725,6 @@ console.log(candle,lastDate)
     const d = this.toUTCDate(date);
     d.setUTCDate(d.getUTCDate() - 1);
     return d.toISOString().split('T')[0] as ISODate;
-  }
-  async sellTransactionByFIFO(sellTransactionRequest: SellTransactionRequest) {
-    return this.prisma.$transaction(async (tx) => {
-      const asset = await this.assetService.findOne(
-        sellTransactionRequest.assetId,
-      );
-
-      const portfolio = await this.prisma.portfolio.findUniqueOrThrow({
-        where: { id: asset.portfolioId },
-      });
-      let quantityToSell = sellTransactionRequest.quantity;
-
-      if (quantityToSell > asset.totalQuantity) {
-        throw new BadRequestException(
-          `Insufficient assets: trying to sell ${quantityToSell} but only ${asset.totalQuantity} available`,
-        );
-      }
-
-      const transactions = await this.findAllByAssetId(asset.id);
-
-      // FIFO
-      let i = 0;
-      while (true) {
-        if (quantityToSell <= 0) break;
-
-        const sellingQuantity = Math.min(
-          transactions[i].quantity,
-          quantityToSell,
-        );
-
-        transactions[i].quantity -= sellingQuantity;
-        transactions[i].invested -= sellingQuantity * transactions[i].price;
-
-        asset.totalQuantity -= sellingQuantity;
-
-        asset.totalInvestedByUSD -= sellingQuantity * transactions[i].price;
-        asset.averageCostByUSD = asset.totalInvestedByUSD / asset.totalQuantity;
-
-        asset.totalInvestedByEURO -=
-          (sellingQuantity * transactions[i].price) / transactions[i].eurusd;
-        asset.averageCostByEURO =
-          asset.totalInvestedByEURO / asset.totalQuantity;
-
-        asset.totalInvestedByTRY -=
-          sellingQuantity * transactions[i].price * transactions[i].usdtry;
-        asset.averageCostByTRY = asset.totalInvestedByTRY / asset.totalQuantity;
-
-        portfolio.totalInvestedByUSD -= sellingQuantity * transactions[i].price;
-        portfolio.totalInvestedByEURO -=
-          (sellingQuantity * transactions[i].price) / transactions[i].eurusd;
-        portfolio.totalInvestedByTRY -=
-          sellingQuantity * transactions[i].price * transactions[i].usdtry;
-
-        await tx.transaction.update({
-          where: { id: transactions[i].id },
-          data: transactions[i],
-        });
-        quantityToSell -= sellingQuantity;
-        i++;
-      }
-
-      await tx.asset.update({ where: { id: asset.id }, data: asset });
-
-      await tx.portfolio.update({
-        where: { id: portfolio.id },
-        data: portfolio,
-      });
-    });
   }
 
   async findOne(id: number) {

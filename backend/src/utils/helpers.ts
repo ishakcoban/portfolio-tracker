@@ -73,7 +73,11 @@ export class Helper {
     date: string,
   ): Promise<number> {
     try {
-      const url = `https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@${date}/v1/currencies/usd.json`;
+
+// const formattedDate = date.replace(/-0/g, ".").replace(/-/g, ".");
+const url = `https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@${date}/v1/currencies/usd.json`;
+// const url = `https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@${date}/v1/currencies/usd.json`;
+      // const url = `https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@${date}/v1/currencies/usd.json`;
 
       const response = await firstValueFrom(httpService.get(url));
 

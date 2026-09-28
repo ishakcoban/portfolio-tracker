@@ -92,6 +92,7 @@ enum AssetStatus {
 enum TransactionType {
   BUY
   SELL
+  TRANSFER
 }
 
 enum AssetType {

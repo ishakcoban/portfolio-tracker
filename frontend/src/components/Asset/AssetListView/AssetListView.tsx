@@ -243,7 +243,7 @@ export default function AssetListView({ asset }: Props) {
                           <NumberFlow
                             format={{
                               style: "decimal",
-                              signDisplay: "always",
+                              signDisplay: "never",
                               maximumFractionDigits: 2,
                             }}
                             animated={false}

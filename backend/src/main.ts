@@ -16,8 +16,9 @@ async function bootstrap() {
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true, // Strip properties that don't have decorators
-      forbidNonWhitelisted: true, // Throw error if extra properties sent
+      //forbidNonWhitelisted: true, // Throw error if extra properties sent
       transform: true, // Auto-transform payloads to DTO instances
+     // skipMissingProperties: true, // Skip validation for undefined values
     }),
   );
   await app.listen(process.env.PORT ?? 3000);

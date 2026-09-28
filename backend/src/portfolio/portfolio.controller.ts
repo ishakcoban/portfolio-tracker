@@ -39,12 +39,13 @@ export class PortfolioController {
     return this.portfolioService.findOne(+id);
   }
 
-  @Get(':id/line-overview-chart')
-  getValuesForLineOverviewChart(@Param('id') id: string) {
-    return this.portfolioService.calculatePortfolioValueForLightweightChart(
+    @Get(':id/assets/weight-deviation')
+  getWeightDeviation(@Param('id') id: string) {
+    return this.portfolioService.getByWeightDeviation(
       +id,
     );
   }
+  
 
   @Patch(':id')
   update(

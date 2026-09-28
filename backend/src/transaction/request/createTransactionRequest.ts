@@ -3,6 +3,7 @@ import {
   IsEnum,
   IsInt,
   IsNumber,
+  IsOptional,
   Min,
   NotEquals,
 } from 'class-validator';
@@ -10,6 +11,7 @@ import {
 export enum TransactionType {
   BUY = 'BUY',
   SELL = 'SELL',
+  TRANSFER = 'TRANSFER',
 }
 
 export class CreateTransactionRequest {
@@ -17,12 +19,21 @@ export class CreateTransactionRequest {
   assetId: number;
   @IsEnum(TransactionType, { message: 'Type must be a valid TransactionType' })
   type: TransactionType;
+
+  // Optional field example
+  @IsOptional()
+  @IsNumber()
+  underweightedAsset?: number;
+  @IsOptional()
+  underweightedAssetPrice?: number;
   @IsNumber({}, { message: 'Invested must be a number' })
   @NotEquals(0, { message: 'Invested cannot be zero' })
   @Min(0, { message: 'Invested must be at least 0' })
   invested: number;
+  @IsOptional()
   @IsNumber()
   usdtry: number;
+  @IsOptional()
   @IsNumber()
   eurusd: number;
 

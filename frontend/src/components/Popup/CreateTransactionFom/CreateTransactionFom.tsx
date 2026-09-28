@@ -6,7 +6,6 @@ import CustomInput from "../../CustomInput/CustomInput";
 import SuccessResponse from "../../SuccessResponse/SuccessResponse";
 import LoadingSpinner from "../../LoadingSpinner/LoadingSpinner";
 import Select from "react-select";
-import type { IdNotVerifiedFreeIcons } from "@hugeicons/core-free-icons";
 import { useNavigate } from "react-router-dom";
 interface TransactionRow {
   date: string;
@@ -41,6 +40,18 @@ type Option = {
   type?: string;
   longName?: string;
   assets?: Asset[];
+  initialWeight?: number;
+  currentWeight?: number;
+  weightDeviation?: number;
+};
+
+type WeightedAsset = {
+  id?: number;
+  value: string;
+  label: string;
+  initialWeight?: number;
+  currentWeight?: number;
+  weightDeviation?: number;
 };
 
 export const CreateTransactionForm: React.FC<Props> = ({
@@ -54,7 +65,12 @@ export const CreateTransactionForm: React.FC<Props> = ({
   const [success, setSuccess] = useState(false);
   const [investmentAmount, setInvestmentAmount] = useState<number>(0);
   const [saleAmount, setSaleAmount] = useState<number>(0);
+  const [amount, setAmount] = useState<number>(0);
   const [price, setPrice] = useState<number>(0);
+  const [overweightedAssetPrice, setOverweightedAssetPrice] =
+    useState<number>(0);
+  const [underweightedAssetPrice, setUnderweightedAssetPrice] =
+    useState<number>(0);
   const [date, setDate] = useState<string>("");
   const [selectedAsset, setSelectedAsset] = useState<number | null>();
   const [USDTRY, setUSDTRY] = useState<number>(0);
@@ -65,6 +81,12 @@ export const CreateTransactionForm: React.FC<Props> = ({
   const [transactionType, setTransactionType] = useState<string>("BUY");
   const [mode, setMode] = useState<string>("");
   const [portfolios, setPortfolios] = useState<Option[]>([]);
+  const [overweightedAssets, setOverweightedAssets] = useState<Option[]>([]);
+  const [underweightedAssets, setUnderweightedAssets] = useState<Option[]>([]);
+  const [selectedOverweightedAsset, setOverweightedAsset] =
+    useState<WeightedAsset | null>();
+  const [selectedUnderweightedAsset, setUnderweightedAsset] =
+    useState<WeightedAsset | null>();
   const [selectedPortfolioId, setSelectedPortfolioId] = useState<number>();
   const [assets, setAssets] = useState<Option[]>([]);
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -125,7 +147,6 @@ export const CreateTransactionForm: React.FC<Props> = ({
             }),
           ),
         );
-        console.log(response.data);
       }
     } catch (err) {
       //setError(err instanceof Error ? err.message : 'Failed to fetch assets');
@@ -193,8 +214,20 @@ export const CreateTransactionForm: React.FC<Props> = ({
           date: date,
         };
         break;
+      case "TRANSFER":
+        data = {
+          assetId: selectedOverweightedAsset?.value,
+          underweightedAsset: selectedUnderweightedAsset?.value,
+          type: transactionType,
+          invested: amount,
+          quantity: +(amount / overweightedAssetPrice),
+          price: +overweightedAssetPrice,
+          underweightedAssetPrice: +underweightedAssetPrice,
+          date: date,
+        };
+        break;
     }
-
+    console.log(data);
     setMessage("");
     setIsLoading(true);
     setTimeout(async () => {
@@ -205,15 +238,23 @@ export const CreateTransactionForm: React.FC<Props> = ({
           setPrice(0);
           setDate("");
 
-          if (transactionType == "BUY") {
-            setInvestmentAmount(0);
-          } else {
-            setSaleAmount(0);
+          switch (transactionType) {
+            case "BUY":
+              setInvestmentAmount(0);
+              break;
+
+            case "SELL":
+              setSaleAmount(0);
+              break;
+            case "TRANSFER":
+              setAmount(0);
+              break;
           }
+
           setStatusCode(response.status);
           onSuccess("Transaction created!");
           closePopup();
-
+          console.log("selectedPortfolioId: " + selectedPortfolioId);
           navigate(`/portfolio/${selectedPortfolioId}`, {
             state: { refresh: true, timestamp: Date.now() },
           });
@@ -234,6 +275,54 @@ export const CreateTransactionForm: React.FC<Props> = ({
   };
 
   const handlePortfolio = async (id: number) => {
+    if (transactionType == "TRANSFER") {
+      try {
+        const response = await httpService.get(
+          `/portfolios/${id}/assets/weight-deviation`,
+        );
+        if (response.status === 200) {
+          console.log(response.data);
+          setOverweightedAssets(
+            response.data.overweight.map(
+              (item: {
+                id: number;
+                symbol: string;
+                initialWeight: number;
+                currentWeight: number;
+                weightDeviation: number;
+              }) => ({
+                value: item.id,
+                label: item.symbol,
+                initialWeight: item.initialWeight,
+                currentWeight: item.currentWeight,
+                weightDeviation: item.weightDeviation,
+              }),
+            ),
+          );
+          setUnderweightedAssets(
+            response.data.underweight.map(
+              (item: {
+                id: number;
+                symbol: string;
+                initialWeight: number;
+                currentWeight: number;
+                weightDeviation: number;
+              }) => ({
+                value: item.id,
+                label: item.symbol,
+                initialWeight: item.initialWeight,
+                currentWeight: item.currentWeight,
+                weightDeviation: item.weightDeviation,
+              }),
+            ),
+          );
+          setSelectedPortfolioId(id);
+        }
+      } catch (error) {}
+      const fromAssets = 0;
+      return;
+    }
+
     setSelectedPortfolioId(+id);
     const portfolio = portfolios.find((item: any) => +item.value === id);
 
@@ -257,10 +346,6 @@ export const CreateTransactionForm: React.FC<Props> = ({
     fetchPortfolios();
   }, []);
 
-  useEffect(() => {
-    console.log(assets);
-  }, [assets]);
-
   return (
     <>
       <div className="max-w-6xl mx-auto">
@@ -275,7 +360,7 @@ export const CreateTransactionForm: React.FC<Props> = ({
           <div className="w-50">
             <div className="d-flex flex-column gap-4">
               <Select
-                placeholder="Select a portfolio to add asset"
+                placeholder="Select a portfolio"
                 styles={{
                   control: (baseStyles) => ({
                     ...baseStyles,
@@ -300,62 +385,257 @@ export const CreateTransactionForm: React.FC<Props> = ({
                 }
                 options={portfolios}
               />
+              {transactionType != "TRANSFER" && (
+                <Select
+                  placeholder="Select an asset"
+                  styles={{
+                    control: (baseStyles) => ({
+                      ...baseStyles,
+                      borderColor: "#BBBBB5",
+                      borderRadius: "8px",
+                      backgroundColor: "transparent",
+                    }),
+                    singleValue: (baseStyles) => ({
+                      ...baseStyles,
+                      color: "#BBBBB5",
+                    }),
+                    input: (baseStyles) => ({
+                      ...baseStyles,
+                      color: "#BBBBB5",
+                    }),
+                    placeholder: (baseStyles) => ({
+                      ...baseStyles,
+                    }),
+                  }}
+                  onChange={(selectedOption: Option | null) =>
+                    setSelectedAsset(+selectedOption!.value)
+                  }
+                  options={assets}
+                />
+              )}
 
-              <Select
-                placeholder="Select an asset"
-                styles={{
-                  control: (baseStyles) => ({
-                    ...baseStyles,
-                    borderColor: "#BBBBB5",
-                    borderRadius: "8px",
-                    backgroundColor: "transparent",
-                  }),
-                  singleValue: (baseStyles) => ({
-                    ...baseStyles,
-                    color: "#BBBBB5",
-                  }),
-                  input: (baseStyles) => ({
-                    ...baseStyles,
-                    color: "#BBBBB5",
-                  }),
-                  placeholder: (baseStyles) => ({
-                    ...baseStyles,
-                  }),
-                }}
-                onChange={(selectedOption: Option | null) =>
-                  setSelectedAsset(+selectedOption!.value)
-                }
-                options={assets}
-              />
-            </div>
-          </div>
-        </div>
-        <div className="rounded-lg p-6 mb-6 d-flex flex-column align-items-center text-light">
-          <p className="text-gray-600">
-            Add transactions individually or upload multiple transactions at
-            once
-          </p>
-        </div>
-        {/* Mode Toggle */}
+              {transactionType == "TRANSFER" && (
+                <>
+                  <div className="d-flex justify-content-between align-items-center">
+                    <Select
+                      placeholder="Select an asset"
+                      styles={{
+                        control: (baseStyles) => ({
+                          ...baseStyles,
+                          borderColor: "#BBBBB5",
+                          borderRadius: "8px",
+                          backgroundColor: "transparent",
+                        }),
+                        singleValue: (baseStyles) => ({
+                          ...baseStyles,
+                          color: "#BBBBB5",
+                        }),
+                        input: (baseStyles) => ({
+                          ...baseStyles,
+                          color: "#BBBBB5",
+                        }),
+                        placeholder: (baseStyles) => ({
+                          ...baseStyles,
+                        }),
+                      }}
+                      onChange={(selectedOption: Option | null) =>
+                        setOverweightedAsset(selectedOption)
+                      }
+                      options={overweightedAssets}
+                    />
+                    <div className="fw-bold fs-5 text-light">to</div>
+                    <Select
+                      placeholder="Select an asset"
+                      styles={{
+                        control: (baseStyles) => ({
+                          ...baseStyles,
+                          borderColor: "#BBBBB5",
+                          borderRadius: "8px",
+                          backgroundColor: "transparent",
+                        }),
+                        singleValue: (baseStyles) => ({
+                          ...baseStyles,
+                          color: "#BBBBB5",
+                        }),
+                        input: (baseStyles) => ({
+                          ...baseStyles,
+                          color: "#BBBBB5",
+                        }),
+                        placeholder: (baseStyles) => ({
+                          ...baseStyles,
+                        }),
+                      }}
+                      onChange={(selectedOption: Option | null) =>
+                        setUnderweightedAsset(selectedOption)
+                      }
+                      options={underweightedAssets}
+                    />
+                  </div>
+                  {selectedOverweightedAsset && selectedUnderweightedAsset && (
+                    <div className="text-light">
+                      <div
+                        style={{ fontSize: ".8rem" }}
+                        className="fw-bold text-orange text-center"
+                      >
+                        Initial Weight
+                      </div>
+                      <div className="row m-0 p-0">
+                        <div className="col-6 m-0 p-0 text-end pe-3">
+                          {Number(
+                            selectedOverweightedAsset?.initialWeight?.toFixed(
+                              2,
+                            ),
+                          )}
+                          %
+                        </div>
 
-        <div className="d-flex justify-content-center m-0 p-0 gap-3 pb-3">
-          <div className="col-3 m-0 p-0 d-flex align-items-center">
-            <div
-              className={`asset-broker w-100 mx-1 py-2 ps-3 ${mode == "single" && "border border-light border-2"}`}
-              onClick={() => setMode("single")}
-            >
-              single
-            </div>
-          </div>
-          <div className="col-3 m-0 p-0 d-flex align-items-center">
-            <div
-              className={`asset-broker w-100 mx-1 py-2 ps-3 ${mode == "multiple" && "border border-light border-2"}`}
-              onClick={() => setMode("multiple")}
-            >
-              multiple
+                        <div className="col-6 m-0 p-0 text-start ps-3">
+                          {Number(
+                            selectedUnderweightedAsset?.initialWeight?.toFixed(
+                              2,
+                            ),
+                          )}
+                          %
+                        </div>
+                      </div>
+                      <div
+                        style={{ fontSize: ".8rem" }}
+                        className="fw-bold text-orange text-center"
+                      >
+                        Current Weight
+                      </div>
+                      <div className="row m-0 p-0">
+                        <div className="col-6 m-0 p-0 text-end pe-3">
+                          {Number(
+                            selectedOverweightedAsset?.currentWeight?.toFixed(
+                              2,
+                            ),
+                          )}
+                          %
+                        </div>
+
+                        <div className="col-6 m-0 p-0 text-start ps-3">
+                          {Number(
+                            selectedUnderweightedAsset?.currentWeight?.toFixed(
+                              2,
+                            ),
+                          )}
+                          %
+                        </div>
+                      </div>
+                      <div
+                        style={{ fontSize: ".8rem" }}
+                        className="fw-bold text-orange text-center"
+                      >
+                        Weight Deviation
+                      </div>
+                      <div className="row m-0 p-0">
+                        <div className="col-6 m-0 p-0 text-end pe-3 text-green fw-bold">
+                          {Number(
+                            selectedOverweightedAsset?.weightDeviation?.toFixed(
+                              2,
+                            ),
+                          )}
+                          $
+                        </div>
+
+                        <div className="col-6 m-0 p-0 text-start ps-3 text-red fw-bold">
+                          {Number(
+                            selectedUnderweightedAsset?.weightDeviation?.toFixed(
+                              2,
+                            ),
+                          )}
+                          $
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  <div className="d-flex gap-5">
+                    <CustomInput header="Price">
+                      <input
+                        type="number"
+                        className="input-style"
+                        value={overweightedAssetPrice}
+                        name="price1"
+                        onChange={(
+                          event: React.ChangeEvent<HTMLInputElement>,
+                        ) => setOverweightedAssetPrice(+event.target.value)}
+                      ></input>
+                    </CustomInput>
+                    <CustomInput header="Price">
+                      <input
+                        type="number"
+                        className="input-style"
+                        value={underweightedAssetPrice}
+                        name="price2"
+                        onChange={(
+                          event: React.ChangeEvent<HTMLInputElement>,
+                        ) => setUnderweightedAssetPrice(+event.target.value)}
+                      ></input>
+                    </CustomInput>
+                  </div>
+
+                  <CustomInput header="Amount">
+                    <input
+                      type="number"
+                      className="input-style"
+                      value={amount}
+                      name="amount"
+                      onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+                        setAmount(+event.target.value)
+                      }
+                    ></input>
+                  </CustomInput>
+
+                  <CustomInput header="Transaction Date">
+                    <input
+                      type="datetime-local"
+                      className="input-style"
+                      value={date || toInputValue(date)}
+                      name="transactionDate"
+                      onChange={(event) => {
+                        setDate(event.target.value);
+                        // console.log(new Date(event.target.value).toISOString())
+                        // const iso = new Date(event.target.value).toISOString();
+                        // setDate(iso);
+                      }}
+                    />
+                  </CustomInput>
+                </>
+              )}
             </div>
           </div>
         </div>
+        {transactionType != "TRANSFER" && (
+          <>
+            <div className="rounded-lg p-6 mb-6 d-flex flex-column align-items-center text-light">
+              <p className="text-gray-600">
+                Add transactions individually or upload multiple transactions at
+                once
+              </p>
+            </div>
+            {/* Mode Toggle */}
+
+            <div className="d-flex justify-content-center m-0 p-0 gap-3 pb-3">
+              <div className="col-3 m-0 p-0 d-flex align-items-center">
+                <div
+                  className={`asset-broker w-100 mx-1 py-2 ps-3 ${mode == "single" && "border border-light border-2"}`}
+                  onClick={() => setMode("single")}
+                >
+                  single
+                </div>
+              </div>
+              <div className="col-3 m-0 p-0 d-flex align-items-center">
+                <div
+                  className={`asset-broker w-100 mx-1 py-2 ps-3 ${mode == "multiple" && "border border-light border-2"}`}
+                  onClick={() => setMode("multiple")}
+                >
+                  multiple
+                </div>
+              </div>
+            </div>
+          </>
+        )}
       </div>
 
       {mode == "single" && (

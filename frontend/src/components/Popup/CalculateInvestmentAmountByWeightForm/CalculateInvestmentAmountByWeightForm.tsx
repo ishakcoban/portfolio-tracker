@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useStore } from "../../../store";
 import httpService from "../../../services/httpService";
+import { useParams } from "react-router-dom";
 
 export default function CalculateInvestmentAmountByWeightForm() {
   const [text, setText] = useState<string>("");
@@ -8,7 +9,7 @@ export default function CalculateInvestmentAmountByWeightForm() {
   const [message, setMessage] = useState<string>("");
   const [statusCode, setStatusCode] = useState<number>(0);
   const [assets, setAssets] = useState([]);
-  const { pID } = useStore();
+    const { id } = useParams<{ id: string }>();
   const inputHandler = (event: React.ChangeEvent<HTMLInputElement>) => {
     setText(event.target.value.trimStart());
   };
@@ -17,7 +18,7 @@ export default function CalculateInvestmentAmountByWeightForm() {
     // This runs when component mounts (page loads/reloads)
     const fetchAssets = async () => {
       try {
-        const response = await httpService.get(`/portfolios/${pID}`);
+        const response = await httpService.get(`/portfolios/${id}`);
         if (response.status === 200) {
          
           setAssets(response.data.assets);
